@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import Avatar from "../ui/Avatar";
 import Button from "../ui/Button";
+import bshLogo from "../../assets/logo-1.png";
 import {
   HiOutlineSearch,
   HiOutlineMenu,
@@ -68,17 +69,8 @@ const Navbar: React.FC = () => {
       <nav style={{ background: "#0f0e1a", borderBottom: "1px solid #1e1b4b", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", height: 64, display: "flex", alignItems: "center", gap: 16, padding: "0 20px" }}>
           {/* Logo */}
-          <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <div style={{
-              width: 38, height: 38, borderRadius: 10,
-              background: "linear-gradient(135deg,#7c3aed,#4c1d95)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 900, color: "#fff", fontSize: 14, letterSpacing: -0.5,
-              boxShadow: "0 4px 12px rgba(124,58,237,0.4)"
-            }}>BSH</div>
-            <span style={{ fontWeight: 800, fontSize: 20, color: "#f3f4f6", letterSpacing: -0.5 }}>
-              Learn
-            </span>
+          <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <img src={bshLogo} alt="BSHLearn" style={{ height: 40, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
           </Link>
 
           {/* Search — hidden on mobile */}

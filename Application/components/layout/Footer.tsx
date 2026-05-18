@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaInstagram, FaYoutube, FaTelegram, FaTwitter } from "react-icons/fa";
+import bshLogo from "../../assets/logo-1.png";
 
 const Footer: React.FC = () => (
   <footer style={{ background: "#0a0914", borderTop: "1px solid #1e1b4b", padding: "48px 24px 28px" }}>
@@ -8,9 +9,8 @@ const Footer: React.FC = () => (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 36, marginBottom: 40 }}>
         {/* Brand */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 9, background: "linear-gradient(135deg,#7c3aed,#4c1d95)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 13 }}>BSH</div>
-            <span style={{ fontWeight: 800, fontSize: 18, color: "#f3f4f6" }}>Learn</span>
+          <div style={{ marginBottom: 14 }}>
+            <img src={bshLogo} alt="BSHLearn" style={{ height: 42, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
           </div>
           <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>
             India's best learning platform for Hypnosis, Reiki, Shadow Work & Akashik practices.
