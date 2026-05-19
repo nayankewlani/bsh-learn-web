@@ -89,7 +89,7 @@ const LoginPage: React.FC = () => {
               <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#555", cursor: "pointer" }}>
                 <input type="checkbox" style={{ accentColor: "#7c3aed" }} /> Remember me
               </label>
-              <span style={{ color: "#7c3aed", fontWeight: 600, cursor: "pointer" }}>Forgot Password?</span>
+              <span onClick={() => navigate("/forgot-password")} style={{ color: "#7c3aed", fontWeight: 600, cursor: "pointer" }}>Forgot Password?</span>
             </div>
 
             {error && (

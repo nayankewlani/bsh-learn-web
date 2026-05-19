@@ -16,6 +16,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ScheduleLiveClassPage from "./pages/ScheduleLiveClassPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 
 const Layout: React.FC = () => (
   <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0914" }}>
@@ -44,6 +45,7 @@ const AppRouter: React.FC = () => (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
