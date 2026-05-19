@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom
 import { useAuthStore } from "./stores/authStore";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import MobileBottomNav from "./components/layout/MobileBottomNav";
 
 import HomePage from "./pages/HomePage";
 import ExplorePage from "./pages/ExplorePage";
@@ -21,8 +22,9 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 const Layout: React.FC = () => (
   <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0914" }}>
     <Navbar />
-    <main style={{ flex: 1 }}><Outlet /></main>
+    <main style={{ flex: 1 }} className="mobile-nav-pad"><Outlet /></main>
     <Footer />
+    <MobileBottomNav />
   </div>
 );
 

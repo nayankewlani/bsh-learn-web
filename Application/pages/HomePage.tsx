@@ -18,6 +18,8 @@ import slide4 from "../assets/slide-4.png";
 import slide5 from "../assets/slide-5.png";
 import akashicImg from "../assets/akashic.png";
 import hypnosisImg from "../assets/hypnosis.png";
+import mesmerismImg from "../assets/mesmerism.png";
+import courseImg from "../assets/slide-1.png";
 
 const SLIDES = [
   { img: slide1, title: "Art of Hypnosis", badge: "4 Days Workshop", text: "Only 10 in-person seats left. Register now to reserve your seat.", category: "Advance Hypnosis" },
@@ -227,6 +229,64 @@ const HomePage: React.FC = () => {
           </Swiper>
         </div>
       </section>
+
+      {/* ─── Instructor Showcase (from reference frontend) ─── */}
+      <section style={{ maxWidth: 1280, margin: "0 auto", padding: "0 20px 56px" }}>
+        <div style={{ marginBottom: 28 }}>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: "#f3f4f6", margin: 0, letterSpacing: -0.5 }}>Learn from the Best</h2>
+          <p style={{ color: "#9ca3af", margin: "6px 0 0", fontSize: 14 }}>India's top spiritual educators on one platform</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 20 }}>
+          {[
+            { name: "Dr Pradeep Kumar", subject: "SHADOW WORK COURSE", lang: "Hindi", desc: "Apne suppressed emotions aur past ko samajhkar heal karna — real transformation possible hota hai.", img: slide3, gradient: "linear-gradient(135deg,#0d4b45,#1fa89b)" },
+            { name: "Master Pradeep", subject: "ART OF HYPNOSIS", lang: "Hindi", desc: "Master the ancient art of hypnosis. Deep trance techniques for profound healing and mind reprogramming.", img: slide1, gradient: "linear-gradient(135deg,#1e0a3c,#7c3aed)" },
+            { name: "BSH Faculty", subject: "AKASHIK RECORDS", lang: "Hindi / English", desc: "Access universal knowledge. Unlock the Akashic records and live a higher conscious life.", img: akashicImg, gradient: "linear-gradient(135deg,#0a1929,#1a4472)" },
+          ].map((edu) => (
+            <div key={edu.name} style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 20, overflow: "hidden" }}>
+              {/* Circular instructor image card (from HypnoPradeepKumar.css .video-card) */}
+              <div style={{ position: "relative", background: edu.gradient, height: 200, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <img src={edu.img} alt={edu.name} style={{ width: 160, height: 160, objectFit: "cover", borderRadius: "50%", border: "4px solid rgba(255,255,255,0.15)" }} />
+                <div style={{ position: "absolute", right: 20, bottom: 20, width: 48, height: 48, borderRadius: "50%", border: "2.5px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 18, backdropFilter: "blur(6px)", cursor: "pointer" }}>▶</div>
+                <div style={{ position: "absolute", left: 20, bottom: 20, display: "grid", gridTemplateColumns: "repeat(3,7px)", gap: 8 }}>
+                  {[...Array(6)].map((_, i) => <span key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: "rgba(255,255,255,0.6)", display: "block" }} />)}
+                </div>
+              </div>
+              {/* Info */}
+              <div style={{ padding: "16px 18px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <span style={{ background: "#fff", color: "#111", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>{edu.lang}</span>
+                  <span style={{ color: "#7c3aed", fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{edu.subject}</span>
+                </div>
+                <p style={{ color: "#9ca3af", fontSize: 13, lineHeight: 1.7, marginBottom: 14 }}>{edu.desc}</p>
+                <p style={{ color: "#f3f4f6", fontWeight: 800, fontSize: 15, marginBottom: 16 }}>{edu.name}</p>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button onClick={() => navigate("/explore")} style={{ flex: 1, background: "linear-gradient(135deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", padding: "10px 0", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "0.2s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+                    Buy Now
+                  </button>
+                  <button onClick={() => navigate("/explore")} style={{ flex: 1, background: "transparent", border: "1.5px solid #3730a3", color: "#c4b5fd", padding: "10px 0", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "0.2s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#7c3aed")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#3730a3")}>
+                    View Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Join Plus Bar (from reference .join-bar) ─── */}
+      <div style={{ position: "fixed", left: 16, right: 16, bottom: 72, zIndex: 90, maxWidth: 700, margin: "0 auto", pointerEvents: "none" }} className="join-bar-wrapper">
+        <div style={{ background: "#0f0e1a", border: "1px solid #3730a3", borderRadius: 20, padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 12px 40px rgba(0,0,0,0.5)", backdropFilter: "blur(12px)", pointerEvents: "auto" }}>
+          <div>
+            <p style={{ margin: 0, color: "#f3f4f6", fontSize: 13, fontWeight: 700 }}>Get access to all batches</p>
+            <span style={{ fontSize: 12, color: "#a78bfa" }}>Starts at ₹400/Month</span>
+          </div>
+          <button onClick={() => navigate("/explore")} style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", padding: "11px 22px", borderRadius: 12, fontWeight: 800, fontSize: 13, cursor: "pointer", letterSpacing: 0.5, flexShrink: 0 }}>
+            JOIN PLUS
+          </button>
+        </div>
+      </div>
 
       {/* ─── CTA ─── */}
       <section style={{ maxWidth: 1280, margin: "0 auto", padding: "56px 20px" }}>
