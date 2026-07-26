@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Chapter, Lesson } from "../../stores/courseStore";
+import type { Chapter, Lesson } from "../../stores/courseStore";
 import Badge from "../ui/Badge";
 
 interface Props {

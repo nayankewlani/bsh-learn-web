@@ -1,11 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaBook, FaVideo, FaUserGraduate } from "react-icons/fa";
+import { FaHome, FaComments, FaVideo, FaUserGraduate } from "react-icons/fa";
 import { useAuthStore } from "../../stores/authStore";
 
 const TABS = [
   { to: "/", label: "Home", icon: <FaHome /> },
-  { to: "/explore", label: "Courses", icon: <FaBook /> },
+  { to: "/consultation", label: "Consult", icon: <FaComments /> },
   { to: "/live", label: "Live", icon: <FaVideo /> },
 ];
 

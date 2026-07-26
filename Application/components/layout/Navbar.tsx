@@ -1,50 +1,63 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
+import { useThemeStore } from "../../stores/themeStore";
 import Avatar from "../ui/Avatar";
-import Button from "../ui/Button";
-import bshLogo from "../../assets/logo-1.png";
-import profileImg from "../../assets/profile.jpg";
+import bshIcon from "../../assets/BSH-logo-02.png";
 import {
-  HiOutlineSearch,
-  HiOutlineX,
-  HiOutlineHome,
-  HiOutlineBookOpen,
-  HiOutlineVideoCamera,
-  HiOutlineAcademicCap,
-  HiOutlineUser,
-  HiOutlinePlusCircle,
-  HiOutlineLogout,
-  HiOutlineChevronDown,
+  HiOutlineSearch, HiOutlineBookOpen, HiOutlineAcademicCap,
+  HiOutlineUser, HiOutlinePlusCircle, HiOutlineLogout,
+  HiOutlineChevronDown, HiOutlineCog, HiOutlineChatAlt2,
+  HiMenu, HiX,
 } from "react-icons/hi";
-import { BsGrid3X3GapFill } from "react-icons/bs";
-import { FaTimes } from "react-icons/fa";
+import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
 
-const NAV_LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/explore", label: "Courses" },
-  { to: "/live", label: "Live" },
+interface NavItem {
+  to: string;
+  label: string;
+  emoji: string;
+  live?: boolean;
+  isHash?: boolean;
+  consultation?: boolean;
+}
+
+const NAV_LINKS: NavItem[] = [
+  { to: "/",                  label: "Home",             emoji: "🏠" },
+  { to: "/live",              label: "Live",             emoji: "📡",  live: true },
+  { to: "/consultation",      label: "Consultation",     emoji: "💬",  consultation: true },
+  { to: "/explore",           label: "Courses",          emoji: "🎓" },
+  { to: "/#healing-tools",    label: "Healing Tools",    emoji: "🌿",  isHash: true },
 ];
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuthStore();
+  const { isDark, toggle, t } = useThemeStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchQ, setSearchQ] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [profileOpen, setProfileOpen]     = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled]           = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (to: string) =>
-    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+  const isActive = (link: NavItem): boolean => {
+    if (link.isHash) {
+      const hash = "#" + link.to.split("#")[1];
+      return location.pathname === "/" && location.hash === hash;
+    }
+    if (link.to === "/") return location.pathname === "/" && !location.hash;
+    return location.pathname.startsWith(link.to);
+  };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleNavClick = (link: NavItem, closeMobile = false) => (e: React.MouseEvent) => {
+    if (closeMobile) setMobileMenuOpen(false);
+    if (!link.isHash) return;
     e.preventDefault();
-    if (searchQ.trim()) {
-      navigate(`/explore?q=${encodeURIComponent(searchQ)}`);
-      setSearchOpen(false);
-      setDrawerOpen(false);
+    const hash = link.to.split("#")[1];
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" }), 350);
+    } else {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -52,24 +65,38 @@ const Navbar: React.FC = () => {
     await logout();
     navigate("/");
     setProfileOpen(false);
-    setDrawerOpen(false);
+    setMobileMenuOpen(false);
   };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
         setProfileOpen(false);
-      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close drawer on route change
-  useEffect(() => { setDrawerOpen(false); setSearchOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    setProfileOpen(false);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
 
   const userMenuItems = user ? [
-    { label: "Dashboard", to: user.role === "educator" ? "/educator" : "/dashboard", icon: <HiOutlineAcademicCap size={15} /> },
+    ...(user.role === "admin" ? [{ label: "Admin Dashboard", to: "/admin", icon: <HiOutlineCog size={15} /> }] : []),
+    { label: user.role === "educator" ? "Educator Dashboard" : "My Learning", to: user.role === "educator" ? "/educator" : "/dashboard", icon: <HiOutlineAcademicCap size={15} /> },
     { label: "My Courses", to: "/dashboard", icon: <HiOutlineBookOpen size={15} /> },
     { label: "Profile", to: "/profile", icon: <HiOutlineUser size={15} /> },
     ...(user.role === "educator" ? [{ label: "Create Course", to: "/educator/create", icon: <HiOutlinePlusCircle size={15} /> }] : []),
@@ -77,247 +104,404 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* ── Main nav wrapper ── */}
-      <div style={{ position: "sticky", top: 0, zIndex: 200, padding: "10px 16px", background: "transparent", pointerEvents: "none" }}>
-        {/* Floating pill */}
-        <nav style={{
-          maxWidth: 1240, margin: "0 auto",
-          background: "#13122a",
-          border: "1.5px solid #3730a3",
-          borderRadius: 22,
-          padding: "8px 16px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
-          backdropFilter: "blur(20px)",
-          pointerEvents: "auto",
-          gap: 12,
+      <header style={{
+        position: "sticky", top: 0, zIndex: 200,
+        backgroundColor: t.bgNav,
+        borderBottom: `1px solid ${t.border}`,
+        boxShadow: scrolled ? `0 4px 28px ${t.shadow}` : "none",
+        transition: "box-shadow 0.25s, background-color 0.2s",
+      }}>
+        <div style={{
+          maxWidth: 1360, margin: "0 auto", padding: "0 24px",
+          height: 64, display: "flex", alignItems: "center", gap: 10,
         }}>
 
-          {/* Logo */}
-          <Link to="/" style={{ textDecoration: "none", flexShrink: 0, display: "flex", alignItems: "center" }}>
-            <img src={bshLogo} alt="BSHLearn" style={{ height: 38, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          {/* ── Logo ── */}
+          <Link to="/" style={{ textDecoration: "none", flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
+            <img src={bshIcon} alt="BSH" style={{ height: 36, width: 36, borderRadius: "50%", objectFit: "cover", display: "block" }} />
+            <div>
+              <span style={{ color: t.textPrimary, fontWeight: 900, fontSize: 16, letterSpacing: -0.5, display: "block", lineHeight: 1 }}>BSH</span>
+              <span style={{ color: t.textMuted, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", display: "block", lineHeight: 1.2 }}>Healers</span>
+            </div>
           </Link>
 
-          {/* Center nav links — desktop only */}
-          <div className="nav-pill-links" style={{ display: "flex", alignItems: "center", gap: 4, flex: 1, justifyContent: "center" }}>
-            {NAV_LINKS.map((link) => (
-              <Link key={link.to} to={link.to}
-                style={{
-                  color: isActive(link.to) ? "#a78bfa" : "#c4b5fd",
-                  textDecoration: "none", fontSize: 14, fontWeight: 600,
-                  padding: "6px 14px", borderRadius: 12,
-                  background: isActive(link.to) ? "rgba(124,58,237,0.18)" : "transparent",
-                  transition: "all 0.2s", letterSpacing: 0.2,
-                }}
-                onMouseEnter={(e) => { if (!isActive(link.to)) e.currentTarget.style.background = "rgba(124,58,237,0.1)"; }}
-                onMouseLeave={(e) => { if (!isActive(link.to)) e.currentTarget.style.background = "transparent"; }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          {/* ── Mobile: Consultation shortcut (always visible beside logo) ── */}
+          <Link
+            className="nav-mobile-only"
+            to="/consultation"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "6px 11px 6px 9px", borderRadius: 50, flexShrink: 0,
+              background: isDark ? "rgba(255,255,255,0.09)" : "#ffffff",
+              border: `1.5px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"}`,
+              boxShadow: isDark ? "0 2px 8px rgba(0,0,0,0.4)" : "0 2px 10px rgba(0,0,0,0.1)",
+              color: isDark ? t.textPrimary : "#1e1040",
+              textDecoration: "none", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+            }}
+          >
+            <HiOutlineChatAlt2 size={13} style={{ color: isDark ? t.textAccent : "#7c3aed", flexShrink: 0 }} />
+            Consult
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 10, height: 10, flexShrink: 0 }}>
+              <span className="consult-ring" />
+              <span className="consult-dot" />
+            </span>
+          </Link>
 
-          {/* Right section */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {/* ── Divider (desktop only) ── */}
+          <div className="nav-desktop" style={{ width: 1, height: 26, background: t.border, flexShrink: 0, marginLeft: 4 }} />
 
-            {/* Search icon — desktop */}
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="nav-pill-links"
-              style={{ background: "rgba(124,58,237,0.12)", border: "1px solid #3730a3", borderRadius: 10, padding: "6px 10px", cursor: "pointer", color: "#c4b5fd", display: "flex", alignItems: "center" }}
-            >
-              <HiOutlineSearch size={17} />
-            </button>
+          {/* ── Desktop Nav links ── */}
+          <nav className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link);
+              const isLiveLink = !!link.live;
 
-            {/* Grid menu icon */}
-            <button
-              onClick={() => setDrawerOpen(true)}
-              style={{ background: "rgba(124,58,237,0.12)", border: "1px solid #3730a3", borderRadius: 10, padding: "6px 10px", cursor: "pointer", color: "#c4b5fd", display: "flex", alignItems: "center" }}
-            >
-              <BsGrid3X3GapFill size={17} />
-            </button>
+              if (link.consultation) {
+                return (
+                  <Link
+                    key="Consultation"
+                    to={link.to}
+                    onClick={handleNavClick(link)}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 7,
+                      padding: "7px 14px 7px 11px", borderRadius: 50,
+                      background: isDark ? "rgba(255,255,255,0.09)" : "#ffffff",
+                      border: `1.5px solid ${isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.11)"}`,
+                      boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.45)" : "0 2px 12px rgba(0,0,0,0.13)",
+                      color: isDark ? t.textPrimary : "#222",
+                      textDecoration: "none", fontSize: 13, fontWeight: 700,
+                      transition: "all 0.2s", whiteSpace: "nowrap", cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = isDark ? "0 8px 24px rgba(0,0,0,0.55)" : "0 8px 24px rgba(0,0,0,0.18)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = isDark ? "0 2px 12px rgba(0,0,0,0.45)" : "0 2px 12px rgba(0,0,0,0.13)"; }}
+                  >
+                    <HiOutlineChatAlt2 size={16} style={{ color: isDark ? t.textAccent : "#444", flexShrink: 0 }} />
+                    Consultation
+                    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 12, height: 12, flexShrink: 0 }}>
+                      <span className="consult-ring" />
+                      <span className="consult-dot" />
+                    </span>
+                  </Link>
+                );
+              }
 
-            {/* Profile circle */}
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  onClick={handleNavClick(link)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    padding: "7px 13px 7px 11px", borderRadius: 50,
+                    background: active
+                      ? (isLiveLink ? "rgba(239,68,68,0.1)" : isDark ? "rgba(124,58,237,0.18)" : "rgba(124,58,237,0.1)")
+                      : (isDark ? "rgba(255,255,255,0.09)" : "#ffffff"),
+                    border: `1.5px solid ${active
+                      ? (isLiveLink ? "rgba(239,68,68,0.45)" : "rgba(124,58,237,0.45)")
+                      : (isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.11)")}`,
+                    boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.45)" : "0 2px 12px rgba(0,0,0,0.13)",
+                    color: active ? (isLiveLink ? "#f87171" : t.accentLight) : (isDark ? t.textPrimary : "#222"),
+                    textDecoration: "none", fontSize: 13, fontWeight: 700,
+                    transition: "all 0.2s", whiteSpace: "nowrap", cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => { if (!active) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = isDark ? "0 8px 24px rgba(0,0,0,0.55)" : "0 8px 24px rgba(0,0,0,0.18)"; } }}
+                  onMouseLeave={(e) => { if (!active) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = isDark ? "0 2px 12px rgba(0,0,0,0.45)" : "0 2px 12px rgba(0,0,0,0.13)"; } }}
+                >
+                  {isLiveLink ? (
+                    <>
+                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: active ? "#f87171" : "#ef4444", display: "inline-block", flexShrink: 0, animation: "navLivePulse 1.5s ease-in-out infinite", boxShadow: "0 0 6px #ef4444" }} />
+                      {link.label}
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 12, lineHeight: 1 }}>{link.emoji}</span>
+                      {link.label}
+                    </>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* ── Flex spacer ── */}
+          <div style={{ flex: 1 }} />
+
+          {/* ── Search icon (desktop) ── */}
+          <button
+            className="nav-desktop"
+            onClick={() => navigate("/explore")}
+            title="Search courses"
+            style={{ background: "none", border: `1.5px solid ${t.border}`, borderRadius: 10, width: 36, height: 36, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: t.textMuted, transition: "all 0.18s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = t.accent; e.currentTarget.style.color = t.accent; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.color = t.textMuted; }}
+          >
+            <HiOutlineSearch size={16} />
+          </button>
+
+          {/* ── Theme toggle ── */}
+          <button
+            onClick={toggle}
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            style={{ background: isDark ? "rgba(124,58,237,0.1)" : "rgba(124,58,237,0.08)", border: `1.5px solid ${t.border}`, borderRadius: 10, width: 36, height: 36, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: t.textAccent, transition: "all 0.18s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = t.accent; e.currentTarget.style.boxShadow = `0 0 14px ${t.accent}44`; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = "none"; }}
+          >
+            {isDark ? <MdOutlineLightMode size={17} /> : <MdOutlineDarkMode size={17} />}
+          </button>
+
+          {/* ── Auth / Profile (desktop) ── */}
+          <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {user ? (
               <div ref={dropdownRef} style={{ position: "relative" }}>
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 6 }}
+                  style={{ background: profileOpen ? t.bgTertiary : "none", border: `1.5px solid ${profileOpen ? t.accent : t.border}`, borderRadius: 50, cursor: "pointer", padding: "4px 10px 4px 4px", display: "flex", alignItems: "center", gap: 8, transition: "all 0.18s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = t.accent; }}
+                  onMouseLeave={(e) => { if (!profileOpen) e.currentTarget.style.borderColor = t.border; }}
                 >
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #7c3aed", overflow: "hidden", flexShrink: 0 }}>
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <Avatar src={user.avatar} name={user.name} size={36} />
-                    )}
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", overflow: "hidden", backgroundColor: t.accent, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {user.avatar ? <img src={user.avatar} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#fff", fontWeight: 700, fontSize: 12 }}>{user.name[0].toUpperCase()}</span>}
                   </div>
-                  <HiOutlineChevronDown size={12} style={{ color: "#9ca3af", transform: profileOpen ? "rotate(180deg)" : "none", transition: "0.2s" }} className="nav-pill-links" />
+                  <span style={{ color: t.textPrimary, fontSize: 13, fontWeight: 600, maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name.split(" ")[0]}</span>
+                  <HiOutlineChevronDown size={12} style={{ color: t.textMuted, transform: profileOpen ? "rotate(180deg)" : "none", transition: "0.2s", flexShrink: 0 }} />
                 </button>
 
                 {profileOpen && (
-                  <div style={{
-                    position: "absolute", right: 0, top: 48,
-                    background: "#13122a", border: "1px solid #3730a3",
-                    borderRadius: 16, minWidth: 210,
-                    boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
-                    overflow: "hidden", zIndex: 300,
-                    animation: "fadeIn 0.15s ease",
-                  }}>
-                    <div style={{ padding: "14px 16px", borderBottom: "1px solid #1e1b4b", display: "flex", alignItems: "center", gap: 10 }}>
-                      <Avatar src={user.avatar} name={user.name} size={38} />
+                  <div style={{ position: "absolute", right: 0, top: 50, background: t.bgCard, border: `1px solid ${t.borderLight}`, borderRadius: 14, minWidth: 220, boxShadow: `0 20px 60px ${t.shadow}, 0 0 0 1px ${t.border}`, overflow: "hidden", zIndex: 300, animation: "ddFadeIn 0.15s ease" }}>
+                    <div style={{ padding: "16px 16px 12px", background: isDark ? "linear-gradient(135deg,rgba(124,58,237,0.12),rgba(79,172,254,0.06))" : "linear-gradient(135deg,rgba(124,58,237,0.06),rgba(79,172,254,0.03))", borderBottom: `1px solid ${t.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+                      <Avatar src={user.avatar} name={user.name} size={40} />
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#f3f4f6" }}>{user.name}</div>
-                        <div style={{ fontSize: 11, color: "#a78bfa", textTransform: "capitalize" }}>{user.role}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: t.textPrimary }}>{user.name}</div>
+                        <div style={{ fontSize: 11, color: t.accentLight, textTransform: "capitalize", marginTop: 1 }}>✦ {user.role}</div>
                       </div>
                     </div>
-                    {userMenuItems.map((item) => (
-                      <Link key={item.to} to={item.to} onClick={() => setProfileOpen(false)}
-                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 16px", color: "#c4b5fd", textDecoration: "none", fontSize: 13, borderBottom: "1px solid #1e1b4b", transition: "background 0.15s" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "#1e1b4b")}
+                    <div style={{ padding: "6px 0" }}>
+                      {userMenuItems.map((item) => (
+                        <Link key={item.to + item.label} to={item.to} onClick={() => setProfileOpen(false)}
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", color: t.textAccent, textDecoration: "none", fontSize: 13, transition: "background 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = t.bgTertiary)}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <span style={{ color: t.textMuted }}>{item.icon}</span> {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                    <div style={{ borderTop: `1px solid ${t.border}`, padding: "6px 0 6px" }}>
+                      <button onClick={handleLogout}
+                        style={{ width: "100%", padding: "10px 16px", background: "none", border: "none", color: "#f87171", textAlign: "left", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", gap: 10 }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.08)")}
                         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                       >
-                        {item.icon} {item.label}
-                      </Link>
-                    ))}
-                    <button onClick={handleLogout}
-                      style={{ width: "100%", padding: "11px 16px", background: "none", border: "none", color: "#f87171", textAlign: "left", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", gap: 10, transition: "background 0.15s" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1e1b4b")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    >
-                      <HiOutlineLogout size={15} /> Log Out
-                    </button>
+                        <HiOutlineLogout size={15} /> Log Out
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ display: "flex", gap: 6 }} className="nav-pill-links">
-                <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>Log in</Button>
-                <Button size="sm" onClick={() => navigate("/register")}>Sign up</Button>
-              </div>
-            )}
-
-            {/* Login icon for mobile (when not logged in) */}
-            {!user && (
-              <button
-                className="nav-mobile-login"
-                onClick={() => navigate("/login")}
-                style={{ background: "#7c3aed", border: "none", borderRadius: 10, padding: "7px 14px", cursor: "pointer", color: "#fff", fontSize: 13, fontWeight: 600 }}
-              >
-                Login
-              </button>
-            )}
-          </div>
-        </nav>
-      </div>
-
-      {/* ── Search Bar (expands below pill) ── */}
-      {searchOpen && (
-        <div style={{ position: "fixed", top: 78, left: 0, right: 0, zIndex: 199, padding: "0 16px", animation: "fadeIn 0.15s ease" }}>
-          <div style={{ maxWidth: 640, margin: "0 auto" }}>
-            <form onSubmit={handleSearch}>
-              <div style={{ position: "relative" }}>
-                <HiOutlineSearch size={17} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
-                <input
-                  autoFocus
-                  value={searchQ}
-                  onChange={(e) => setSearchQ(e.target.value)}
-                  placeholder="Search courses, topics, educators..."
-                  style={{ width: "100%", padding: "13px 46px 13px 44px", background: "#13122a", border: "1.5px solid #7c3aed", borderRadius: 14, color: "#f3f4f6", fontSize: 15, outline: "none", boxSizing: "border-box", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
-                />
-                <button type="button" onClick={() => setSearchOpen(false)}
-                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#6b7280", cursor: "pointer" }}>
-                  <HiOutlineX size={17} />
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ── Side Drawer ── */}
-      {drawerOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 400 }} onClick={() => setDrawerOpen(false)}>
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }} />
-          <div
-            style={{ position: "absolute", top: 0, right: 0, width: 280, height: "100%", background: "#0f0e1a", borderLeft: "1px solid #3730a3", padding: "24px 20px", overflowY: "auto", animation: "slideIn 0.25s ease" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-              <img src={bshLogo} alt="BSHLearn" style={{ height: 34, filter: "brightness(0) invert(1)" }} />
-              <button onClick={() => setDrawerOpen(false)} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid #3730a3", borderRadius: 8, padding: "6px", cursor: "pointer", color: "#c4b5fd", display: "flex" }}>
-                <FaTimes size={15} />
-              </button>
-            </div>
-
-            {/* Search in drawer */}
-            <form onSubmit={handleSearch} style={{ marginBottom: 20 }}>
-              <div style={{ position: "relative" }}>
-                <HiOutlineSearch size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
-                <input
-                  value={searchQ}
-                  onChange={(e) => setSearchQ(e.target.value)}
-                  placeholder="Search..."
-                  style={{ width: "100%", padding: "10px 12px 10px 34px", background: "#13122a", border: "1.5px solid #3730a3", borderRadius: 10, color: "#f3f4f6", fontSize: 14, outline: "none", boxSizing: "border-box" }}
-                />
-              </div>
-            </form>
-
-            {/* Nav grid like reference */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
-              {[
-                { to: "/", label: "Home", icon: <HiOutlineHome size={20} /> },
-                { to: "/explore", label: "Courses", icon: <HiOutlineBookOpen size={20} /> },
-                { to: "/live", label: "Live", icon: <HiOutlineVideoCamera size={20} /> },
-                { to: user ? (user.role === "educator" ? "/educator" : "/dashboard") : "/register", label: "My Learning", icon: <HiOutlineAcademicCap size={20} /> },
-              ].map((item) => (
-                <Link key={item.to} to={item.to} onClick={() => setDrawerOpen(false)}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 12px", background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 14, color: "#c4b5fd", textDecoration: "none", fontSize: 12, fontWeight: 600, transition: "all 0.2s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#7c3aed"; e.currentTarget.style.background = "rgba(124,58,237,0.1)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#1e1b4b"; e.currentTarget.style.background = "#13122a"; }}
+              <>
+                <button
+                  onClick={() => navigate("/login")}
+                  style={{ background: "none", border: `1.5px solid ${t.borderLight}`, color: t.textAccent, padding: "8px 18px", borderRadius: 50, cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.2s", letterSpacing: 0.1 }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = t.accent; e.currentTarget.style.background = isDark ? "rgba(124,58,237,0.1)" : "rgba(124,58,237,0.06)"; e.currentTarget.style.boxShadow = `0 0 16px ${t.accent}30`; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.borderLight; e.currentTarget.style.background = "none"; e.currentTarget.style.boxShadow = "none"; }}
                 >
-                  <span style={{ color: "#a78bfa" }}>{item.icon}</span>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+                  Log in
+                </button>
+                <button
+                  onClick={() => navigate("/register")}
+                  style={{ background: "linear-gradient(135deg,#7c3aed 0%,#5b21b6 100%)", border: "none", color: "#fff", padding: "9px 20px", borderRadius: 50, cursor: "pointer", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 4px 16px rgba(124,58,237,0.45)", transition: "all 0.2s", letterSpacing: 0.2 }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(124,58,237,0.6)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(124,58,237,0.45)"; }}
+                >
+                  ✨ Join Free
+                </button>
+              </>
+            )}
+          </div>
 
-            {/* User section */}
+          {/* ── Mobile: hamburger button ── */}
+          <button
+            className="nav-mobile-only"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menu"
+            style={{ background: mobileMenuOpen ? t.bgTertiary : "none", border: `1.5px solid ${mobileMenuOpen ? t.accent : t.border}`, borderRadius: 10, width: 36, height: 36, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: t.textPrimary, transition: "all 0.18s" }}
+          >
+            {mobileMenuOpen ? <HiX size={20} /> : <HiMenu size={20} />}
+          </button>
+        </div>
+
+        <style>{`
+          @media (max-width: 1000px) { .nav-desktop { display: none !important; } }
+          @media (min-width: 1001px) { .nav-desktop { display: flex !important; } .nav-mobile-only { display: none !important; } }
+          .nav-mobile-only { display: flex; }
+
+          @keyframes navLivePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 6px #ef4444; transform: scale(1); }
+            50%       { opacity: 0.6; box-shadow: 0 0 10px #ef4444; transform: scale(1.5); }
+          }
+          @keyframes consultDotColor {
+            0%, 45%  { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+            50%, 95% { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+            100%     { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+          }
+          @keyframes consultRingColor {
+            0%, 45%  { background: #22c55e; }
+            50%, 95% { background: #ef4444; }
+            100%     { background: #22c55e; }
+          }
+          @keyframes pingExpand {
+            0%        { transform: scale(1); opacity: 0.6; }
+            75%, 100% { transform: scale(2.4); opacity: 0; }
+          }
+          .consult-dot {
+            width: 9px; height: 9px; border-radius: 50%; display: block; flex-shrink: 0;
+            animation: consultDotColor 4s ease-in-out infinite;
+          }
+          .consult-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            animation: consultRingColor 4s ease-in-out infinite, pingExpand 2s ease-out infinite;
+            opacity: 0.5;
+          }
+          @keyframes ddFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes mobileMenuIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+      </header>
+
+      {/* ── Mobile Menu Overlay ── */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: "fixed", top: 64, left: 0, right: 0, bottom: 0,
+          background: t.bgPrimary, zIndex: 199,
+          overflowY: "auto", animation: "mobileMenuIn 0.22s ease",
+          borderTop: `1px solid ${t.border}`,
+        }}>
+          {/* Nav links */}
+          <div style={{ padding: "8px 0" }}>
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link);
+              const isLiveLink = !!link.live;
+
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  onClick={handleNavClick(link, true)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14,
+                    padding: "15px 24px",
+                    textDecoration: "none",
+                    borderBottom: `1px solid ${t.border}`,
+                    background: active ? (isDark ? "rgba(124,58,237,0.1)" : "rgba(124,58,237,0.06)") : "transparent",
+                    transition: "background 0.15s",
+                  }}
+                >
+                  {/* Icon / indicator */}
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                    background: active
+                      ? (isLiveLink ? "rgba(239,68,68,0.12)" : "rgba(124,58,237,0.15)")
+                      : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"),
+                    border: `1.5px solid ${active ? (isLiveLink ? "rgba(239,68,68,0.35)" : "rgba(124,58,237,0.35)") : t.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
+                  }}>
+                    {isLiveLink ? (
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", display: "block", animation: "navLivePulse 1.5s infinite", boxShadow: "0 0 6px #ef4444" }} />
+                    ) : link.consultation ? (
+                      <HiOutlineChatAlt2 size={18} style={{ color: active ? t.accentLight : t.textSecond }} />
+                    ) : (
+                      <span style={{ fontSize: 16 }}>{link.emoji}</span>
+                    )}
+                  </div>
+
+                  {/* Label */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: active ? (isLiveLink ? "#f87171" : t.accentLight) : t.textPrimary, fontWeight: active ? 700 : 600, fontSize: 15 }}>
+                      {link.label}
+                      {isLiveLink && (
+                        <span style={{ marginLeft: 8, background: "rgba(239,68,68,0.15)", color: "#f87171", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(239,68,68,0.3)" }}>LIVE</span>
+                      )}
+                    </div>
+                    <div style={{ color: t.textMuted, fontSize: 11, marginTop: 1 }}>
+                      {link.label === "Home" && "Back to home page"}
+                      {link.label === "Live" && "Watch live spiritual classes"}
+                      {link.label === "Consultation" && "Talk to expert healers"}
+                      {link.label === "Courses" && "Explore all courses"}
+                      {link.label === "Healing Tools" && "Free meditation & breathing tools"}
+                    </div>
+                  </div>
+
+                  {/* Consultation dot */}
+                  {link.consultation && (
+                    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0 }}>
+                      <span className="consult-ring" />
+                      <span className="consult-dot" />
+                    </span>
+                  )}
+
+                  {/* Chevron */}
+                  <span style={{ color: t.textMuted, fontSize: 16 }}>›</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 8, background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}` }} />
+
+          {/* Auth section */}
+          <div style={{ padding: "20px 24px 32px" }}>
             {user ? (
-              <div style={{ borderTop: "1px solid #1e1b4b", paddingTop: 20 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                  <Avatar src={user.avatar} name={user.name} size={40} />
+              <>
+                {/* User info */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: isDark ? "rgba(124,58,237,0.08)" : "rgba(124,58,237,0.05)", borderRadius: 14, border: `1px solid ${t.border}`, marginBottom: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: t.accent, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {user.avatar ? <img src={user.avatar} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>{user.name[0].toUpperCase()}</span>}
+                  </div>
                   <div>
-                    <div style={{ fontWeight: 700, color: "#f3f4f6", fontSize: 14 }}>{user.name}</div>
-                    <div style={{ color: "#a78bfa", fontSize: 11, textTransform: "capitalize" }}>{user.role}</div>
+                    <div style={{ color: t.textPrimary, fontWeight: 700, fontSize: 15 }}>{user.name}</div>
+                    <div style={{ color: t.accentLight, fontSize: 12, textTransform: "capitalize" }}>✦ {user.role}</div>
                   </div>
                 </div>
+
+                {userMenuItems.map((item) => (
+                  <Link key={item.to + item.label} to={item.to} onClick={() => setMobileMenuOpen(false)}
+                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 0", borderBottom: `1px solid ${t.border}`, color: t.textAccent, textDecoration: "none", fontSize: 14 }}
+                  >
+                    <span style={{ color: t.textMuted }}>{item.icon}</span> {item.label}
+                  </Link>
+                ))}
+
                 <button onClick={handleLogout}
-                  style={{ width: "100%", padding: "11px 16px", background: "#1e1b4b", border: "1px solid #3730a3", borderRadius: 10, color: "#f87171", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
-                  <HiOutlineLogout size={15} /> Log Out
+                  style={{ width: "100%", marginTop: 16, padding: "13px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 12, color: "#f87171", cursor: "pointer", fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                >
+                  <HiOutlineLogout size={16} /> Log Out
                 </button>
-              </div>
+              </>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid #1e1b4b", paddingTop: 20 }}>
-                <Button onClick={() => { navigate("/login"); setDrawerOpen(false); }}>Sign In</Button>
-                <Button variant="secondary" onClick={() => { navigate("/register"); setDrawerOpen(false); }}>Create Account</Button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <p style={{ color: t.textMuted, fontSize: 13, marginBottom: 4 }}>Join 50,000+ spiritual learners</p>
+                <button onClick={() => { setMobileMenuOpen(false); navigate("/register"); }}
+                  style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", padding: "14px", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, boxShadow: "0 4px 16px rgba(124,58,237,0.4)" }}
+                >
+                  ✨ Join Free
+                </button>
+                <button onClick={() => { setMobileMenuOpen(false); navigate("/login"); }}
+                  style={{ background: "none", border: `1.5px solid ${t.borderLight}`, color: t.textAccent, padding: "13px", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 600 }}
+                >
+                  Log In
+                </button>
               </div>
             )}
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 768px) {
-          .nav-pill-links { display: none !important; }
-          .nav-mobile-login { display: flex !important; }
-        }
-        @media (min-width: 769px) {
-          .nav-pill-links { display: flex !important; }
-          .nav-mobile-login { display: none !important; }
-        }
-      `}</style>
     </>
   );
 };

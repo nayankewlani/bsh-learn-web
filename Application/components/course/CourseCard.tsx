@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Course } from "../../stores/courseStore";
+import type { Course } from "../../stores/courseStore";
 import Avatar from "../ui/Avatar";
+import { useThemeStore } from "../../stores/themeStore";
 import { HiOutlineStar, HiOutlineUserGroup, HiOutlineBookOpen, HiOutlineClock } from "react-icons/hi";
 
 interface Props {
@@ -20,6 +21,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const CourseCard: React.FC<Props> = ({ course, showProgress, style }) => {
   const navigate = useNavigate();
+  const { t } = useThemeStore();
   const price = course.discountPrice ?? course.price;
   const hasDiscount = course.discountPrice && course.discountPrice < course.price;
   const levelColor = LEVEL_COLORS[course.level?.toLowerCase() || ""] || "#7c3aed";
@@ -28,28 +30,27 @@ const CourseCard: React.FC<Props> = ({ course, showProgress, style }) => {
     <div
       onClick={() => navigate(`/course/${course._id}`)}
       style={{
-        background: "#13122a",
+        background: t.bgCard,
         borderRadius: 18,
         overflow: "hidden",
         cursor: "pointer",
         transition: "transform 0.25s, box-shadow 0.25s, border-color 0.25s",
         display: "flex",
         flexDirection: "column",
-        border: "1px solid #1e1b4b",
-        fontFamily: "'Poppins', sans-serif",
+        border: `1px solid ${t.border}`,
         ...style,
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLDivElement;
         el.style.transform = "translateY(-5px)";
-        el.style.boxShadow = "0 20px 48px rgba(124,58,237,0.25)";
-        el.style.borderColor = "#4c1d95";
+        el.style.boxShadow = `0 20px 48px rgba(124,58,237,0.22)`;
+        el.style.borderColor = "#7c3aed";
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLDivElement;
         el.style.transform = "none";
         el.style.boxShadow = "none";
-        el.style.borderColor = "#1e1b4b";
+        el.style.borderColor = t.border;
       }}
     >
       {/* Thumbnail */}
@@ -95,13 +96,13 @@ const CourseCard: React.FC<Props> = ({ course, showProgress, style }) => {
       <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
 
         {/* Category chip */}
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#a78bfa", background: "rgba(124,58,237,0.14)", padding: "2px 8px", borderRadius: 20, alignSelf: "flex-start", letterSpacing: 0.3 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#a78bfa", background: "rgba(124,58,237,0.12)", padding: "2px 8px", borderRadius: 20, alignSelf: "flex-start", letterSpacing: 0.3 }}>
           {course.category}
         </span>
 
         {/* Title */}
         <h3 style={{
-          margin: 0, fontSize: 14, fontWeight: 700, color: "#f3f4f6", lineHeight: 1.45,
+          margin: 0, fontSize: 14, fontWeight: 700, color: t.textPrimary, lineHeight: 1.45,
           display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>
           {course.title}
@@ -110,14 +111,14 @@ const CourseCard: React.FC<Props> = ({ course, showProgress, style }) => {
         {/* Educator */}
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <Avatar src={course.educator?.avatar} name={course.educator?.name || "Educator"} size={20} />
-          <span style={{ color: "#9ca3af", fontSize: 12 }}>{course.educator?.name}</span>
+          <span style={{ color: t.textSecond, fontSize: 12 }}>{course.educator?.name}</span>
         </div>
 
         {/* Meta stats */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "#6b7280", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: t.textMuted, flexWrap: "wrap" }}>
           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
             <HiOutlineStar size={12} style={{ color: "#f59e0b" }} />
-            {course.rating.toFixed(1)}
+            {(course.rating ?? 0).toFixed(1)}
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
             <HiOutlineUserGroup size={12} />
@@ -138,36 +139,36 @@ const CourseCard: React.FC<Props> = ({ course, showProgress, style }) => {
         {/* Progress bar */}
         {showProgress !== undefined && (
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: t.textMuted, marginBottom: 4 }}>
               <span>Progress</span><span style={{ color: "#a78bfa", fontWeight: 600 }}>{showProgress}%</span>
             </div>
-            <div style={{ background: "#1e1b4b", borderRadius: 4, height: 4 }}>
+            <div style={{ background: t.bgTertiary, borderRadius: 4, height: 4 }}>
               <div style={{ background: "linear-gradient(90deg,#7c3aed,#a78bfa)", height: "100%", borderRadius: 4, width: `${showProgress}%`, transition: "width 0.3s" }} />
             </div>
           </div>
         )}
 
-        {/* Price + button row (from reference style) */}
-        <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #1e1b4b" }}>
+        {/* Price + button row */}
+        <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${t.border}` }}>
           <div>
             {price === 0 ? (
-              <span style={{ fontWeight: 800, color: "#4ade80", fontSize: 16 }}>Free</span>
+              <span style={{ fontWeight: 800, color: "#16a34a", fontSize: 16 }}>Free</span>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontWeight: 800, color: "#f3f4f6", fontSize: 16 }}>₹{(price / 100).toLocaleString()}</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                <span style={{ fontWeight: 800, color: t.textPrimary, fontSize: 16 }}>₹{price.toLocaleString()}</span>
                 {hasDiscount && (
-                  <span style={{ color: "#6b7280", fontSize: 12, textDecoration: "line-through" }}>₹{(course.price / 100).toLocaleString()}</span>
+                  <span style={{ color: t.textMuted, fontSize: 12, textDecoration: "line-through" }}>₹{course.price.toLocaleString()}</span>
                 )}
               </div>
             )}
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); navigate(`/course/${course._id}`); }}
-            style={{ background: "#7c3aed", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, padding: "7px 14px", borderRadius: 10, cursor: "pointer", transition: "background 0.2s" }}
+            style={{ background: "#7c3aed", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, padding: "7px 16px", borderRadius: 10, cursor: "pointer", transition: "background 0.2s" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#6d28d9")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "#7c3aed")}
           >
-            View Details
+            Enroll Now
           </button>
         </div>
       </div>

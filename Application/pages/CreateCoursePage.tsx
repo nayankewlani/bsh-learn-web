@@ -7,7 +7,7 @@ import client from "../api/client";
 const CATEGORIES = ["Advance Hypnosis", "Hypnosis 2.0", "Art of shadow work", "Reiki", "Akashik"];
 const LANGUAGES = ["Hindi", "English", "Tamil", "Telugu", "Bengali", "Marathi"];
 
-const STEPS = ["Basic Info", "Details", "Pricing", "Review"];
+const STEPS = ["Basic Info", "Details", "Pricing", "Review & Submit"];
 
 const CreateCoursePage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const CreateCoursePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    title: "", description: "", category: "Mathematics", subcategory: "", language: "Hindi",
+    title: "", description: "", category: "Advance Hypnosis", subcategory: "", language: "Hindi",
     level: "beginner", price: "0", discountPrice: "", thumbnail: "",
     requirements: [""], objectives: [""], tags: "",
   });
@@ -32,13 +32,15 @@ const CreateCoursePage: React.FC = () => {
     try {
       const payload = {
         ...form,
-        price: Number(form.price) * 100,
-        discountPrice: form.discountPrice ? Number(form.discountPrice) * 100 : undefined,
+        price: Number(form.price),
+        discountPrice: form.discountPrice ? Number(form.discountPrice) : undefined,
         requirements: form.requirements.filter(Boolean),
         objectives: form.objectives.filter(Boolean),
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
       };
       const { data } = await client.post("/courses", payload);
+      // Immediately submit for review so admin sees it
+      await client.post(`/courses/${data.course._id}/submit-review`).catch(() => {});
       navigate(`/educator/courses/${data.course._id}`);
     } catch (err: unknown) {
       setError((err as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to create course");
@@ -136,7 +138,10 @@ const CreateCoursePage: React.FC = () => {
 
           {step === 3 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <h3 style={{ color: "#f3f4f6", margin: 0 }}>Review Your Course</h3>
+              <h3 style={{ color: "#f3f4f6", margin: 0 }}>Review & Submit for Admin Approval</h3>
+              <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 10, padding: "12px 16px", color: "#fbbf24", fontSize: 13, lineHeight: 1.7 }}>
+                ⚠️ <strong>How it works:</strong> Your course will be created as a draft and sent to the admin for review. Once approved, the admin will publish it so students can enroll. You can add chapters and lessons right away in the Course Editor.
+              </div>
               {[["Title", form.title], ["Category", form.category], ["Language", form.language], ["Level", form.level], ["Price", form.price === "0" ? "Free" : `₹${form.price}`]].map(([k, v]) => (
                 <div key={k} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #1e1b4b" }}>
                   <span style={{ color: "#9ca3af", fontSize: 14, minWidth: 100 }}>{k}</span>
@@ -152,7 +157,7 @@ const CreateCoursePage: React.FC = () => {
             {step < 3 ? (
               <Button onClick={() => setStep(s => s + 1)} disabled={step === 0 && (!form.title || !form.description)}>Next →</Button>
             ) : (
-              <Button onClick={handleSubmit} loading={loading}>Create Course</Button>
+              <Button onClick={handleSubmit} loading={loading}>Submit for Review →</Button>
             )}
           </div>
         </div>

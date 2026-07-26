@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaInstagram, FaYoutube, FaTelegram, FaTwitter } from "react-icons/fa";
-import bshLogo from "../../assets/logo-1.png";
+import bshIcon from "../../assets/BSH-logo-02.png";
 
 const Footer: React.FC = () => (
   <footer style={{ background: "#0a0914", borderTop: "1px solid #1e1b4b", padding: "48px 24px 28px" }}>
@@ -9,8 +9,9 @@ const Footer: React.FC = () => (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 36, marginBottom: 40 }}>
         {/* Brand */}
         <div>
-          <div style={{ marginBottom: 14 }}>
-            <img src={bshLogo} alt="BSHLearn" style={{ height: 42, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          <div style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 9 }}>
+            <img src={bshIcon} alt="BSH" style={{ height: 40, width: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+            <span style={{ color: "#f3f4f6", fontWeight: 800, fontSize: 20, letterSpacing: -0.3 }}>BSH</span>
           </div>
           <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>
             India's best learning platform for Hypnosis, Reiki, Shadow Work & Akashik practices.
@@ -100,7 +101,7 @@ const Footer: React.FC = () => (
 
       {/* Bottom bar */}
       <div style={{ borderTop: "1px solid #1e1b4b", paddingTop: 22, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-        <span style={{ color: "#4b5563", fontSize: 13 }}>© 2026 BSHLearn. All rights reserved.</span>
+        <span style={{ color: "#4b5563", fontSize: 13 }}>© 2026 BSH. All rights reserved.</span>
         <span style={{ color: "#4b5563", fontSize: 13 }}>Made with ❤️ for Indian learners</span>
       </div>
     </div>

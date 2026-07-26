@@ -101,10 +101,8 @@ export const useCourseStore = create<CourseState>((set) => ({
   },
 
   fetchMyCourses: async () => {
-    try {
-      const { data } = await client.get("/my-courses");
-      set({ enrolledCourses: data.enrollments.map((e: { course: Course; progress: number }) => ({ course: e.course, progress: e.progress })) });
-    } catch {}
+    const { data } = await client.get("/my-courses");
+    set({ enrolledCourses: data.enrollments.map((e: { course: Course; progress: number }) => ({ course: e.course, progress: e.progress })) });
   },
 
   searchCourses: async (q, params = {}) => {

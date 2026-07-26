@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useCourseStore, Course, Chapter, Lesson } from "../stores/courseStore";
+import { useCourseStore } from "../stores/courseStore";
+import type { Course, Chapter, Lesson } from "../stores/courseStore";
 import { useAuthStore } from "../stores/authStore";
 import CourseSyllabus from "../components/course/CourseSyllabus";
 import CheckoutModal from "../components/payment/CheckoutModal";
+import CourseAnnouncementsPanel from "../components/CourseAnnouncementsPanel";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
 import Avatar from "../components/ui/Avatar";
@@ -91,8 +93,8 @@ const CourseDetailPage: React.FC = () => {
               <Button fullWidth size="lg" onClick={handleEnrollFree} loading={enrolling}>Enroll for Free</Button>
             ) : (
               <>
-                <div style={{ fontSize: 32, fontWeight: 900, color: "#a78bfa", marginBottom: 4 }}>₹{(price / 100).toLocaleString()}</div>
-                {course.discountPrice && <div style={{ color: "#6b7280", textDecoration: "line-through", marginBottom: 12 }}>₹{(course.price / 100).toLocaleString()}</div>}
+                <div style={{ fontSize: 32, fontWeight: 900, color: "#a78bfa", marginBottom: 4 }}>₹{price.toLocaleString()}</div>
+                {course.discountPrice && <div style={{ color: "#6b7280", textDecoration: "line-through", marginBottom: 12 }}>₹{course.price.toLocaleString()}</div>}
                 <Button fullWidth size="lg" onClick={() => user ? setShowCheckout(true) : navigate("/login")}>Buy Now</Button>
               </>
             )}
@@ -118,6 +120,11 @@ const CourseDetailPage: React.FC = () => {
           <h2 style={{ fontSize: 22, fontWeight: 800, color: "#f3f4f6", marginBottom: 16 }}>Course Content</h2>
           <CourseSyllabus chapters={chapters} lessons={lessons} isEnrolled={isEnrolled} onLessonClick={handleLessonClick} />
         </div>
+
+        {/* Announcements — visible only to enrolled students and admin */}
+        {(isEnrolled || user?.role === "admin") && id && (
+          <CourseAnnouncementsPanel courseId={id} />
+        )}
       </div>
 
       <CheckoutModal
@@ -125,7 +132,7 @@ const CourseDetailPage: React.FC = () => {
         onClose={() => setShowCheckout(false)}
         courseId={id}
         courseTitle={course.title}
-        coursePricePaise={price}
+        coursePriceRupees={price}
         onSuccess={() => setIsEnrolled(true)}
       />
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import Modal from "../ui/Modal";
 import Button from "../ui/Button";
 import client from "../../api/client";
@@ -12,7 +12,7 @@ interface Props {
   onClose: () => void;
   courseId?: string;
   courseTitle?: string;
-  coursePricePaise?: number;
+  coursePriceRupees?: number;
   plan?: "monthly" | "annual";
   onSuccess?: () => void;
 }
@@ -22,14 +22,12 @@ const PLAN_DETAILS = {
   annual: { label: "Pro Annual", price: 3999, description: "All courses + downloads + recordings for 1 year" },
 };
 
-const CheckoutModal: React.FC<Props> = ({ isOpen, onClose, courseId, courseTitle, coursePricePaise, plan, onSuccess }) => {
+const CheckoutModal: React.FC<Props> = ({ isOpen, onClose, courseId, courseTitle, coursePriceRupees, plan, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const isPlan = !!plan;
-  const displayPrice = isPlan
-    ? (PLAN_DETAILS[plan!].price * 100)
-    : (coursePricePaise || 0);
+  const displayPrice = isPlan ? PLAN_DETAILS[plan!].price : (coursePriceRupees || 0);
 
   const handleCheckout = async () => {
     setLoading(true);
@@ -41,17 +39,22 @@ const CheckoutModal: React.FC<Props> = ({ isOpen, onClose, courseId, courseTitle
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.order.amount,
         currency: "INR",
-        name: "BSHLearn",
+        name: "BSH Healers",
         description: isPlan ? PLAN_DETAILS[plan!].label : courseTitle,
         order_id: data.order.id,
         handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
-          await client.post("/payments/verify", {
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpaySignature: response.razorpay_signature,
-          });
-          onSuccess?.();
-          onClose();
+          try {
+            await client.post("/payments/verify", {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            onSuccess?.();
+            onClose();
+          } catch (err: unknown) {
+            setError((err as { response?: { data?: { message?: string } } }).response?.data?.message
+              || "Payment received but verification failed. Please contact support with your payment ID.");
+          }
         },
         prefill: {},
         theme: { color: "#7c3aed" },
@@ -76,7 +79,7 @@ const CheckoutModal: React.FC<Props> = ({ isOpen, onClose, courseId, courseTitle
           </div>
           {isPlan && <div style={{ color: "#9ca3af", fontSize: 13, marginTop: 4 }}>{PLAN_DETAILS[plan!].description}</div>}
           <div style={{ marginTop: 12, fontSize: 26, fontWeight: 800, color: "#a78bfa" }}>
-            ₹{(displayPrice / 100).toLocaleString()}
+            ₹{displayPrice.toLocaleString()}
           </div>
         </div>
 
@@ -89,7 +92,7 @@ const CheckoutModal: React.FC<Props> = ({ isOpen, onClose, courseId, courseTitle
         {error && <div style={{ background: "#450a0a", color: "#f87171", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>{error}</div>}
 
         <Button fullWidth onClick={handleCheckout} loading={loading} size="lg">
-          Pay ₹{(displayPrice / 100).toLocaleString()} Now
+          Pay ₹{displayPrice.toLocaleString()} Now
         </Button>
       </div>
     </Modal>

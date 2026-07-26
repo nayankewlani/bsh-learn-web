@@ -1,5 +1,5 @@
 import React from "react";
-import { Course } from "../../stores/courseStore";
+import type { Course } from "../../stores/courseStore";
 import CourseCard from "./CourseCard";
 
 interface Props {

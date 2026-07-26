@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiMail, FiCheckCircle } from "react-icons/fi";
 import bshLogo from "../../assets/logo-1.png";
@@ -61,7 +61,7 @@ const ForgotPasswordPage: React.FC = () => {
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <img
             src={bshLogo}
-            alt="BSHLearn"
+            alt="BSH Healers"
             style={{ height: 64, width: "auto", objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(124,58,237,0.4))", animation: "float 4s ease-in-out infinite" }}
           />
         </div>

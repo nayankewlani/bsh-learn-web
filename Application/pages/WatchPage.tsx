@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useCourseStore, Lesson } from "../stores/courseStore";
+import { useCourseStore } from "../stores/courseStore";
+import type { Lesson } from "../stores/courseStore";
 import VideoPlayer from "../components/video/VideoPlayer";
 import CourseSyllabus from "../components/course/CourseSyllabus";
 import Button from "../components/ui/Button";
@@ -18,7 +19,7 @@ const WatchPage: React.FC = () => {
     if (!lessonId) return;
     setLoading(true);
     client.get(`/lessons/${lessonId}/watch`)
-      .then(({ data }) => { setLesson(data.lesson); })
+      .then(({ data }) => { setLesson({ ...data.lesson, streamUrl: data.streamUrl }); })
       .catch(() => navigate(-1))
       .finally(() => setLoading(false));
   }, [lessonId]);
@@ -51,7 +52,7 @@ const WatchPage: React.FC = () => {
   return (
     <div style={{ background: "#0a0914", minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 320px" }}>
       <div style={{ padding: 24, borderRight: "1px solid #1e1b4b" }}>
-        {lesson && <VideoPlayer muxPlaybackId={lesson.muxPlaybackId} title={lesson.title} onEnded={markComplete} />}
+        {lesson && <VideoPlayer streamUrl={lesson.streamUrl} muxPlaybackId={lesson.muxPlaybackId} title={lesson.title} onEnded={markComplete} />}
         {lesson && (
           <div style={{ marginTop: 20 }}>
             <h2 style={{ color: "#f3f4f6", fontSize: 20, fontWeight: 800, margin: "0 0 8px" }}>{lesson.title}</h2>
