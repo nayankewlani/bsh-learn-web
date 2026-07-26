@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import client from "../api/client";
 import { useThemeStore } from "../stores/themeStore";
 import seedhiBaatImg from "../assets/seedhi-baat.jpeg";
 import pradeepKumarImg from "../assets/IMG_8265.JPG.jpeg";
@@ -508,6 +509,20 @@ const PrivateSession: React.FC = () => {
   const { t, isDark } = useThemeStore();
   const [modalOpen, setModalOpen] = useState(false);
   const trainersRef = useRef<HTMLDivElement>(null);
+  const [activeNames, setActiveNames] = useState<Set<string> | null>(null);
+
+  useEffect(() => {
+    client.get("/chat/online-educators")
+      .then(r => {
+        const names: string[] = ((r.data as any).educators || []).map((e: any) => (e.name as string).toLowerCase());
+        setActiveNames(new Set(names));
+      })
+      .catch(() => {});
+  }, []);
+
+  const visibleTrainers = TRAINERS.filter(tr =>
+    !activeNames || activeNames.has(tr.name.toLowerCase())
+  );
 
   const scrollTrainers = (dir: "left" | "right") => {
     if (trainersRef.current) {
@@ -579,7 +594,7 @@ const PrivateSession: React.FC = () => {
 
             {/* Cards row */}
             <div ref={trainersRef} style={{ display: "flex", gap: 18, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
-              {TRAINERS.map((trainer) => (
+              {visibleTrainers.map((trainer) => (
                 <div
                   key={trainer.name}
                   onClick={() => setModalOpen(true)}

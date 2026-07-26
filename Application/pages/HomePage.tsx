@@ -331,9 +331,21 @@ const HomePage: React.FC = () => {
   const [homeClasses, setHomeClasses]     = useState<HomeClassAPI[]>([]);
   const [classesReady, setClassesReady]   = useState(false);
   const [videoModal, setVideoModal]       = useState<{ url: string; title: string } | null>(null);
+  const [activeHealerNames, setActiveHealerNames] = useState<Set<string> | null>(null);
+
+  const visibleHealers = HERO_HEALERS.filter(h =>
+    !activeHealerNames || activeHealerNames.has(h.name.toLowerCase())
+  );
 
   useEffect(() => {
     fetchFeatured();
+    // Fetch active educator names to filter hardcoded healer list
+    client.get("/chat/online-educators")
+      .then(r => {
+        const names: string[] = ((r.data as any).educators || []).map((e: any) => (e.name as string).toLowerCase());
+        setActiveHealerNames(new Set(names));
+      })
+      .catch(() => {}); // silently fail — show all healers if API unavailable
     client.get("/home-classes")
       .then(r => {
         const cls: HomeClassAPI[] = (r.data as any).classes || [];
@@ -465,7 +477,7 @@ const HomePage: React.FC = () => {
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 64, zIndex: 2, pointerEvents: "none", background: `linear-gradient(to top, ${t.isDark ? "#0c0b18" : "#f7f5f1"}, transparent)` }} />
 
               <div className="healer-scroller-inner" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {[...HERO_HEALERS, ...HERO_HEALERS].map((h, i) => (
+                {[...visibleHealers, ...visibleHealers].map((h, i) => (
                   <div key={i}
                     style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 16, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, transition: "border-color 0.2s, box-shadow 0.2s" }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = h.color; e.currentTarget.style.boxShadow = `0 4px 16px ${h.color}22`; }}
