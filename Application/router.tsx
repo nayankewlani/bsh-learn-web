@@ -40,6 +40,9 @@ import AdminEducatorApplications from "./pages/admin/AdminEducatorApplications";
 import AdminCourseManager from "./pages/admin/AdminCourseManager";
 import AdminReports       from "./pages/admin/AdminReports";
 import AdminHomeClasses   from "./pages/admin/AdminHomeClasses";
+import AdminBulkEnroll    from "./pages/admin/AdminBulkEnroll";
+import AdminProgramPosts  from "./pages/admin/AdminProgramPosts";
+import AdminHeroBanners  from "./pages/admin/AdminHeroBanners";
 
 const Layout: React.FC = () => (
   <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0914" }}>
@@ -116,7 +119,10 @@ const AppRouter: React.FC = () => (
           <Route path="payouts"                element={<AdminPayouts />} />
           <Route path="educator-applications"  element={<AdminEducatorApplications />} />
           <Route path="course-manager"          element={<AdminCourseManager />} />
+          <Route path="bulk-enroll"             element={<AdminBulkEnroll />} />
+          <Route path="program-posts"           element={<AdminProgramPosts />} />
           <Route path="home-classes"            element={<AdminHomeClasses />} />
+          <Route path="hero-banners"            element={<AdminHeroBanners />} />
           <Route path="reports"                 element={<AdminReports />} />
         </Route>
       </Route>

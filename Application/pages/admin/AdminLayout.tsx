@@ -8,6 +8,9 @@ const NAV = [
   { to: '/admin/students',         label: 'Students' },
   { to: '/admin/trainers',         label: 'Trainers' },
   { to: '/admin/course-manager',   label: 'Course Manager' },
+  { to: '/admin/bulk-enroll',      label: 'Bulk Enroll' },
+  { to: '/admin/program-posts',   label: 'Program Posts' },
+  { to: '/admin/hero-banners',      label: 'Hero Banners' },
   { to: '/admin/home-classes',     label: 'Home Free Classes' },
   { to: '/admin/live-classes',     label: 'Live Classes' },
   { to: '/admin/sessions',              label: 'Sessions & Calls' },
@@ -23,6 +26,9 @@ const TITLES: Record<string, string> = {
   '/admin/students':         'Students',
   '/admin/trainers':         'Trainers',
   '/admin/course-manager':   'Course Manager',
+  '/admin/bulk-enroll':      'Bulk Enroll',
+  '/admin/program-posts':   'Program Posts',
+  '/admin/hero-banners':      'Hero Banners',
   '/admin/home-classes':     'Home Free Classes',
   '/admin/live-classes':     'Live Classes',
   '/admin/sessions':              'Sessions & Calls',
@@ -35,7 +41,7 @@ const TITLES: Record<string, string> = {
 
 const ICONS: Record<string, string> = {
   'Overview': '▣', 'Students': '👥', 'Trainers': '🎓', 'Courses': '📚',
-  'Course Manager': '⚙️', 'Home Free Classes': '🎬', 'Live Classes': '📡', 'Sessions & Calls': '📋',
+  'Course Manager': '⚙️', 'Bulk Enroll': '📥', 'Program Posts': '📢', 'Hero Banners': '🎥', 'Home Free Classes': '🎬', 'Live Classes': '📡', 'Sessions & Calls': '📋',
   'Educator Applications': '🎓', 'Transactions': '₹', 'Trainer Payouts': '💸', 'Permissions': '🔐', 'Reports': '📊',
 };
 
