@@ -1,0 +1,26 @@
+name: Deploy Web App
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into EC2 and rebuild
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.WEB_DIR }}
+            echo "=== Pulling latest code ==="
+            git pull origin master
+            echo "=== Installing dependencies ==="
+            npm ci
+            echo "=== Building ==="
+            npm run build
+            echo "=== Done ==="
