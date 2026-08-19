@@ -120,7 +120,27 @@ const AdminUpcomingClasses: React.FC = () => {
     setClasses(prev => prev.map(c => c._id === id ? { ...c, isActive: !c.isActive } : c));
   };
 
-  // Thumbnail file upload — converts to base64 JSON to avoid multipart issues
+  // Compress image client-side via Canvas, then save as base64 data URL
+  // via the existing thumbnail-url PATCH endpoint — no server file upload needed
+  const compressImage = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 900;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round((height / width) * MAX); width = MAX; }
+          else                { width  = Math.round((width / height) * MAX); height = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     const id   = uploadingForId.current;
@@ -128,26 +148,11 @@ const AdminUpcomingClasses: React.FC = () => {
     e.target.value = '';
     setUploadingId(id);
     try {
-      const token = localStorage.getItem('accessToken') || '';
-
-      const imageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload  = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read file'));
-        reader.readAsDataURL(file);
-      });
-
-      const res = await fetch(`/api/upcoming-classes/${id}/thumbnail`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ imageBase64 }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
-
-      setClasses(prev => prev.map(c => c._id === id ? { ...c, thumbnailUrl: data.thumbnailUrl } : c));
+      const thumbnailUrl = await compressImage(file);
+      await client.patch(`/upcoming-classes/${id}/thumbnail-url`, { thumbnailUrl });
+      setClasses(prev => prev.map(c => c._id === id ? { ...c, thumbnailUrl } : c));
     } catch (e: any) {
-      alert('Upload failed: ' + e.message);
+      alert('Upload failed: ' + (e?.response?.data?.message || e.message));
     }
     setUploadingId(null);
   };
