@@ -29,7 +29,6 @@ import slide3 from "../assets/slide-3.png";
 import slide4 from "../assets/slide-4.png";
 import vedic from "../assets/vedic-astro.jpeg";
 import pradeepKumarImg from "../assets/IMG_8265.JPG.jpeg";
-import amitNarangImg from "../assets/Amit-Narang.jpg.jpeg";
 import naliniYadavImg from "../assets/Nalini-J-Yadav.jpg.jpeg";
 import vikasBhardwajImg from "../assets/Vikas-Bhardwaj.jpg.jpeg";
 import sumanBatraImg from "../assets/suamn batra.jpeg";
@@ -122,7 +121,6 @@ const STATS = [
 const HERO_HEALERS = [
   { name: "Dr. Pradeep Kumar", subject: "Hypnosis & NLP", exp: "20+ yrs", rating: "4.9", img: pradeepKumarImg, color: "#7c3aed", isLive: true },
   { name: "Geeta Makhijani", subject: "Shadow Work", exp: "15+ yrs", rating: "4.8", img: geetaMakhijaniImg, color: "#0d9488", isLive: false },
-  { name: "Amit Narang", subject: "Hypnotherapy", exp: "18+ yrs", rating: "4.9", img: amitNarangImg, color: "#7c3aed", isLive: true },
   { name: "Nalini J. Yadav", subject: "Emotional Healing", exp: "14+ yrs", rating: "4.8", img: naliniYadavImg, color: "#0d9488", isLive: false },
   { name: "Vikas Bhardwaj", subject: "NLP Coaching", exp: "12+ yrs", rating: "4.9", img: vikasBhardwajImg, color: "#2563eb", isLive: true },
   { name: "Vandana Khurana", subject: "Spiritual Healing", exp: "11+ yrs", rating: "4.8", img: vandanaKhuranaImg, color: "#9333ea", isLive: false },
@@ -333,19 +331,23 @@ const HomePage: React.FC = () => {
   const [videoModal, setVideoModal]       = useState<{ url: string; title: string } | null>(null);
   const [activeHealerNames, setActiveHealerNames] = useState<Set<string> | null>(null);
 
-  const visibleHealers = HERO_HEALERS.filter(h =>
-    !activeHealerNames || activeHealerNames.has(h.name.toLowerCase())
-  );
+  // null = still loading (render nothing to avoid flash of paused healers)
+  // Set  = API responded (show only active ones; fallback shows all on error)
+  const visibleHealers = activeHealerNames === null
+    ? []
+    : HERO_HEALERS.filter(h => activeHealerNames.has(h.name.toLowerCase()));
 
   useEffect(() => {
     fetchFeatured();
-    // Fetch active educator names to filter hardcoded healer list
     client.get("/chat/online-educators")
       .then(r => {
         const names: string[] = ((r.data as any).educators || []).map((e: any) => (e.name as string).toLowerCase());
         setActiveHealerNames(new Set(names));
       })
-      .catch(() => {}); // silently fail — show all healers if API unavailable
+      .catch(() => {
+        // API failed — show all hardcoded healers as fallback
+        setActiveHealerNames(new Set(HERO_HEALERS.map(h => h.name.toLowerCase())));
+      });
     client.get("/home-classes")
       .then(r => {
         const cls: HomeClassAPI[] = (r.data as any).classes || [];

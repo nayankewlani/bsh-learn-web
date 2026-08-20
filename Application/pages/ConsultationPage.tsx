@@ -9,7 +9,6 @@ import { useAuthStore } from "../stores/authStore";
 
 import pradeepKumarImg    from "../assets/IMG_8265.JPG.jpeg";
 import geetaMakhijaniImg  from "../assets/geeta-makhijani.png";
-import amitNarangImg      from "../assets/Amit-Narang.jpg.jpeg";
 import naliniYadavImg     from "../assets/Nalini-J-Yadav.jpg.jpeg";
 import vikasBhardwajImg   from "../assets/Vikas-Bhardwaj.jpg.jpeg";
 import puneetJainImg      from "../assets/Dr.punnet jain.jpeg";
@@ -27,7 +26,6 @@ import abhinnavKumarImg   from "../assets/Arishnav B Kumar.jpeg";
 const LOCAL_IMAGES: Record<string, string> = {
   "dr. pradeep kumar":   pradeepKumarImg,
   "geeta makhijani":     geetaMakhijaniImg,
-  "amit narang":         amitNarangImg,
   "nalini j. yadav":     naliniYadavImg,
   "nalini j yadav":      naliniYadavImg,
   "vikas bhardwaj":      vikasBhardwajImg,

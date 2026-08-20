@@ -5,7 +5,6 @@ import { useThemeStore } from "../stores/themeStore";
 import seedhiBaatImg from "../assets/seedhi-baat.jpeg";
 import pradeepKumarImg from "../assets/IMG_8265.JPG.jpeg";
 import geetaMakhijaniImg from "../assets/geeta-makhijani.png";
-import amitNarangImg from "../assets/Amit-Narang.jpg.jpeg";
 import puneetJainImg from "../assets/Dr.punnet jain.jpeg";
 import vandanaKhuranaImg from "../assets/Vandana khurana.jpeg";
 import sumanBatraImg from "../assets/suamn batra.jpeg";
@@ -75,19 +74,6 @@ const TRAINERS = [
     badge: "POPULAR",
     bg: "linear-gradient(135deg,#042f2e 0%,#134e4a 100%)",
     specialties: ["Inner Child", "Trauma Release", "Mirror Work", "Shadow Work"],
-  },
-  {
-    name: "Amit Narang",
-    role: "Master Hypnotherapist",
-    subject: "Hypnotherapy",
-    subjectColor: "#7c3aed",
-    exp: "18+ Years",
-    sessions: "4,200+",
-    rating: 4.9,
-    img: amitNarangImg,
-    badge: "MASTER TRAINER",
-    bg: "linear-gradient(135deg,#1e1044 0%,#3b0764 100%)",
-    specialties: ["Clinical Hypnosis", "NLP", "Regression", "Mind Reprogramming"],
   },
   {
     name: "Nalini J. Yadav",
@@ -517,12 +503,15 @@ const PrivateSession: React.FC = () => {
         const names: string[] = ((r.data as any).educators || []).map((e: any) => (e.name as string).toLowerCase());
         setActiveNames(new Set(names));
       })
-      .catch(() => {});
+      .catch(() => {
+        setActiveNames(new Set(TRAINERS.map(tr => tr.name.toLowerCase())));
+      });
   }, []);
 
-  const visibleTrainers = TRAINERS.filter(tr =>
-    !activeNames || activeNames.has(tr.name.toLowerCase())
-  );
+  // null = loading (show nothing to avoid flash of paused trainers)
+  const visibleTrainers = activeNames === null
+    ? []
+    : TRAINERS.filter(tr => activeNames.has(tr.name.toLowerCase()));
 
   const scrollTrainers = (dir: "left" | "right") => {
     if (trainersRef.current) {
