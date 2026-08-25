@@ -4,6 +4,7 @@ import { useThemeStore } from "../stores/themeStore";
 import { useAuthStore } from "../stores/authStore";
 import client from "../api/client";
 import advHypnosisImg from "../assets/advanced-hypnosis.png";
+import ProgramPostsBoard from "../components/ProgramPostsBoard";
 
 declare global {
   interface Window { Razorpay: new (opts: unknown) => { open(): void }; }
@@ -56,6 +57,8 @@ const AdvanceHypnosisPage: React.FC = () => {
   const [sticky, setSticky]   = useState(false);
   const [price, setPrice]           = useState(3000000);
   const [discountPrice, setDiscountPrice] = useState<number | null>(null);
+  const [hasAccess, setHasAccess]   = useState<boolean | null>(null);
+  const [accessExpiry, setAccessExpiry] = useState<string | null>(null);
 
   useEffect(() => {
     client.get("/courses/programs/public")
@@ -69,6 +72,18 @@ const AdvanceHypnosisPage: React.FC = () => {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!user) { setHasAccess(false); return; }
+    client.get("/payments/program-access/advance-hypnosis")
+      .then(({ data }) => {
+        setHasAccess(!!data.hasAccess);
+        if (data.access?.accessExpiresAt) {
+          setAccessExpiry(new Date(data.access.accessExpiresAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }));
+        }
+      })
+      .catch(() => setHasAccess(false));
+  }, [user]);
 
   useEffect(() => {
     const onScroll = () => setSticky(window.scrollY > 520);
@@ -100,6 +115,7 @@ const AdvanceHypnosisPage: React.FC = () => {
               razorpaySignature: r.razorpay_signature,
             });
             setSuccess(true);
+            setHasAccess(true);
           } catch {
             setError("Payment received but verification failed. Please contact support with your payment ID.");
           }
@@ -114,39 +130,100 @@ const AdvanceHypnosisPage: React.FC = () => {
     }
   };
 
-  const JoinBtn: React.FC<{ size?: "sm" | "lg" }> = ({ size = "lg" }) => (
-    <button
-      onClick={handleJoinNow}
-      disabled={loading || success}
-      style={{
-        background: success
-          ? "linear-gradient(135deg,#22c55e,#16a34a)"
-          : "linear-gradient(135deg,#7c3aed,#5b21b6)",
-        border: "none",
-        color: "#fff",
-        padding: size === "lg" ? "16px 40px" : "12px 24px",
-        borderRadius: 50,
-        fontWeight: 800,
-        fontSize: size === "lg" ? 17 : 14,
-        cursor: loading || success ? "default" : "pointer",
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 10,
-        boxShadow: "0 8px 28px rgba(124,58,237,0.45)",
-        transition: "all 0.2s",
-        whiteSpace: "nowrap",
-      }}
-      onMouseEnter={e => { if (!loading && !success) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(124,58,237,0.6)"; } }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(124,58,237,0.45)"; }}
-    >
-      {loading
-        ? <><span style={{ width: 18, height: 18, border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} /> Processing…</>
-        : success
-          ? "✅ Payment Successful!"
-          : "Join Now →"}
-    </button>
-  );
+  const JoinBtn: React.FC<{ size?: "sm" | "lg" }> = ({ size = "lg" }) => {
+    if (hasAccess === null && !!user) return (
+      <div style={{ width: size === "lg" ? 44 : 32, height: size === "lg" ? 44 : 32, border: "2.5px solid rgba(255,255,255,0.1)", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+    );
+    if (hasAccess === true) return (
+      <div style={{ background: "rgba(34,197,94,0.14)", border: "1px solid rgba(34,197,94,0.45)", borderRadius: 50, padding: size === "lg" ? "14px 28px" : "10px 18px", color: "#4ade80", fontWeight: 700, fontSize: size === "lg" ? 15 : 13, display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
+        ✅ Access Active
+      </div>
+    );
+    return (
+      <button
+        onClick={handleJoinNow}
+        disabled={loading || success}
+        style={{
+          background: success
+            ? "linear-gradient(135deg,#22c55e,#16a34a)"
+            : "linear-gradient(135deg,#7c3aed,#5b21b6)",
+          border: "none",
+          color: "#fff",
+          padding: size === "lg" ? "16px 40px" : "12px 24px",
+          borderRadius: 50,
+          fontWeight: 800,
+          fontSize: size === "lg" ? 17 : 14,
+          cursor: loading || success ? "default" : "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 10,
+          boxShadow: "0 8px 28px rgba(124,58,237,0.45)",
+          transition: "all 0.2s",
+          whiteSpace: "nowrap",
+        }}
+        onMouseEnter={e => { if (!loading && !success) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(124,58,237,0.6)"; } }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(124,58,237,0.45)"; }}
+      >
+        {loading
+          ? <><span style={{ width: 18, height: 18, border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} /> Processing…</>
+          : success
+            ? "✅ Payment Successful!"
+            : "Join Now →"}
+      </button>
+    );
+  };
 
+  // ── LOADING (access check in progress) ──────────────────────────────────────
+  if (hasAccess === null && !!user) {
+    return (
+      <div style={{ background: t.bgPrimary, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: 44, height: 44, border: "3px solid rgba(124,58,237,0.2)", borderTopColor: "#7c3aed", borderRadius: "50%", animation: "spin 0.9s linear infinite", margin: "0 auto 16px" }} />
+          <div style={{ color: t.textMuted, fontSize: 14 }}>Loading your access…</div>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // ── MEMBER VIEW — enrolled or admin ─────────────────────────────────────────
+  if (hasAccess === true || user?.role === "admin") {
+    return (
+      <div style={{ background: t.bgPrimary, minHeight: "100vh" }}>
+        {/* Compact top bar */}
+        <div style={{ background: "linear-gradient(135deg,#1a0533 0%,#0d082a 100%)", padding: "16px 24px", borderBottom: "1px solid rgba(124,58,237,0.25)" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>
+                <span style={{ cursor: "pointer", color: "#a78bfa" }} onClick={() => navigate("/")}>Home</span>
+                <span>/</span>
+                <span style={{ cursor: "pointer", color: "#a78bfa" }} onClick={() => navigate("/explore")}>Courses</span>
+                <span>/</span>
+                <span style={{ color: "rgba(255,255,255,0.7)" }}>Advanced Hypnosis</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {accessExpiry && (
+                <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>
+                  Access until: <strong style={{ color: "#86efac" }}>{accessExpiry}</strong>
+                </span>
+              )}
+              {user?.role === "admin" && (
+                <span style={{ background: "rgba(124,58,237,0.25)", border: "1px solid rgba(124,58,237,0.5)", color: "#c4b5fd", borderRadius: 50, padding: "3px 12px", fontSize: 11, fontWeight: 700 }}>
+                  Admin Preview
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <ProgramPostsBoard programId="advance-hypnosis" accent="#7c3aed" />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // ── MARKETING VIEW — not enrolled ───────────────────────────────────────────
   return (
     <div style={{ background: t.bgPrimary, minHeight: "100vh" }}>
 
@@ -307,7 +384,6 @@ const AdvanceHypnosisPage: React.FC = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
-            {/* Learning Library */}
             {[
               { accent: "#7c3aed", icon: "📚", label: "Learning Library",  sub: "On-demand content",     items: LIBRARY_ITEMS },
               { accent: "#22c55e", icon: "🎥", label: "Live Learning",     sub: "Real-time instruction", items: LIVE_ITEMS },
@@ -349,10 +425,7 @@ const AdvanceHypnosisPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Diploma card */}
           <div style={{ maxWidth: 660, margin: "0 auto", background: isDark ? "linear-gradient(135deg,#1a0533,#0a1a3a)" : "linear-gradient(135deg,#f4f3ff,#ede9fe)", border: `2px solid ${isDark ? "rgba(167,139,250,0.3)" : "#c4b5fd"}`, borderRadius: 24, overflow: "hidden", boxShadow: isDark ? "0 24px 70px rgba(124,58,237,0.28)" : "0 24px 70px rgba(124,58,237,0.14)" }}>
-
-            {/* Diploma header */}
             <div style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", padding: "30px 36px", textAlign: "center" }}>
               <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: 700, letterSpacing: 3.5, textTransform: "uppercase", marginBottom: 8 }}>
                 Blessings School of Hypnosis
@@ -360,8 +433,6 @@ const AdvanceHypnosisPage: React.FC = () => {
               <div style={{ color: "#fff", fontWeight: 900, fontSize: 22, marginBottom: 5 }}>Certificate of Achievement</div>
               <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>This is to certify that the learner has successfully completed</div>
             </div>
-
-            {/* Diploma body */}
             <div style={{ padding: "36px" }}>
               <div style={{ textAlign: "center", marginBottom: 28, paddingBottom: 28, borderBottom: `1px dashed ${isDark ? "rgba(255,255,255,0.14)" : "#ddd6fe"}` }}>
                 <div style={{ color: t.textMuted, fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Certificate Title</div>
@@ -370,7 +441,6 @@ const AdvanceHypnosisPage: React.FC = () => {
                   <span style={{ color: "#7c3aed" }}>Clinical Hypnotherapy</span>
                 </div>
               </div>
-
               <div style={{ display: "flex", gap: 0, justifyContent: "center", flexWrap: "wrap" }}>
                 {[
                   { title: "Awarded Title",    line1: "Certified Clinical", line2: "Hypnotherapist", color: "#7c3aed" },
@@ -388,8 +458,6 @@ const AdvanceHypnosisPage: React.FC = () => {
                 ))}
               </div>
             </div>
-
-            {/* Diploma footer */}
             <div style={{ padding: "16px 36px", background: isDark ? "rgba(255,255,255,0.02)" : "rgba(124,58,237,0.04)", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#ddd6fe"}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>🏅</span>
               <span style={{ color: t.textMuted, fontSize: 13 }}>Internationally recognised accreditation & certification branding</span>

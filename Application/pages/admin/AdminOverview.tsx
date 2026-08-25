@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
@@ -19,7 +19,7 @@ type MetricKey = 'students' | 'courses' | 'sessions' | 'revenue' | 'courseEnroll
 const METRICS: { key: MetricKey; label: string; color: string; icon: string; currency?: boolean }[] = [
   { key: 'students',          label: 'New Students',       color: '#3b82f6', icon: '👥' },
   { key: 'courses',           label: 'New Courses',        color: '#22c55e', icon: '📚' },
-  { key: 'sessions',          label: 'Sessions',           color: '#a855f7', icon: '📋' },
+  { key: 'sessions',          label: 'Sessions',           color: '#FF6A00', icon: '📋' },
   { key: 'revenue',           label: 'Revenue',            color: '#f59e0b', icon: '💰', currency: true },
   { key: 'courseEnrollments', label: 'Course Enrollments', color: '#06b6d4', icon: '🎓' },
   { key: 'liveClasses',       label: 'Live Classes',       color: '#ef4444', icon: '📡' },
@@ -30,7 +30,7 @@ const ChartTooltip = ({ active, payload, label, currency }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: '#0f0e1a', border: '1px solid #3730a3', borderRadius: 8,
+      background: '#111111', border: '1px solid #333333', borderRadius: 8,
       padding: '8px 12px', fontSize: 12, color: '#e2e8f0',
     }}>
       <div style={{ color: '#64748b', marginBottom: 4 }}>{label}</div>
@@ -70,8 +70,8 @@ const ChartCard: React.FC<ChartCardProps> = ({
     <div
       onClick={onToggle}
       style={{
-        background: '#1a1835',
-        border: `1px solid ${expanded ? metric.color : '#2a2a5a'}`,
+        background: '#1E1E1E',
+        border: `1px solid ${expanded ? metric.color : '#2D2D2D'}`,
         borderRadius: 14,
         padding: '16px 18px',
         cursor: 'pointer',
@@ -185,7 +185,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
 
       {/* Extra content (top courses, recent classes, etc.) shown when expanded */}
       {expanded && extraContent && (
-        <div onClick={e => e.stopPropagation()} style={{ marginTop: 16, borderTop: '1px solid #2a2a5a', paddingTop: 14 }}>
+        <div onClick={e => e.stopPropagation()} style={{ marginTop: 16, borderTop: '1px solid #2D2D2D', paddingTop: 14 }}>
           {extraContent}
         </div>
       )}
@@ -261,7 +261,7 @@ const AdminOverview: React.FC = () => {
   // Summary stat chips at top
   const chips = [
     { label: 'Students',      value: stats.totalStudents,       color: '#3b82f6' },
-    { label: 'Trainers',      value: stats.totalTrainers,       color: '#a855f7' },
+    { label: 'Trainers',      value: stats.totalTrainers,       color: '#FF6A00' },
     { label: 'Courses',       value: stats.totalCourses,        color: '#22c55e' },
     { label: 'Enrollments',   value: stats.totalEnrollments,    color: '#06b6d4' },
     { label: 'Live Now',      value: stats.liveNow,             color: '#ef4444' },
@@ -272,7 +272,7 @@ const AdminOverview: React.FC = () => {
   return (
     <>
       {/* ── Revenue hero ── */}
-      <div className="adm-card" style={{ marginBottom: 18, background: 'linear-gradient(135deg,#1a1835,#1f0f4d)' }}>
+      <div className="adm-card" style={{ marginBottom: 18, background: 'linear-gradient(135deg,#1E1E1E,#1A0008)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>
@@ -280,7 +280,7 @@ const AdminOverview: React.FC = () => {
             </div>
             <div className="adm-rev-big">{fmt(stats.totalRevenuePaise)}</div>
             <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
-              This month: <strong style={{ color: '#a78bfa' }}>{fmt(stats.thisMonthRevenuePaise)}</strong>
+              This month: <strong style={{ color: '#FF6B8A' }}>{fmt(stats.thisMonthRevenuePaise)}</strong>
             </div>
           </div>
           {earnings?.byType && earnings.byType.length > 0 && (
@@ -300,7 +300,7 @@ const AdminOverview: React.FC = () => {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
         {chips.map(c => (
           <div key={c.label} style={{
-            background: '#1a1835', border: '1px solid #2a2a5a', borderRadius: 10,
+            background: '#1E1E1E', border: '1px solid #2D2D2D', borderRadius: 10,
             padding: '8px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center',
             minWidth: 70,
           }}>
@@ -421,7 +421,7 @@ const AdminOverview: React.FC = () => {
                     <td style={{ color: '#64748b' }}>{i + 1}</td>
                     <td style={{ fontWeight: 600 }}>{c.title}</td>
                     <td>{fmtNum(c.enrollments)}</td>
-                    <td style={{ color: '#a78bfa', fontWeight: 700 }}>{fmt(c.revenuePaise)}</td>
+                    <td style={{ color: '#FF6B8A', fontWeight: 700 }}>{fmt(c.revenuePaise)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -443,7 +443,7 @@ const AdminOverview: React.FC = () => {
                   <div className="adm-bar-track">
                     <div className="adm-bar-fill" style={{ width: `${Math.round((m.revenuePaise / max) * 100)}%` }} />
                   </div>
-                  <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#a78bfa', fontWeight: 600 }}>
+                  <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#FF6B8A', fontWeight: 600 }}>
                     {fmt(m.revenuePaise)}
                   </div>
                 </div>

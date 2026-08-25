@@ -37,19 +37,19 @@ const ForgotPasswordPage: React.FC = () => {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #050412 0%, #0f0e1a 40%, #1a0a2e 100%)",
+      background: "linear-gradient(135deg, #0A0000 0%, #1A0008 40%, #200010 100%)",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: 20, position: "relative", overflow: "hidden",
       fontFamily: "Inter, sans-serif",
     }}>
       {/* Decorative orbs */}
-      <div style={{ position: "absolute", top: -100, left: -50, width: 300, height: 300, background: "radial-gradient(circle, rgba(124,58,237,0.25), transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: -100, left: -50, width: 300, height: 300, background: "radial-gradient(circle, rgba(255,30,86,0.25), transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: -50, right: -50, width: 250, height: 250, background: "radial-gradient(circle, rgba(167,139,250,0.15), transparent 70%)", pointerEvents: "none" }} />
 
       {/* Back button */}
       <button
         onClick={() => navigate("/login")}
-        style={{ position: "absolute", top: 24, left: 24, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#c4b5fd", padding: "8px 16px", borderRadius: 50, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, backdropFilter: "blur(10px)", transition: "0.2s" }}
+        style={{ position: "absolute", top: 24, left: 24, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#FF6B8A", padding: "8px 16px", borderRadius: 50, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, backdropFilter: "blur(10px)", transition: "0.2s" }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
       >
@@ -62,7 +62,7 @@ const ForgotPasswordPage: React.FC = () => {
           <img
             src={bshLogo}
             alt="BSH Healers"
-            style={{ height: 64, width: "auto", objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(124,58,237,0.4))", animation: "float 4s ease-in-out infinite" }}
+            style={{ height: 64, width: "auto", objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(255,30,86,0.4))", animation: "float 4s ease-in-out infinite" }}
           />
         </div>
 
@@ -112,7 +112,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                style={{ width: "100%", padding: 14, background: isLoading ? "#9ca3af" : "linear-gradient(135deg,#7c3aed,#5b21b6)", border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, fontSize: 16, cursor: isLoading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "0.3s" }}
+                style={{ width: "100%", padding: 14, background: isLoading ? "#9ca3af" : "linear-gradient(135deg,#FF1E56,#D4003F)", border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, fontSize: 16, cursor: isLoading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "0.3s" }}
                 onMouseEnter={(e) => { if (!isLoading) (e.currentTarget.style.transform = "translateY(-2px)"); }}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
               >
@@ -132,8 +132,8 @@ const ForgotPasswordPage: React.FC = () => {
               </p>
               <button
                 onClick={() => setSuccess(false)}
-                style={{ background: "transparent", border: "1.5px solid #7c3aed", color: "#7c3aed", padding: "10px 20px", borderRadius: 10, cursor: "pointer", fontWeight: 600, fontSize: 14, transition: "0.2s" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.06)"; }}
+                style={{ background: "transparent", border: "1.5px solid #FF1E56", color: "#FF1E56", padding: "10px 20px", borderRadius: 10, cursor: "pointer", fontWeight: 600, fontSize: 14, transition: "0.2s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,30,86,0.06)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
               >
                 Try another email
@@ -145,7 +145,7 @@ const ForgotPasswordPage: React.FC = () => {
             Remembered your password?{" "}
             <span
               onClick={() => navigate("/login")}
-              style={{ color: "#7c3aed", fontWeight: 700, cursor: "pointer" }}
+              style={{ color: "#FF1E56", fontWeight: 700, cursor: "pointer" }}
             >
               Login here
             </span>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import type { AdminStudent } from '../../api/admin';
 import { adminGetStudents, adminGetStudentDetail, adminSuspendUser, adminUpdatePermissions } from '../../api/admin';
@@ -117,7 +117,7 @@ const AdminStudents: React.FC = () => {
                         <td style={{ fontWeight: 600, color: '#e2e8f0' }}>{s.name}</td>
                         <td style={{ color: '#94a3b8' }}>{s.email}</td>
                         <td style={{ color: '#64748b' }}>{s.phone || '—'}</td>
-                        <td style={{ textAlign: 'center', color: '#a78bfa', fontWeight: 600 }}>{s.enrollmentCount ?? 0}</td>
+                        <td style={{ textAlign: 'center', color: '#FF6B8A', fontWeight: 600 }}>{s.enrollmentCount ?? 0}</td>
                         <td style={{ color: '#64748b' }}>{fmtDate(s.createdAt)}</td>
                         <td><span className={`pill ${s.isActive ? 'pill-green' : 'pill-red'}`}>{s.isActive ? 'Active' : 'Suspended'}</span></td>
                         <td style={{ display: 'flex', gap: 6 }}>
@@ -179,7 +179,7 @@ const AdminStudents: React.FC = () => {
 
                 {/* Enrollments */}
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', marginBottom: 8 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#FF6B8A', marginBottom: 8 }}>
                     📚 Enrollments ({detail.enrollments.length})
                   </div>
                   {detail.enrollments.length === 0
@@ -220,7 +220,7 @@ const AdminStudents: React.FC = () => {
                               <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{p.course?.title ?? (p.type === 'subscription' ? 'Subscription' : 'Payment')}</div>
                               <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>{fmtDate(p.createdAt)} · <span className="pill pill-blue" style={{ fontSize: 10 }}>{p.type}</span></div>
                             </div>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa' }}>{fmtMoney(p.amount)}</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: '#FF6B8A' }}>{fmtMoney(p.amount)}</div>
                           </div>
                         ))}
                       </div>

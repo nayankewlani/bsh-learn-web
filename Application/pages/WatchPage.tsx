@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCourseStore } from "../stores/courseStore";
 import type { Lesson } from "../stores/courseStore";
@@ -44,13 +44,13 @@ const WatchPage: React.FC = () => {
   const handleLessonClick = (l: Lesson) => navigate(`/watch/${l._id}`);
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#0a0914", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <span style={{ color: "#7c3aed" }}>Loading video...</span>
+    <div style={{ minHeight: "100vh", background: "#0D0D0D", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <span style={{ color: "#FF1E56" }}>Loading video...</span>
     </div>
   );
 
   return (
-    <div style={{ background: "#0a0914", minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 320px" }}>
+    <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 320px" }}>
       <div style={{ padding: 24, borderRight: "1px solid #1e1b4b" }}>
         {lesson && <VideoPlayer streamUrl={lesson.streamUrl} muxPlaybackId={lesson.muxPlaybackId} title={lesson.title} onEnded={markComplete} />}
         {lesson && (
@@ -61,8 +61,8 @@ const WatchPage: React.FC = () => {
                 <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: 13, marginBottom: 6 }}>
                   <span>Course Progress</span><span>{progress}%</span>
                 </div>
-                <div style={{ background: "#1e1b4b", borderRadius: 6, height: 8 }}>
-                  <div style={{ background: "linear-gradient(90deg,#7c3aed,#a78bfa)", height: "100%", borderRadius: 6, width: `${progress}%`, transition: "width 0.5s" }} />
+                <div style={{ background: "#222222", borderRadius: 6, height: 8 }}>
+                  <div style={{ background: "linear-gradient(90deg,#FF1E56,#FF6B8A)", height: "100%", borderRadius: 6, width: `${progress}%`, transition: "width 0.5s" }} />
                 </div>
               </div>
             )}
@@ -71,9 +71,9 @@ const WatchPage: React.FC = () => {
         )}
       </div>
 
-      <div style={{ height: "100vh", overflowY: "auto", background: "#0f0e1a" }}>
+      <div style={{ height: "100vh", overflowY: "auto", background: "#111111" }}>
         <div style={{ padding: "20px 16px", borderBottom: "1px solid #1e1b4b" }}>
-          <button onClick={() => navigate(`/course/${currentCourse?._id}`)} style={{ background: "none", border: "none", color: "#7c3aed", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>← Back to Course</button>
+          <button onClick={() => navigate(`/course/${currentCourse?._id}`)} style={{ background: "none", border: "none", color: "#FF1E56", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>← Back to Course</button>
           <h3 style={{ color: "#f3f4f6", fontSize: 15, fontWeight: 700, margin: "10px 0 0" }}>{currentCourse?.title}</h3>
         </div>
         {chapters.length > 0 && lessons.length > 0 && (

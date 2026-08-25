@@ -11,9 +11,12 @@ const NAV = [
   { to: '/admin/bulk-enroll',      label: 'Bulk Enroll' },
   { to: '/admin/program-posts',   label: 'Program Posts' },
   { to: '/admin/hero-banners',      label: 'Hero Banners' },
+  { to: '/admin/upcoming-classes',  label: 'Starting Soon' },
   { to: '/admin/home-classes',     label: 'Home Free Classes' },
   { to: '/admin/live-classes',     label: 'Live Classes' },
   { to: '/admin/sessions',              label: 'Sessions & Calls' },
+  { to: '/admin/chat',                  label: 'Chat Viewer' },
+  { to: '/admin/broadcast',             label: 'Broadcast' },
   { to: '/admin/educator-applications', label: 'Educator Applications' },
   { to: '/admin/transactions',          label: 'Transactions' },
   { to: '/admin/payouts',               label: 'Trainer Payouts' },
@@ -29,9 +32,12 @@ const TITLES: Record<string, string> = {
   '/admin/bulk-enroll':      'Bulk Enroll',
   '/admin/program-posts':   'Program Posts',
   '/admin/hero-banners':      'Hero Banners',
+  '/admin/upcoming-classes':  'Starting Soon',
   '/admin/home-classes':     'Home Free Classes',
   '/admin/live-classes':     'Live Classes',
   '/admin/sessions':              'Sessions & Calls',
+  '/admin/chat':                  'Chat Viewer',
+  '/admin/broadcast':             'Broadcast',
   '/admin/educator-applications': 'Educator Applications',
   '/admin/transactions':          'Transactions',
   '/admin/payouts':               'Trainer Payouts',
@@ -41,8 +47,8 @@ const TITLES: Record<string, string> = {
 
 const ICONS: Record<string, string> = {
   'Overview': '▣', 'Students': '👥', 'Trainers': '🎓', 'Courses': '📚',
-  'Course Manager': '⚙️', 'Bulk Enroll': '📥', 'Program Posts': '📢', 'Hero Banners': '🎥', 'Home Free Classes': '🎬', 'Live Classes': '📡', 'Sessions & Calls': '📋',
-  'Educator Applications': '🎓', 'Transactions': '₹', 'Trainer Payouts': '💸', 'Permissions': '🔐', 'Reports': '📊',
+  'Course Manager': '⚙️', 'Bulk Enroll': '📥', 'Program Posts': '📢', 'Hero Banners': '🎥', 'Starting Soon': '📅', 'Home Free Classes': '🎬', 'Live Classes': '📡', 'Sessions & Calls': '📋',
+  'Educator Applications': '🎓', 'Transactions': '₹', 'Trainer Payouts': '💸', 'Permissions': '🔐', 'Reports': '📊', 'Chat Viewer': '💬', 'Broadcast': '📣',
 };
 
 const AdminLayout: React.FC = () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import client from "../api/client";
 import Button from "../components/ui/Button";
@@ -34,7 +34,7 @@ interface Course {
 }
 
 const inputStyle: React.CSSProperties = {
-  background: "#1e1b4b", border: "1.5px solid #3730a3", borderRadius: 8,
+  background: "#222222", border: "1.5px solid #3730a3", borderRadius: 8,
   color: "#f3f4f6", padding: "9px 12px", fontSize: 14, width: "100%", boxSizing: "border-box",
 };
 
@@ -255,19 +255,19 @@ const CourseEditorPage: React.FC = () => {
   };
 
   if (loading) return (
-    <div style={{ background: "#0a0914", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#7c3aed" }}>
+    <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#FF1E56" }}>
       Loading course...
     </div>
   );
 
   if (!course) return (
-    <div style={{ background: "#0a0914", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#f87171" }}>
+    <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#f87171" }}>
       Course not found
     </div>
   );
 
   return (
-    <div style={{ background: "#0a0914", minHeight: "100vh", padding: "32px 24px" }}>
+    <div style={{ background: "#0D0D0D", minHeight: "100vh", padding: "32px 24px" }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
         {/* Header */}
@@ -319,7 +319,7 @@ const CourseEditorPage: React.FC = () => {
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", cursor: "pointer" }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: 13 }}>Chapter {ci + 1}</span>
+                    <span style={{ color: "#FF1E56", fontWeight: 700, fontSize: 13 }}>Chapter {ci + 1}</span>
                     <span style={{ color: "#f3f4f6", fontWeight: 600, fontSize: 15 }}>{chapter.title}</span>
                     <span style={{ color: "#9ca3af", fontSize: 12 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
                   </div>
@@ -330,7 +330,7 @@ const CourseEditorPage: React.FC = () => {
                     >
                       Delete
                     </button>
-                    <span style={{ color: "#7c3aed", fontSize: 16 }}>{isOpen ? "▲" : "▼"}</span>
+                    <span style={{ color: "#FF1E56", fontSize: 16 }}>{isOpen ? "▲" : "▼"}</span>
                   </div>
                 </div>
 
@@ -342,7 +342,7 @@ const CourseEditorPage: React.FC = () => {
                     )}
 
                     {lessons.map((lesson, li) => (
-                      <div key={lesson._id} style={{ background: "#0f0e1a", borderRadius: 10, padding: "12px 14px", border: "1px solid #1e1b4b" }}>
+                      <div key={lesson._id} style={{ background: "#111111", borderRadius: 10, padding: "12px 14px", border: "1px solid #1e1b4b" }}>
                         {editLesson === lesson._id ? (
                           // Edit mode
                           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -353,7 +353,7 @@ const CourseEditorPage: React.FC = () => {
                               placeholder="Lesson title"
                             />
                             <div style={{ display: "flex", gap: 10 }}>
-                              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#c4b5fd", fontSize: 13, cursor: "pointer" }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#FF6B8A", fontSize: 13, cursor: "pointer" }}>
                                 <input
                                   type="checkbox"
                                   checked={editLessonData.isFree ?? lesson.isFree}
@@ -362,7 +362,7 @@ const CourseEditorPage: React.FC = () => {
                                 Free preview
                               </label>
                               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <label style={{ color: "#c4b5fd", fontSize: 13 }}>Duration (min):</label>
+                                <label style={{ color: "#FF6B8A", fontSize: 13 }}>Duration (min):</label>
                                 <input
                                   type="number"
                                   value={editLessonData.duration ?? lesson.duration}
@@ -416,10 +416,10 @@ const CourseEditorPage: React.FC = () => {
                         {uploadFor === lesson._id && (
                           <div style={{ marginTop: 12, padding: 16, background: "#13122a", borderRadius: 10, border: "1px solid #3730a3" }}>
                             {/* Mode tabs */}
-                            <div style={{ display: "flex", gap: 0, marginBottom: 14, background: "#0f0e1a", borderRadius: 8, padding: 3 }}>
+                            <div style={{ display: "flex", gap: 0, marginBottom: 14, background: "#111111", borderRadius: 8, padding: 3 }}>
                               {(["file", "url"] as const).map((m) => (
                                 <button key={m} onClick={() => setUploadMode(m)}
-                                  style={{ flex: 1, padding: "7px", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", background: uploadMode === m ? "#7c3aed" : "transparent", color: uploadMode === m ? "#fff" : "#9ca3af" }}>
+                                  style={{ flex: 1, padding: "7px", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", background: uploadMode === m ? "#FF1E56" : "transparent", color: uploadMode === m ? "#fff" : "#9ca3af" }}>
                                   {m === "file" ? "📁 Upload File" : "🔗 Paste URL"}
                                 </button>
                               ))}
@@ -434,17 +434,17 @@ const CourseEditorPage: React.FC = () => {
                                   type="file"
                                   accept="video/*"
                                   onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-                                  style={{ color: "#c4b5fd", fontSize: 13, marginBottom: 10, width: "100%" }}
+                                  style={{ color: "#FF6B8A", fontSize: 13, marginBottom: 10, width: "100%" }}
                                 />
-                                {videoFile && <p style={{ color: "#a78bfa", fontSize: 12, margin: "0 0 10px" }}>Selected: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)} MB)</p>}
+                                {videoFile && <p style={{ color: "#FF6B8A", fontSize: 12, margin: "0 0 10px" }}>Selected: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)} MB)</p>}
                                 {uploading && (
                                   <div style={{ marginBottom: 10 }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", color: "#c4b5fd", fontSize: 12, marginBottom: 4 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", color: "#FF6B8A", fontSize: 12, marginBottom: 4 }}>
                                       <span>{uploadProgress < 92 ? "Uploading..." : uploadProgress < 100 ? "Processing..." : "Done!"}</span>
                                       <span>{uploadProgress}%</span>
                                     </div>
-                                    <div style={{ background: "#1e1b4b", borderRadius: 4, height: 6 }}>
-                                      <div style={{ height: "100%", borderRadius: 4, background: "linear-gradient(90deg,#7c3aed,#a78bfa)", width: `${uploadProgress}%`, transition: "width 0.4s" }} />
+                                    <div style={{ background: "#222222", borderRadius: 4, height: 6 }}>
+                                      <div style={{ height: "100%", borderRadius: 4, background: "linear-gradient(90deg,#FF1E56,#FF6B8A)", width: `${uploadProgress}%`, transition: "width 0.4s" }} />
                                     </div>
                                   </div>
                                 )}
@@ -452,7 +452,7 @@ const CourseEditorPage: React.FC = () => {
                             ) : (
                               <>
                                 <p style={{ color: "#9ca3af", fontSize: 12, margin: "0 0 10px" }}>
-                                  Paste a <strong style={{ color: "#c4b5fd" }}>direct</strong> MP4 URL (S3, Firebase Storage, Cloudinary, Dropbox dl.dropbox.com link). Google Drive links do not work reliably.
+                                  Paste a <strong style={{ color: "#FF6B8A" }}>direct</strong> MP4 URL (S3, Firebase Storage, Cloudinary, Dropbox dl.dropbox.com link). Google Drive links do not work reliably.
                                 </p>
                                 <input
                                   value={videoUrl}
@@ -464,7 +464,7 @@ const CourseEditorPage: React.FC = () => {
                             )}
 
                             <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
-                              <label style={{ color: "#c4b5fd", fontSize: 13, whiteSpace: "nowrap" }}>Duration (minutes):</label>
+                              <label style={{ color: "#FF6B8A", fontSize: 13, whiteSpace: "nowrap" }}>Duration (minutes):</label>
                               <input
                                 type="number"
                                 value={videoDuration || ""}
@@ -493,7 +493,7 @@ const CourseEditorPage: React.FC = () => {
 
                     {/* Add lesson row */}
                     {addLessonFor === chapter._id ? (
-                      <div style={{ background: "#0f0e1a", borderRadius: 10, padding: "12px 14px", border: "1px dashed #3730a3", display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div style={{ background: "#111111", borderRadius: 10, padding: "12px 14px", border: "1px dashed #3730a3", display: "flex", flexDirection: "column", gap: 10 }}>
                         <input
                           value={newLesson.title}
                           onChange={(e) => setNewLesson((p) => ({ ...p, title: e.target.value }))}
@@ -503,7 +503,7 @@ const CourseEditorPage: React.FC = () => {
                         />
                         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                           <div>
-                            <label style={{ color: "#c4b5fd", fontSize: 12, display: "block", marginBottom: 4 }}>Type</label>
+                            <label style={{ color: "#FF6B8A", fontSize: 12, display: "block", marginBottom: 4 }}>Type</label>
                             <select
                               value={newLesson.type}
                               onChange={(e) => setNewLesson((p) => ({ ...p, type: e.target.value as "video" | "article" | "quiz" }))}
@@ -515,7 +515,7 @@ const CourseEditorPage: React.FC = () => {
                             </select>
                           </div>
                           <div>
-                            <label style={{ color: "#c4b5fd", fontSize: 12, display: "block", marginBottom: 4 }}>Duration (min)</label>
+                            <label style={{ color: "#FF6B8A", fontSize: 12, display: "block", marginBottom: 4 }}>Duration (min)</label>
                             <input
                               type="number"
                               value={newLesson.duration}
@@ -524,7 +524,7 @@ const CourseEditorPage: React.FC = () => {
                               placeholder="0"
                             />
                           </div>
-                          <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#c4b5fd", fontSize: 13, cursor: "pointer", marginTop: 16 }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#FF6B8A", fontSize: 13, cursor: "pointer", marginTop: 16 }}>
                             <input
                               type="checkbox"
                               checked={newLesson.isFree}
@@ -543,7 +543,7 @@ const CourseEditorPage: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => { setAddLessonFor(chapter._id); setNewLesson({ title: "", type: "video", isFree: false, duration: 0 }); }}
-                        style={{ background: "none", border: "1px dashed #3730a3", borderRadius: 8, color: "#7c3aed", cursor: "pointer", padding: "8px 14px", fontSize: 13, textAlign: "left" }}
+                        style={{ background: "none", border: "1px dashed #3730a3", borderRadius: 8, color: "#FF1E56", cursor: "pointer", padding: "8px 14px", fontSize: 13, textAlign: "left" }}
                       >
                         + Add Lesson
                       </button>
@@ -571,7 +571,7 @@ const CourseEditorPage: React.FC = () => {
           ) : (
             <button
               onClick={() => setShowAddChapter(true)}
-              style={{ background: "#13122a", border: "1px dashed #3730a3", borderRadius: 14, padding: "16px 18px", color: "#7c3aed", cursor: "pointer", fontSize: 14, fontWeight: 600, textAlign: "left", width: "100%" }}
+              style={{ background: "#13122a", border: "1px dashed #3730a3", borderRadius: 14, padding: "16px 18px", color: "#FF1E56", cursor: "pointer", fontSize: 14, fontWeight: 600, textAlign: "left", width: "100%" }}
             >
               + Add Chapter
             </button>

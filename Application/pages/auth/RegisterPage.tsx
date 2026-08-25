@@ -166,8 +166,8 @@ const RegisterPage: React.FC = () => {
     outline: "none", boxSizing: "border-box", transition: "0.2s",
   };
   const focusStyle = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.style.borderColor = "#7c3aed";
-    e.target.style.boxShadow   = "0 0 0 4px rgba(124,58,237,0.1)";
+    e.target.style.borderColor = "#FF1E56";
+    e.target.style.boxShadow   = "0 0 0 4px rgba(255,30,86,0.1)";
   };
   const blurStyle = (e: React.FocusEvent<HTMLInputElement>) => {
     e.target.style.borderColor = "#eee";
@@ -178,20 +178,20 @@ const RegisterPage: React.FC = () => {
     <div style={{
       minHeight: "100vh",
       background: isDark
-        ? "linear-gradient(135deg, #050412 0%, #0f0e1a 40%, #1a0a2e 100%)"
+        ? "linear-gradient(135deg, #0A0000 0%, #1A0008 40%, #200010 100%)"
         : "linear-gradient(135deg, #f4f3ff 0%, #ede9fe 40%, #ddd6fe 100%)",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       padding: "40px 20px", position: "relative",
     }}>
-      <div style={{ position: "absolute", top: -80, left: -80, width: 300, height: 300, background: "radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: -80, left: -80, width: 300, height: 300, background: "radial-gradient(circle, rgba(255,30,86,0.12), transparent 70%)", pointerEvents: "none" }} />
 
-      <button onClick={() => navigate(-1)} style={{ position: "absolute", top: 24, left: 24, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#c4b5fd", padding: "8px 16px", borderRadius: 50, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, backdropFilter: "blur(10px)", transition: "0.2s" }}>
+      <button onClick={() => navigate(-1)} style={{ position: "absolute", top: 24, left: 24, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#FF6B8A", padding: "8px 16px", borderRadius: 50, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, backdropFilter: "blur(10px)", transition: "0.2s" }}>
         <FiArrowLeft size={14} /> Back
       </button>
 
       <div style={{ width: "100%", maxWidth: 460 }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <img src={bshLogo} alt="BSH Healers" style={{ height: 58, width: "auto", objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(124,58,237,0.4))", animation: "float 4s ease-in-out infinite" }} />
+          <img src={bshLogo} alt="BSH Healers" style={{ height: 58, width: "auto", objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(255,30,86,0.4))", animation: "float 4s ease-in-out infinite" }} />
         </div>
 
         <div style={{ background: "#fff", borderRadius: 24, padding: "36px 32px", boxShadow: "0 25px 60px rgba(0,0,0,0.6)" }}>
@@ -200,10 +200,10 @@ const RegisterPage: React.FC = () => {
           </h1>
           <p style={{ margin: "0 0 22px", color: "#666", textAlign: "center", fontSize: 14 }}>Begin your journey today</p>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "rgba(124,58,237,0.06)", border: "1.5px solid rgba(124,58,237,0.2)", borderRadius: 12, marginBottom: 18 }}>
-            <HiOutlineAcademicCap size={22} color="#7c3aed" />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "rgba(255,30,86,0.06)", border: "1.5px solid rgba(255,30,86,0.2)", borderRadius: 12, marginBottom: 18 }}>
+            <HiOutlineAcademicCap size={22} color="#FF1E56" />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "#7c3aed" }}>Signing up as Student</div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "#FF1E56" }}>Signing up as Student</div>
               <div style={{ fontSize: 11, color: "#888" }}>Access courses, live sessions & more</div>
             </div>
           </div>
@@ -225,14 +225,14 @@ const RegisterPage: React.FC = () => {
 
             {/* Email OTP Verification Box */}
             <div style={{
-              border: `2px solid ${otpState === "verified" ? "#16a34a" : "#7c3aed"}`,
+              border: `2px solid ${otpState === "verified" ? "#16a34a" : "#FF1E56"}`,
               borderRadius: 14,
               padding: "14px 16px",
-              background: otpState === "verified" ? "#f0fdf4" : "rgba(124,58,237,0.03)",
+              background: otpState === "verified" ? "#f0fdf4" : "rgba(255,30,86,0.03)",
             }}>
               {/* Header */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: otpState === "verified" ? 8 : 12 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: otpState === "verified" ? "#16a34a" : "#7c3aed" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: otpState === "verified" ? "#16a34a" : "#FF1E56" }}>
                   {otpState === "verified" ? <FiCheckCircle size={15} /> : <FiMail size={14} />}
                   {otpState === "verified" ? "Email Verified" : "Verify Email Address"}
                   {otpState !== "verified" && <span style={{ fontWeight: 400, fontSize: 11, color: "#ef4444" }}>(required)</span>}
@@ -259,7 +259,7 @@ const RegisterPage: React.FC = () => {
                   onClick={handleSendOTP}
                   style={{
                     width: "100%", padding: "13px 14px",
-                    background: "linear-gradient(135deg,#7c3aed,#5b21b6)",
+                    background: "linear-gradient(135deg,#FF1E56,#D4003F)",
                     color: "#fff", border: "none", borderRadius: 10,
                     fontWeight: 700, fontSize: 14, cursor: "pointer",
                   }}
@@ -270,8 +270,8 @@ const RegisterPage: React.FC = () => {
 
               {/* Sending spinner */}
               {otpState === "sending" && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#7c3aed", fontSize: 13, padding: "10px 0" }}>
-                  <div style={{ width: 16, height: 16, border: "2px solid rgba(124,58,237,0.3)", borderTopColor: "#7c3aed", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#FF1E56", fontSize: 13, padding: "10px 0" }}>
+                  <div style={{ width: 16, height: 16, border: "2px solid rgba(255,30,86,0.3)", borderTopColor: "#FF1E56", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
                   Sending OTP to {email.trim()}…
                 </div>
               )}
@@ -280,7 +280,7 @@ const RegisterPage: React.FC = () => {
               {(otpState === "sent" || otpState === "verifying") && (
                 <div>
                   <div style={{ fontSize: 12, color: "#555", marginBottom: 8, fontWeight: 500 }}>
-                    Check your inbox — code sent to <strong style={{ color: "#7c3aed" }}>{otpEmail}</strong>
+                    Check your inbox — code sent to <strong style={{ color: "#FF1E56" }}>{otpEmail}</strong>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <input
@@ -288,13 +288,13 @@ const RegisterPage: React.FC = () => {
                       type="text" placeholder="• • • • • •" value={otpCode} maxLength={6}
                       onChange={e => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                       style={{ ...inputStyle, flex: 1, letterSpacing: 6, textAlign: "center", fontSize: 22, fontWeight: 800, borderColor: "#ddd6fe" }}
-                      onFocus={e => { e.target.style.borderColor = "#7c3aed"; e.target.style.boxShadow = "0 0 0 3px rgba(124,58,237,0.12)"; }}
+                      onFocus={e => { e.target.style.borderColor = "#FF1E56"; e.target.style.boxShadow = "0 0 0 3px rgba(255,30,86,0.12)"; }}
                       onBlur={e => { e.target.style.borderColor = "#ddd6fe"; e.target.style.boxShadow = "none"; }}
                     />
                     <button
                       type="button" onClick={handleVerifyOTP}
                       disabled={otpCode.length !== 6 || otpState === "verifying"}
-                      style={{ padding: "12px 20px", background: otpCode.length === 6 ? "linear-gradient(135deg,#7c3aed,#5b21b6)" : "transparent", color: otpCode.length === 6 ? "#fff" : "#7c3aed", border: `2px solid ${otpCode.length === 6 ? "transparent" : "#c4b5fd"}`, borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: otpCode.length === 6 ? "pointer" : "default", whiteSpace: "nowrap", opacity: otpCode.length === 6 ? 1 : 0.6 }}>
+                      style={{ padding: "12px 20px", background: otpCode.length === 6 ? "linear-gradient(135deg,#FF1E56,#D4003F)" : "transparent", color: otpCode.length === 6 ? "#fff" : "#FF1E56", border: `2px solid ${otpCode.length === 6 ? "transparent" : "#FF6B8A"}`, borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: otpCode.length === 6 ? "pointer" : "default", whiteSpace: "nowrap", opacity: otpCode.length === 6 ? 1 : 0.6 }}>
                       {otpState === "verifying" ? "…" : "Verify"}
                     </button>
                   </div>
@@ -303,7 +303,7 @@ const RegisterPage: React.FC = () => {
                       {cooldown > 0 ? `Resend in ${cooldown}s` : "Didn't receive it?"}
                     </span>
                     <button type="button" onClick={handleResend} disabled={cooldown > 0}
-                      style={{ background: "none", border: "none", color: cooldown > 0 ? "#ccc" : "#7c3aed", fontSize: 12, fontWeight: 700, cursor: cooldown > 0 ? "default" : "pointer", padding: 0, textDecoration: cooldown > 0 ? "none" : "underline" }}>
+                      style={{ background: "none", border: "none", color: cooldown > 0 ? "#ccc" : "#FF1E56", fontSize: 12, fontWeight: 700, cursor: cooldown > 0 ? "default" : "pointer", padding: 0, textDecoration: cooldown > 0 ? "none" : "underline" }}>
                       Resend OTP
                     </button>
                   </div>
@@ -383,7 +383,7 @@ const RegisterPage: React.FC = () => {
               disabled={isLoading || successAnim || otpState !== "verified"}
               style={{
                 width: "100%", padding: 15,
-                background: successAnim ? "#16a34a" : isLoading ? "#7c3aed" : otpState !== "verified" ? "#6b21a8" : "linear-gradient(135deg,#7c3aed,#5b21b6)",
+                background: successAnim ? "#16a34a" : isLoading ? "#FF1E56" : otpState !== "verified" ? "#6b21a8" : "linear-gradient(135deg,#FF1E56,#D4003F)",
                 color: "#fff",
                 border: "none", borderRadius: 12, fontWeight: 700, fontSize: 16,
                 cursor: (isLoading || successAnim || otpState !== "verified") ? "not-allowed" : "pointer",
@@ -403,13 +403,13 @@ const RegisterPage: React.FC = () => {
 
           <p style={{ textAlign: "center", marginTop: 18, color: "#666", fontSize: 14 }}>
             Already have an account?{" "}
-            <Link to="/login" style={{ color: "#7c3aed", fontWeight: 700, textDecoration: "none" }}>Log In</Link>
+            <Link to="/login" style={{ color: "#FF1E56", fontWeight: 700, textDecoration: "none" }}>Log In</Link>
           </p>
 
-          <div style={{ marginTop: 14, padding: "14px", background: "#f9f7ff", borderRadius: 12, border: "1px dashed rgba(124,58,237,0.3)", textAlign: "center" }}>
+          <div style={{ marginTop: 14, padding: "14px", background: "#f9f7ff", borderRadius: 12, border: "1px dashed rgba(255,30,86,0.3)", textAlign: "center" }}>
             <div style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>Want to teach on BSH Healers?</div>
             <button type="button" onClick={() => navigate("/apply-educator")}
-              style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              style={{ background: "linear-gradient(135deg,#FF1E56,#D4003F)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
               <HiOutlineAcademicCap size={16} /> Request to Join as Educator
             </button>
           </div>

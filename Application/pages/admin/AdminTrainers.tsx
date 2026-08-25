@@ -18,7 +18,7 @@ const SPECIALTIES_OPTIONS = [
 const LANGUAGE_OPTIONS = ["English","Hindi","Telugu","Tamil","Marathi","Bengali","Gujarati","Kannada","Malayalam","Punjabi"];
 
 const SPECIALTY_COLORS: Record<string, string> = {
-  "Hypnotherapy":              "#7c3aed",
+  "Hypnotherapy":              "#FF1E56",
   "Shadow Work":               "#0d9488",
   "NLP Coaching":              "#2563eb",
   "Spiritual Healing":         "#9333ea",
@@ -28,7 +28,7 @@ const SPECIALTY_COLORS: Record<string, string> = {
   "Autism Healing":            "#059669",
   "Corporate Training":        "#1d4ed8",
   "Meditation":                "#8b5cf6",
-  "Past Life Regression":      "#6d28d9",
+  "Past Life Regression":      "#D4003F",
   "Reiki Healing":             "#0891b2",
   "Cognitive Behavioral Therapy": "#065f46",
   "Sound Healing":             "#92400e",
@@ -115,7 +115,7 @@ const ImageDropZone: React.FC<{
     <div>
       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
         {/* Preview circle */}
-        <div style={{ width: size, height: size, borderRadius: '50%', border: '2px solid #7c3aed', overflow: 'hidden', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.28, fontWeight: 800, color: '#7c3aed', flexShrink: 0 }}>
+        <div style={{ width: size, height: size, borderRadius: '50%', border: '2px solid #FF1E56', overflow: 'hidden', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.28, fontWeight: 800, color: '#FF1E56', flexShrink: 0 }}>
           {value
             ? <img src={value} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             : initials || '?'}
@@ -129,19 +129,19 @@ const ImageDropZone: React.FC<{
             onDrop={onDrop}
             onClick={() => !busy && fileRef.current?.click()}
             style={{
-              border: `2px dashed ${drag ? '#7c3aed' : '#334155'}`,
+              border: `2px dashed ${drag ? '#FF1E56' : '#334155'}`,
               borderRadius: 10,
               padding: '14px 10px',
               textAlign: 'center',
               cursor: busy ? 'wait' : 'pointer',
-              background: drag ? 'rgba(124,58,237,0.08)' : '#0f172a',
+              background: drag ? 'rgba(255,30,86,0.08)' : '#0f172a',
               transition: 'all 0.15s',
               marginBottom: 8,
             }}>
             {busy ? (
-              <span style={{ color: '#a78bfa', fontSize: 12 }}>Compressing…</span>
+              <span style={{ color: '#FF6B8A', fontSize: 12 }}>Compressing…</span>
             ) : drag ? (
-              <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700 }}>Drop to upload</span>
+              <span style={{ color: '#FF6B8A', fontSize: 12, fontWeight: 700 }}>Drop to upload</span>
             ) : (
               <>
                 <div style={{ fontSize: 20, marginBottom: 4 }}>📷</div>
@@ -239,7 +239,7 @@ const ChipSelect: React.FC<{
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {allOpts.map(opt => {
           const active = selected.includes(opt);
-          const color = SPECIALTY_COLORS[opt] || '#7c3aed';
+          const color = SPECIALTY_COLORS[opt] || '#FF1E56';
           return (
             <button key={opt} onClick={() => toggle(opt)} type="button"
               style={{ padding: '5px 12px', borderRadius: 50, fontSize: 12, fontWeight: active ? 700 : 500, cursor: 'pointer', border: `1.5px solid ${active ? color : '#334155'}`, background: active ? `${color}22` : 'transparent', color: active ? color : '#94a3b8', transition: 'all 0.15s' }}>
@@ -262,7 +262,7 @@ const ChipSelect: React.FC<{
                   if (e.key === 'Escape') { setAdding(false); setInputVal(''); }
                 }}
                 placeholder="Modality name…"
-                style={{ padding: '4px 10px', borderRadius: 50, border: '1.5px solid #7c3aed', background: 'rgba(124,58,237,0.08)', color: '#e2e8f0', fontSize: 12, outline: 'none', width: 140 }}
+                style={{ padding: '4px 10px', borderRadius: 50, border: '1.5px solid #FF1E56', background: 'rgba(255,30,86,0.08)', color: '#e2e8f0', fontSize: 12, outline: 'none', width: 140 }}
               />
               <button onClick={submitCustom} type="button"
                 style={{ padding: '4px 10px', borderRadius: 50, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1.5px solid #22c55e', background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}>
@@ -276,7 +276,7 @@ const ChipSelect: React.FC<{
           ) : (
             <button onClick={() => setAdding(true)} type="button"
               style={{ padding: '5px 12px', borderRadius: 50, fontSize: 12, fontWeight: 500, cursor: 'pointer', border: '1.5px dashed #475569', background: 'transparent', color: '#64748b', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.color = '#a78bfa'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF1E56'; e.currentTarget.style.color = '#FF6B8A'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = '#475569'; e.currentTarget.style.color = '#64748b'; }}>
               + Other
             </button>
@@ -297,7 +297,7 @@ const TrainerCard: React.FC<{
 }> = ({ t, onClick, onPause, onDelete }) => {
   const initials = t.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const primarySpec = t.specialties?.[0] || '';
-  const specColor = SPECIALTY_COLORS[primarySpec] || '#7c3aed';
+  const specColor = SPECIALTY_COLORS[primarySpec] || '#FF1E56';
   const [confirmDel, setConfirmDel] = useState(false);
 
   return (
@@ -335,7 +335,7 @@ const TrainerCard: React.FC<{
       {(t.specialties?.length ?? 0) > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
           {t.specialties!.slice(0, 3).map(s => (
-            <span key={s} style={{ background: `${SPECIALTY_COLORS[s] || '#7c3aed'}22`, color: SPECIALTY_COLORS[s] || '#a78bfa', border: `1px solid ${SPECIALTY_COLORS[s] || '#7c3aed'}44`, borderRadius: 50, padding: '2px 8px', fontSize: 10, fontWeight: 700 }}>{s}</span>
+            <span key={s} style={{ background: `${SPECIALTY_COLORS[s] || '#FF1E56'}22`, color: SPECIALTY_COLORS[s] || '#FF6B8A', border: `1px solid ${SPECIALTY_COLORS[s] || '#FF1E56'}44`, borderRadius: 50, padding: '2px 8px', fontSize: 10, fontWeight: 700 }}>{s}</span>
           ))}
           {(t.specialties!.length > 3) && (
             <span style={{ background: '#0f172a', color: '#64748b', border: '1px solid #334155', borderRadius: 50, padding: '2px 8px', fontSize: 10 }}>+{t.specialties!.length - 3}</span>
@@ -348,12 +348,12 @@ const TrainerCard: React.FC<{
         <span>⏱ {t.experience || '—'}</span>
         <span>{(t.rating ?? 0) > 0 ? <span style={{ color: '#f59e0b', fontWeight: 700 }}>★ {t.rating}</span> : <span>{t.courseCount} course{t.courseCount !== 1 ? 's' : ''}</span>}</span>
         <span>{t.sessionsDisplay ? `🎯 ${t.sessionsDisplay} sessions` : `${t.studentCount.toLocaleString()} students`}</span>
-        <span style={{ color: '#a78bfa', fontWeight: 700 }}>{fmt(t.revenuePaise)}</span>
+        <span style={{ color: '#FF6B8A', fontWeight: 700 }}>{fmt(t.revenuePaise)}</span>
       </div>
 
       {/* Session price */}
       {(t.sessionPricePaise ?? 0) > 0 && (
-        <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: '#a78bfa', fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ background: 'rgba(255,30,86,0.08)', border: '1px solid rgba(255,30,86,0.2)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: '#FF6B8A', fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span>💳 {fmt(t.sessionPricePaise!)}/min</span>
         </div>
       )}
@@ -462,7 +462,7 @@ const TrainerDrawer: React.FC<{
   const Toggle: React.FC<{ label: string; value: boolean; onChange: (v: boolean) => void }> = ({ label: lbl, value, onChange }) => (
     <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '10px 14px', background: '#0f172a', borderRadius: 8, border: '1px solid #334155', marginBottom: 8 }}>
       <span style={{ color: '#cbd5e1', fontSize: 13 }}>{lbl}</span>
-      <div onClick={() => onChange(!value)} style={{ width: 36, height: 20, borderRadius: 10, background: value ? '#7c3aed' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div onClick={() => onChange(!value)} style={{ width: 36, height: 20, borderRadius: 10, background: value ? '#FF1E56' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
         <div style={{ position: 'absolute', top: 2, left: value ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
       </div>
     </label>
@@ -531,7 +531,7 @@ const TrainerDrawer: React.FC<{
             <div style={{ marginBottom: 12 }}>
               <label style={label}>Rate per Minute (₹/min)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: '#a78bfa', fontWeight: 700, fontSize: 15 }}>₹</span>
+                <span style={{ color: '#FF6B8A', fontWeight: 700, fontSize: 15 }}>₹</span>
                 <input
                   type="number"
                   value={edit.sessionPricePaise ? Math.round(edit.sessionPricePaise / 100) : ''}
@@ -548,18 +548,18 @@ const TrainerDrawer: React.FC<{
 
             {/* Razorpay link */}
             <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 10, padding: '12px 14px' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', marginBottom: 8 }}>Razorpay Payment Link</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#FF6B8A', marginBottom: 8 }}>Razorpay Payment Link</div>
               {edit.sessionRazorpayLink ? (
                 <div>
                   <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#60a5fa', background: '#0a1628', padding: '6px 10px', borderRadius: 6, marginBottom: 8, wordBreak: 'break-all' }}>{edit.sessionRazorpayLink}</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <a href={edit.sessionRazorpayLink} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(96,165,250,0.1)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, textDecoration: 'none' }}>Open Link ↗</a>
-                    <button onClick={generateRazorpay} disabled={genLink} style={{ background: 'rgba(124,58,237,0.1)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{genLink ? 'Regenerating…' : '🔄 Regenerate'}</button>
+                    <button onClick={generateRazorpay} disabled={genLink} style={{ background: 'rgba(255,30,86,0.1)', color: '#FF6B8A', border: '1px solid rgba(255,30,86,0.3)', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{genLink ? 'Regenerating…' : '🔄 Regenerate'}</button>
                   </div>
                 </div>
               ) : (
                 <button onClick={generateRazorpay} disabled={genLink || !(edit.sessionPricePaise ?? 0 > 0)}
-                  style={{ background: genLink ? '#0f172a' : 'linear-gradient(90deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 12, fontWeight: 700, cursor: genLink || !(edit.sessionPricePaise ?? 0 > 0) ? 'not-allowed' : 'pointer', opacity: !(edit.sessionPricePaise ?? 0 > 0) ? 0.5 : 1 }}>
+                  style={{ background: genLink ? '#0f172a' : 'linear-gradient(90deg,#FF1E56,#5b21b6)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 12, fontWeight: 700, cursor: genLink || !(edit.sessionPricePaise ?? 0 > 0) ? 'not-allowed' : 'pointer', opacity: !(edit.sessionPricePaise ?? 0 > 0) ? 0.5 : 1 }}>
                   {genLink ? 'Creating…' : '⚡ Generate Razorpay Link'}
                 </button>
               )}
@@ -578,10 +578,10 @@ const TrainerDrawer: React.FC<{
               <div>
                 <label style={label}>Card Color</label>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input type="color" value={edit.trainerColor || '#7c3aed'} onChange={e => setEdit(v => ({ ...v, trainerColor: e.target.value }))}
+                  <input type="color" value={edit.trainerColor || '#FF1E56'} onChange={e => setEdit(v => ({ ...v, trainerColor: e.target.value }))}
                     style={{ width: 38, height: 38, border: '1px solid #334155', borderRadius: 8, cursor: 'pointer', padding: 2, background: '#0f172a' }} />
-                  <input value={edit.trainerColor || '#7c3aed'} onChange={e => setEdit(v => ({ ...v, trainerColor: e.target.value }))}
-                    placeholder="#7c3aed" style={{ ...inp, flex: 1 }} />
+                  <input value={edit.trainerColor || '#FF1E56'} onChange={e => setEdit(v => ({ ...v, trainerColor: e.target.value }))}
+                    placeholder="#FF1E56" style={{ ...inp, flex: 1 }} />
                 </div>
               </div>
             </div>
@@ -636,7 +636,7 @@ const TrainerDrawer: React.FC<{
             </div>
           )}
           <button onClick={save} disabled={saving}
-            style={{ width: '100%', background: saving ? '#334155' : 'linear-gradient(90deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontWeight: 800, fontSize: 15, cursor: saving ? 'not-allowed' : 'pointer' }}>
+            style={{ width: '100%', background: saving ? '#334155' : 'linear-gradient(90deg,#FF1E56,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontWeight: 800, fontSize: 15, cursor: saving ? 'not-allowed' : 'pointer' }}>
             {saving ? 'Saving…' : '💾 Save Changes'}
           </button>
 
@@ -718,7 +718,7 @@ const EMPTY_FORM: AddForm = {
   specialties: [], trainerLanguages: [],
   sessionPricePaise: 0,
   canPublish: true, canGoLive: false, canOfferSessions: false, isVerifiedBadge: false,
-  trainerRole: '', trainerColor: '#7c3aed',
+  trainerRole: '', trainerColor: '#FF1E56',
   rating: 0, followers: 0, sessionsDisplay: '',
   hasPayBooking: true, hasApplyBooking: false,
 };
@@ -738,7 +738,7 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
   const Toggle: React.FC<{ k: 'canPublish' | 'canGoLive' | 'canOfferSessions' | 'isVerifiedBadge'; label: string }> = ({ k, label: lbl }) => (
     <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '10px 14px', background: '#0f172a', borderRadius: 8, border: '1px solid #334155', marginBottom: 8 }}>
       <span style={{ color: '#cbd5e1', fontSize: 13 }}>{lbl}</span>
-      <div onClick={() => setForm(v => ({ ...v, [k]: !v[k] }))} style={{ width: 36, height: 20, borderRadius: 10, background: form[k] ? '#7c3aed' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div onClick={() => setForm(v => ({ ...v, [k]: !v[k] }))} style={{ width: 36, height: 20, borderRadius: 10, background: form[k] ? '#FF1E56' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
         <div style={{ position: 'absolute', top: 2, left: form[k] ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
       </div>
     </label>
@@ -764,9 +764,9 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
       <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
       <div style={{ fontWeight: 800, fontSize: 20, color: '#e2e8f0', marginBottom: 8 }}>Trainer Created!</div>
       <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 24 }}>
-        <strong style={{ color: '#a78bfa' }}>{success.name}</strong> ({success.email}) is now a trainer on BSH Healers.
+        <strong style={{ color: '#FF6B8A' }}>{success.name}</strong> ({success.email}) is now a trainer on BSH Healers.
       </div>
-      <button onClick={() => setSuccess(null)} style={{ background: 'linear-gradient(90deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+      <button onClick={() => setSuccess(null)} style={{ background: 'linear-gradient(90deg,#FF1E56,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
         + Add Another Trainer
       </button>
     </div>
@@ -839,10 +839,10 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
 
           {/* Session pricing */}
           <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: '16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 700, color: '#a78bfa', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>Session Pricing</div>
+            <div style={{ fontWeight: 700, color: '#FF6B8A', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>Session Pricing</div>
             <label style={label}>Rate per Minute (₹/min)</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: 16 }}>₹</span>
+              <span style={{ color: '#FF6B8A', fontWeight: 800, fontSize: 16 }}>₹</span>
               <input
                 type="number"
                 value={form.sessionPricePaise ? Math.round(form.sessionPricePaise / 100) : ''}
@@ -870,7 +870,7 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
                 <input type="color" value={form.trainerColor}
                   onChange={e => setForm(v => ({ ...v, trainerColor: e.target.value }))}
                   style={{ width: 38, height: 38, border: '1px solid #334155', borderRadius: 8, cursor: 'pointer', padding: 2, background: '#1e293b' }} />
-                <input value={form.trainerColor} onChange={f('trainerColor')} placeholder="#7c3aed" style={{ ...inp, flex: 1 }} />
+                <input value={form.trainerColor} onChange={f('trainerColor')} placeholder="#FF1E56" style={{ ...inp, flex: 1 }} />
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
@@ -900,13 +900,13 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
             <div style={{ fontWeight: 700, color: '#f59e0b', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>Booking Options</div>
             <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '10px 14px', background: '#1e293b', borderRadius: 8, border: '1px solid #334155', marginBottom: 8 }}>
               <span style={{ color: '#cbd5e1', fontSize: 13 }}>💳 Pay Button (Razorpay booking)</span>
-              <div onClick={() => setForm(v => ({ ...v, hasPayBooking: !v.hasPayBooking }))} style={{ width: 36, height: 20, borderRadius: 10, background: form.hasPayBooking ? '#7c3aed' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+              <div onClick={() => setForm(v => ({ ...v, hasPayBooking: !v.hasPayBooking }))} style={{ width: 36, height: 20, borderRadius: 10, background: form.hasPayBooking ? '#FF1E56' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
                 <div style={{ position: 'absolute', top: 2, left: form.hasPayBooking ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </div>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '10px 14px', background: '#1e293b', borderRadius: 8, border: '1px solid #334155', marginBottom: 4 }}>
               <span style={{ color: '#cbd5e1', fontSize: 13 }}>✋ Apply for 1:1 Session (request flow)</span>
-              <div onClick={() => setForm(v => ({ ...v, hasApplyBooking: !v.hasApplyBooking }))} style={{ width: 36, height: 20, borderRadius: 10, background: form.hasApplyBooking ? '#7c3aed' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+              <div onClick={() => setForm(v => ({ ...v, hasApplyBooking: !v.hasApplyBooking }))} style={{ width: 36, height: 20, borderRadius: 10, background: form.hasApplyBooking ? '#FF1E56' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
                 <div style={{ position: 'absolute', top: 2, left: form.hasApplyBooking ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </div>
             </label>
@@ -932,7 +932,7 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
       )}
       <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
         <button onClick={submit} disabled={saving}
-          style={{ background: saving ? '#334155' : 'linear-gradient(90deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 36px', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer' }}>
+          style={{ background: saving ? '#334155' : 'linear-gradient(90deg,#FF1E56,#5b21b6)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 36px', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer' }}>
           {saving ? 'Creating…' : '✨ Create Trainer'}
         </button>
       </div>
@@ -1007,7 +1007,7 @@ const ApplicationsTab: React.FC<{ onPublished?: () => void }> = ({ onPublished }
 
   const AppCard: React.FC<{ app: Application }> = ({ app }) => {
     const app2 = app as any;
-    const color = app2.trainerColor || '#7c3aed';
+    const color = app2.trainerColor || '#FF1E56';
     const initials = app.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
     return (
       <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 18, overflow: 'hidden' }}>
@@ -1039,7 +1039,7 @@ const ApplicationsTab: React.FC<{ onPublished?: () => void }> = ({ onPublished }
           {app2.specialties?.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
               {app2.specialties.map((s: string) => (
-                <span key={s} style={{ background: `${SPECIALTY_COLORS[s] || '#7c3aed'}22`, color: SPECIALTY_COLORS[s] || '#a78bfa', border: `1px solid ${SPECIALTY_COLORS[s] || '#7c3aed'}44`, borderRadius: 50, padding: '2px 9px', fontSize: 10, fontWeight: 700 }}>{s}</span>
+                <span key={s} style={{ background: `${SPECIALTY_COLORS[s] || '#FF1E56'}22`, color: SPECIALTY_COLORS[s] || '#FF6B8A', border: `1px solid ${SPECIALTY_COLORS[s] || '#FF1E56'}44`, borderRadius: 50, padding: '2px 9px', fontSize: 10, fontWeight: 700 }}>{s}</span>
               ))}
             </div>
           )}
@@ -1080,12 +1080,12 @@ const ApplicationsTab: React.FC<{ onPublished?: () => void }> = ({ onPublished }
             <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: 16, fontFamily: 'monospace', fontSize: 13, marginBottom: 20 }}>
               <div style={{ color: '#64748b', fontSize: 10, textTransform: 'uppercase', marginBottom: 6 }}>Login Credentials</div>
               <div style={{ color: '#e2e8f0', marginBottom: 6 }}><span style={{ color: '#94a3b8' }}>Email: </span>{creds.email}</div>
-              <div style={{ color: '#e2e8f0' }}><span style={{ color: '#94a3b8' }}>Password: </span><span style={{ color: '#a78bfa', fontWeight: 700 }}>{creds.password}</span></div>
+              <div style={{ color: '#e2e8f0' }}><span style={{ color: '#94a3b8' }}>Password: </span><span style={{ color: '#FF6B8A', fontWeight: 700 }}>{creds.password}</span></div>
             </div>
             <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#fbbf24', marginBottom: 20 }}>
               ⚠️ Save this password now — it cannot be recovered. The trainer should change it after first login.
             </div>
-            <button onClick={() => setCreds(null)} style={{ width: '100%', background: 'linear-gradient(90deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: 13, fontWeight: 800, cursor: 'pointer', fontSize: 14 }}>
+            <button onClick={() => setCreds(null)} style={{ width: '100%', background: 'linear-gradient(90deg,#FF1E56,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: 13, fontWeight: 800, cursor: 'pointer', fontSize: 14 }}>
               Done — I've saved the credentials
             </button>
           </div>
@@ -1110,7 +1110,7 @@ const ApplicationsTab: React.FC<{ onPublished?: () => void }> = ({ onPublished }
           {visible.length > 0 && (
             <>
               {filter === 'pending' && (
-                <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#a78bfa', marginBottom: 16 }}>
+                <div style={{ background: 'rgba(255,30,86,0.08)', border: '1px solid rgba(255,30,86,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#FF6B8A', marginBottom: 16 }}>
                   ✨ Trainer applications waiting for review. Click <strong>"Publish as Trainer"</strong> to create their account and show them on the Consultation page.
                 </div>
               )}
@@ -1158,7 +1158,7 @@ const ApplicationsTab: React.FC<{ onPublished?: () => void }> = ({ onPublished }
                         {edu.specialties && edu.specialties.length > 0 && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
                             {edu.specialties.slice(0, 3).map((s: string) => (
-                              <span key={s} style={{ background: `${SPECIALTY_COLORS[s] || '#7c3aed'}22`, color: SPECIALTY_COLORS[s] || '#a78bfa', border: `1px solid ${SPECIALTY_COLORS[s] || '#7c3aed'}44`, borderRadius: 50, padding: '2px 9px', fontSize: 10, fontWeight: 700 }}>{s}</span>
+                              <span key={s} style={{ background: `${SPECIALTY_COLORS[s] || '#FF1E56'}22`, color: SPECIALTY_COLORS[s] || '#FF6B8A', border: `1px solid ${SPECIALTY_COLORS[s] || '#FF1E56'}44`, borderRadius: 50, padding: '2px 9px', fontSize: 10, fontWeight: 700 }}>{s}</span>
                             ))}
                           </div>
                         )}
@@ -1238,7 +1238,7 @@ const AdminTrainers: React.FC = () => {
           { key: 'add' as const,          label: '➕ Add Trainer'        },
         ].map(({ key, label }) => (
           <button key={key} onClick={() => setTab(key)}
-            style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: tab === key ? '2.5px solid #7c3aed' : '2.5px solid transparent', color: tab === key ? '#a78bfa' : '#64748b', fontWeight: tab === key ? 700 : 500, fontSize: 13, cursor: 'pointer', marginBottom: -1 }}>
+            style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: tab === key ? '2.5px solid #FF1E56' : '2.5px solid transparent', color: tab === key ? '#FF6B8A' : '#64748b', fontWeight: tab === key ? 700 : 500, fontSize: 13, cursor: 'pointer', marginBottom: -1 }}>
             {label}
           </button>
         ))}
@@ -1251,7 +1251,7 @@ const AdminTrainers: React.FC = () => {
           {!loading && (
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
               {[
-                { label: 'Total Trainers',  value: stats.total,    color: '#a78bfa' },
+                { label: 'Total Trainers',  value: stats.total,    color: '#FF6B8A' },
                 { label: 'Active',          value: stats.active,   color: '#22c55e' },
                 { label: 'Online Now',      value: stats.online,   color: '#ef4444' },
                 { label: 'Offer Sessions',  value: stats.sessions, color: '#2dd4bf' },

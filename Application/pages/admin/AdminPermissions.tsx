@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import type { AdminStudent, AdminTrainer } from '../../api/admin';
 import { adminGetStudents, adminGetTrainers, adminUpdatePermissions, adminSuspendUser } from '../../api/admin';
@@ -113,7 +113,7 @@ const AdminPermissions: React.FC = () => {
                     return (
                       <tr key={u._id}>
                         <td style={{ fontWeight: 600, color: '#e2e8f0' }}>
-                          {u.name} {locked && <span style={{ fontSize: 10, color: '#a78bfa' }}>🔒</span>}
+                          {u.name} {locked && <span style={{ fontSize: 10, color: '#FF6B8A' }}>🔒</span>}
                         </td>
                         <td style={{ color: '#94a3b8' }}>{u.email}</td>
                         <td>{rPill(u.role)}</td>
@@ -165,14 +165,14 @@ const AdminPermissions: React.FC = () => {
             </div>
             {form.role === 'educator' && (
               <div style={{ background: '#0f0a2a', borderRadius: 8, padding: '12px 14px', marginBottom: 14 }}>
-                <div style={{ color: '#a78bfa', fontSize: 12, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Educator Permissions</div>
+                <div style={{ color: '#FF6B8A', fontSize: 12, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Educator Permissions</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', color: '#e2e8f0', fontSize: 14 }}>
-                    <input type="checkbox" checked={form.canPublish} onChange={e => setForm({ ...form, canPublish: e.target.checked })} style={{ width: 16, height: 16, accentColor: '#7c3aed' }} />
+                    <input type="checkbox" checked={form.canPublish} onChange={e => setForm({ ...form, canPublish: e.target.checked })} style={{ width: 16, height: 16, accentColor: '#FF1E56' }} />
                     Allow to publish courses
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', color: '#e2e8f0', fontSize: 14 }}>
-                    <input type="checkbox" checked={form.canGoLive} onChange={e => setForm({ ...form, canGoLive: e.target.checked })} style={{ width: 16, height: 16, accentColor: '#7c3aed' }} />
+                    <input type="checkbox" checked={form.canGoLive} onChange={e => setForm({ ...form, canGoLive: e.target.checked })} style={{ width: 16, height: 16, accentColor: '#FF1E56' }} />
                     Allow to go live / schedule live classes
                   </label>
                 </div>

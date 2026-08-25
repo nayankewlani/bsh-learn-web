@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useThemeStore } from "../../stores/themeStore";
 import client from "../../api/client";
 
@@ -85,14 +85,14 @@ const AdminEducatorApplications: React.FC = () => {
             <h3 style={{ margin: "0 0 8px", textAlign: "center", color: "#111", fontSize: 18, fontWeight: 800 }}>Educator Account Created</h3>
             <p style={{ margin: "0 0 20px", color: "#666", textAlign: "center", fontSize: 14 }}>Share these credentials with the educator</p>
 
-            <div style={{ background: "#f8f5ff", border: "1.5px solid rgba(124,58,237,0.2)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
+            <div style={{ background: "#FFF5F7", border: "1.5px solid rgba(255,30,86,0.2)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
               <div style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>Email</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#FF1E56", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>Email</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: "#111" }}>{creds.email}</div>
               </div>
               {creds.password && (
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>Temporary Password</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#FF1E56", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>Temporary Password</div>
                   <div style={{ fontSize: 15, fontWeight: 700, color: "#111", letterSpacing: 1 }}>{creds.password}</div>
                 </div>
               )}
@@ -101,7 +101,7 @@ const AdminEducatorApplications: React.FC = () => {
 
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => copyToClipboard(`Email: ${creds.email}\nPassword: ${creds.password || "(existing account)"}`)}
-                style={{ flex: 1, padding: "11px", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                style={{ flex: 1, padding: "11px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
                 {copied ? "Copied!" : "Copy Credentials"}
               </button>
               <button onClick={() => setCreds(null)} style={{ flex: 1, padding: "11px", background: "#f3f4f6", color: "#374151", border: "none", borderRadius: 10, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
@@ -121,7 +121,7 @@ const AdminEducatorApplications: React.FC = () => {
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
         {(["pending", "approved", "rejected"] as const).map(k => (
           <button key={k} onClick={() => setTab(k)}
-            style={{ padding: "7px 16px", borderRadius: 20, border: `1.5px solid ${tab === k ? t.accent : t.border}`, background: tab === k ? "rgba(124,58,237,0.12)" : "transparent", color: tab === k ? t.accent : t.textSecond, fontWeight: tab === k ? 700 : 500, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            style={{ padding: "7px 16px", borderRadius: 20, border: `1.5px solid ${tab === k ? t.accent : t.border}`, background: tab === k ? "rgba(255,30,86,0.12)" : "transparent", color: tab === k ? t.accent : t.textSecond, fontWeight: tab === k ? 700 : 500, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             {k.charAt(0).toUpperCase() + k.slice(1)}
             <span style={{ background: t.border, borderRadius: 10, padding: "1px 7px", fontSize: 11 }}>{lists[k].length}</span>
           </button>

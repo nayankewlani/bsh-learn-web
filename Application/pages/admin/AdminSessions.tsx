@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import type { AdminSession, AdminSessionApplication } from '../../api/admin';
 import { adminGetSessions, adminUpdateSession, adminGetSessionApplications, adminUpdateSessionApplication } from '../../api/admin';
@@ -111,7 +111,7 @@ const AdminSessions: React.FC = () => {
 
   const statusColor: Record<string, string> = {
     pending_payment: '#6b7280', paid: '#3b82f6', trainer_proposed: '#f59e0b',
-    admin_approved: '#7c3aed', live: '#ef4444', completed: '#16a34a', cancelled: '#dc2626',
+    admin_approved: '#FF1E56', live: '#ef4444', completed: '#16a34a', cancelled: '#dc2626',
   };
 
   const pendingBookings      = bookings.filter(b => b.status === 'trainer_proposed').length;
@@ -144,7 +144,7 @@ const AdminSessions: React.FC = () => {
           { key: 'permissions',   label: `Live Permissions${pendingPermissions > 0 ? ` (${pendingPermissions} pending)` : ''}` },
         ] as const).map(tab => (
           <button key={tab.key} onClick={() => setMainTab(tab.key)}
-            style={{ padding: '8px 18px', borderRadius: 20, border: `1.5px solid ${mainTab === tab.key ? '#7c3aed' : '#e5e7eb'}`, background: mainTab === tab.key ? 'rgba(124,58,237,0.1)' : 'transparent', color: mainTab === tab.key ? '#7c3aed' : '#6b7280', fontWeight: mainTab === tab.key ? 700 : 500, fontSize: 13, cursor: 'pointer' }}>
+            style={{ padding: '8px 18px', borderRadius: 20, border: `1.5px solid ${mainTab === tab.key ? '#FF1E56' : '#e5e7eb'}`, background: mainTab === tab.key ? 'rgba(255,30,86,0.1)' : 'transparent', color: mainTab === tab.key ? '#FF1E56' : '#6b7280', fontWeight: mainTab === tab.key ? 700 : 500, fontSize: 13, cursor: 'pointer' }}>
             {tab.label}
           </button>
         ))}
@@ -156,20 +156,44 @@ const AdminSessions: React.FC = () => {
           <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 16 }}>
             Customers who applied for a 1:1 session. When the trainer proposes a schedule it appears here for admin approval.
           </p>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
             {['all', 'pending', 'trainer_proposed', 'approved', 'rejected', 'completed'].map(s => (
               <button key={s} onClick={() => setAppFilter(s)}
-                style={{ padding: '5px 12px', borderRadius: 14, border: `1px solid ${appFilter === s ? '#7c3aed' : '#e5e7eb'}`, background: appFilter === s ? 'rgba(124,58,237,0.1)' : 'transparent', color: appFilter === s ? '#7c3aed' : '#6b7280', fontSize: 12, fontWeight: appFilter === s ? 700 : 400, cursor: 'pointer' }}>
+                style={{ padding: '5px 12px', borderRadius: 14, border: `1px solid ${appFilter === s ? '#FF1E56' : '#e5e7eb'}`, background: appFilter === s ? 'rgba(255,30,86,0.1)' : 'transparent', color: appFilter === s ? '#FF1E56' : '#6b7280', fontSize: 12, fontWeight: appFilter === s ? 700 : 400, cursor: 'pointer' }}>
                 {s === 'all' ? 'All' : s.replace('_', ' ')}
               </button>
             ))}
+            <button
+              onClick={() => {
+                const rows = applications.filter(a => appFilter === 'all' || a.status === appFilter);
+                const headers = ['Client Name', 'Phone', 'Email', 'Trainer', 'Issue / Goal', 'Preferred Time', 'Message', 'Status', 'Proposed Schedule', 'Trainer Note', 'Admin Note', 'Date'];
+                const escape = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+                const csv = [
+                  headers.map(escape).join(','),
+                  ...rows.map(a => [
+                    a.clientName, a.clientPhone, a.clientEmail, a.trainerName,
+                    a.issue, a.preferredTime ?? '', a.message ?? '',
+                    a.status.replace(/_/g, ' '), a.proposedSchedule ?? '',
+                    a.trainerNote ?? '', a.adminNote ?? '',
+                    new Date(a.createdAt).toLocaleDateString('en-IN'),
+                  ].map(escape).join(','))
+                ].join('\r\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `1on1-applications-${appFilter}-${new Date().toISOString().slice(0,10)}.csv`;
+                a.click(); URL.revokeObjectURL(url);
+              }}
+              style={{ marginLeft: 'auto', padding: '6px 16px', borderRadius: 14, border: '1.5px solid #16a34a', background: 'rgba(22,163,74,0.08)', color: '#16a34a', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              ⬇ Download Sheet
+            </button>
           </div>
           {applications.filter(a => appFilter === 'all' || a.status === appFilter).length === 0 ? (
             <div style={{ color: '#6b7280', padding: '32px 0', textAlign: 'center', fontSize: 14 }}>No applications found</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {applications.filter(a => appFilter === 'all' || a.status === appFilter).map((a) => {
-                const statusColor = a.status === 'approved' ? '#16a34a' : a.status === 'rejected' ? '#dc2626' : a.status === 'trainer_proposed' ? '#d97706' : a.status === 'completed' ? '#7c3aed' : '#6b7280';
+                const statusColor = a.status === 'approved' ? '#16a34a' : a.status === 'rejected' ? '#dc2626' : a.status === 'trainer_proposed' ? '#d97706' : a.status === 'completed' ? '#FF1E56' : '#6b7280';
                 return (
                   <div key={a._id} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '18px 20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -177,7 +201,7 @@ const AdminSessions: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                           <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>{a.clientName}</span>
                           <span style={{ fontSize: 11 }}>→</span>
-                          <span style={{ fontWeight: 700, color: '#7c3aed' }}>{a.trainerName}</span>
+                          <span style={{ fontWeight: 700, color: '#FF1E56' }}>{a.trainerName}</span>
                           <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, fontWeight: 700, background: `${statusColor}18`, color: statusColor }}>
                             {a.status.replace('_', ' ')}
                           </span>
@@ -251,7 +275,7 @@ const AdminSessions: React.FC = () => {
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
             {['all','paid','trainer_proposed','admin_approved','completed','cancelled'].map(s => (
               <button key={s} onClick={() => setBookingFilter(s)}
-                style={{ padding: '5px 12px', borderRadius: 14, border: `1px solid ${bookingFilter === s ? '#7c3aed' : '#e5e7eb'}`, background: bookingFilter === s ? 'rgba(124,58,237,0.1)' : 'transparent', color: bookingFilter === s ? '#7c3aed' : '#6b7280', fontSize: 12, fontWeight: bookingFilter === s ? 700 : 400, cursor: 'pointer' }}>
+                style={{ padding: '5px 12px', borderRadius: 14, border: `1px solid ${bookingFilter === s ? '#FF1E56' : '#e5e7eb'}`, background: bookingFilter === s ? 'rgba(255,30,86,0.1)' : 'transparent', color: bookingFilter === s ? '#FF1E56' : '#6b7280', fontSize: 12, fontWeight: bookingFilter === s ? 700 : 400, cursor: 'pointer' }}>
                 {s === 'all' ? 'All' : s.replace('_', ' ')}
               </button>
             ))}
@@ -268,7 +292,7 @@ const AdminSessions: React.FC = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>{b.client?.name}</span>
                         <span style={{ fontSize: 11, fontWeight: 700 }}>→</span>
-                        <span style={{ fontWeight: 700, fontSize: 15, color: '#7c3aed' }}>{b.trainer?.name}</span>
+                        <span style={{ fontWeight: 700, fontSize: 15, color: '#FF1E56' }}>{b.trainer?.name}</span>
                         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, fontWeight: 700, background: `${statusColor[b.status]}22`, color: statusColor[b.status] }}>{b.status.replace('_',' ')}</span>
                       </div>
                       <div style={{ fontSize: 12, color: '#6b7280' }}>{b.client?.email} · ₹{(b.amount/100).toLocaleString()}</div>
@@ -279,10 +303,10 @@ const AdminSessions: React.FC = () => {
 
                   {b.proposedSlots?.length > 0 && (
                     <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', marginBottom: 8 }}>Proposed Time Slots</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#FF1E56', textTransform: 'uppercase', marginBottom: 8 }}>Proposed Time Slots</div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         {b.proposedSlots.map((slot: any, i: number) => (
-                          <span key={i} style={{ background: '#f5f0ff', color: '#7c3aed', fontSize: 12, padding: '4px 12px', borderRadius: 8, fontWeight: 600 }}>
+                          <span key={i} style={{ background: '#f5f0ff', color: '#FF1E56', fontSize: 12, padding: '4px 12px', borderRadius: 8, fontWeight: 600 }}>
                             {new Date(slot.datetime).toLocaleString()} · {slot.duration}min
                           </span>
                         ))}
@@ -366,7 +390,7 @@ const AdminSessions: React.FC = () => {
       <div style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
         {[
           { l: 'Pending',   v: sessions.filter(s => s.status === 'pending').length,   c: '#eab308' },
-          { l: 'Scheduled', v: sessions.filter(s => s.status === 'scheduled').length, c: '#a855f7' },
+          { l: 'Scheduled', v: sessions.filter(s => s.status === 'scheduled').length, c: '#FF6A00' },
           { l: 'Completed', v: sessions.filter(s => s.status === 'completed').length, c: '#22c55e' },
           { l: 'Free Calls',v: sessions.filter(s => s.type === 'free_call').length,   c: '#3b82f6' },
         ].map(s => (

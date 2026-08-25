@@ -98,6 +98,8 @@ export interface AdminLiveClass {
   agoraChannel?: string;
   maxParticipants?: number;
   heroVideoUrl?: string;
+  recordingMuxPlaybackId?: string;
+  recordingActive?: boolean;
 }
 
 export interface AdminLivePermission {
@@ -182,3 +184,5 @@ export const adminUpdatePermissions = (userId: string, data: object) => client.p
 export const adminSuspendUser                = (id: string)                           => client.delete(`/admin/users/${id}/suspend`);
 export const adminGetSessionApplications     = ()                                      => client.get('/admin/session-applications');
 export const adminUpdateSessionApplication   = (id: string, data: object)              => client.patch(`/admin/session-applications/${id}`, data);
+export const adminBroadcast                  = (data: { title: string; body: string; link?: string }) => client.post('/admin/broadcast', data);
+export const adminGetBroadcasts              = ()                                      => client.get('/admin/broadcasts');

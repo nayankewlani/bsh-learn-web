@@ -69,7 +69,7 @@ const BookSessionPage: React.FC = () => {
           }
         },
         prefill: { name: user.name, email: user.email, contact: user.phone || "" },
-        theme: { color: "#7c3aed" },
+        theme: { color: "#FF1E56" },
       });
       rzp.open();
     } catch (err: any) {
@@ -83,7 +83,7 @@ const BookSessionPage: React.FC = () => {
     <div style={{ background: t.bgPrimary, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
         <p style={{ color: t.textSecond, marginBottom: 16 }}>Please log in to book a session</p>
-        <button onClick={() => navigate("/login")} style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, cursor: "pointer" }}>Log In</button>
+        <button onClick={() => navigate("/login")} style={{ background: "#FF1E56", color: "#fff", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, cursor: "pointer" }}>Log In</button>
       </div>
     </div>
   );
@@ -113,7 +113,7 @@ const BookSessionPage: React.FC = () => {
               Once the educator proposes a time and admin approves, you'll receive a notification with your session schedule.
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              <button onClick={() => navigate("/dashboard")} style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "12px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+              <button onClick={() => navigate("/dashboard")} style={{ background: "#FF1E56", color: "#fff", border: "none", borderRadius: 10, padding: "12px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
                 Go to Dashboard
               </button>
               <button onClick={() => navigate("/live")} style={{ background: "none", border: `1.5px solid ${t.border}`, color: t.textPrimary, borderRadius: 10, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>
@@ -135,9 +135,9 @@ const BookSessionPage: React.FC = () => {
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {trainers.map(tr => (
                     <button key={tr._id} onClick={() => setSelected(tr)}
-                      style={{ background: selected?._id === tr._id ? "rgba(124,58,237,0.08)" : t.bgCard, border: `2px solid ${selected?._id === tr._id ? "#7c3aed" : t.border}`, borderRadius: 16, padding: "16px 18px", textAlign: "left", cursor: "pointer", transition: "all 0.15s" }}>
+                      style={{ background: selected?._id === tr._id ? "rgba(255,30,86,0.08)" : t.bgCard, border: `2px solid ${selected?._id === tr._id ? "#FF1E56" : t.border}`, borderRadius: 16, padding: "16px 18px", textAlign: "left", cursor: "pointer", transition: "all 0.15s" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 50, height: 50, borderRadius: "50%", background: tr.avatar ? `url(${tr.avatar}) center/cover` : "linear-gradient(135deg,#7c3aed,#5b21b6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 18, flexShrink: 0 }}>
+                        <div style={{ width: 50, height: 50, borderRadius: "50%", background: tr.avatar ? `url(${tr.avatar}) center/cover` : "linear-gradient(135deg,#FF1E56,#D4003F)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 18, flexShrink: 0 }}>
                           {!tr.avatar && tr.name[0]}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -145,7 +145,7 @@ const BookSessionPage: React.FC = () => {
                           <div style={{ color: t.textSecond, fontSize: 12, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tr.bio || "Certified Educator"}</div>
                         </div>
                         <div style={{ textAlign: "right", flexShrink: 0 }}>
-                          <div style={{ fontWeight: 800, color: "#7c3aed", fontSize: 16 }}>₹{(tr.sessionFee || SESSION_FEE).toLocaleString()}</div>
+                          <div style={{ fontWeight: 800, color: "#FF1E56", fontSize: 16 }}>₹{(tr.sessionFee || SESSION_FEE).toLocaleString()}</div>
                           <div style={{ color: t.textSecond, fontSize: 11 }}>per session</div>
                         </div>
                       </div>
@@ -163,8 +163,8 @@ const BookSessionPage: React.FC = () => {
                 <p style={{ color: t.textSecond, fontSize: 14, textAlign: "center", padding: "20px 0" }}>Select an educator to continue</p>
               ) : (
                 <>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "12px 14px", background: "rgba(124,58,237,0.06)", borderRadius: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#5b21b6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, flexShrink: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "12px 14px", background: "rgba(255,30,86,0.06)", borderRadius: 10 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#FF1E56,#D4003F)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, flexShrink: 0 }}>
                       {selected.name[0]}
                     </div>
                     <div>
@@ -191,14 +191,14 @@ const BookSessionPage: React.FC = () => {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10, paddingTop: 10, borderTop: `1px solid ${t.border}` }}>
                       <span style={{ color: t.textPrimary, fontWeight: 700, fontSize: 15 }}>Total</span>
-                      <span style={{ color: "#7c3aed", fontWeight: 800, fontSize: 17 }}>₹{(selected.sessionFee || SESSION_FEE).toLocaleString()}</span>
+                      <span style={{ color: "#FF1E56", fontWeight: 800, fontSize: 17 }}>₹{(selected.sessionFee || SESSION_FEE).toLocaleString()}</span>
                     </div>
                   </div>
 
                   {error && <div style={{ color: "#dc2626", fontSize: 13, marginBottom: 12, background: "rgba(239,68,68,0.08)", padding: "8px 12px", borderRadius: 8 }}>⚠️ {error}</div>}
 
                   <button onClick={handleBook} disabled={paying}
-                    style={{ width: "100%", padding: "14px", background: paying ? "#9ca3af" : "linear-gradient(135deg,#7c3aed,#5b21b6)", color: "#fff", border: "none", borderRadius: 12, fontWeight: 700, fontSize: 15, cursor: paying ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    style={{ width: "100%", padding: "14px", background: paying ? "#9ca3af" : "linear-gradient(135deg,#FF1E56,#D4003F)", color: "#fff", border: "none", borderRadius: 12, fontWeight: 700, fontSize: 15, cursor: paying ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                     {paying
                       ? <><div style={{ width: 18, height: 18, border: "3px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Processing...</>
                       : "Pay & Book Session"}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import Button from "../components/ui/Button";
@@ -211,7 +211,7 @@ const EducatorDashboard: React.FC = () => {
   };
 
   const stats = analytics ? [
-    { label: "Total Students", value: analytics.totalStudents.toLocaleString(), icon: "👥", color: "#a78bfa" },
+    { label: "Total Students", value: analytics.totalStudents.toLocaleString(), icon: "👥", color: "#FF6B8A" },
     { label: "My Income (Pending)", value: fmt(pendingTotal), icon: "💰", color: "#4ade80" },
     { label: "Live Classes", value: analytics.totalLiveClasses, icon: "🎥", color: "#f59e0b" },
   ] : [];
@@ -219,7 +219,7 @@ const EducatorDashboard: React.FC = () => {
   const filteredPayouts = payouts.filter((p) => p.status === earningsTab);
 
   return (
-    <div style={{ background: "#0a0914", minHeight: "100vh", padding: "32px 24px" }}>
+    <div style={{ background: "#0D0D0D", minHeight: "100vh", padding: "32px 24px" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
           <div>
@@ -229,7 +229,7 @@ const EducatorDashboard: React.FC = () => {
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             {/* Messages button */}
             <button onClick={() => { setActiveTab("messages"); loadConversations(); }}
-              style={{ position: "relative", background: activeTab === "messages" ? "#7c3aed" : "#13122a", border: `1px solid ${activeTab === "messages" ? "#7c3aed" : "#1e1b4b"}`, borderRadius: 10, padding: "9px 16px", color: "#c4b5fd", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              style={{ position: "relative", background: activeTab === "messages" ? "#FF1E56" : "#13122a", border: `1px solid ${activeTab === "messages" ? "#FF1E56" : "#222222"}`, borderRadius: 10, padding: "9px 16px", color: "#FF6B8A", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               💬 Messages
               {unreadCount > 0 && <span style={{ position: "absolute", top: -6, right: -6, background: "#ef4444", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{unreadCount > 9 ? "9+" : unreadCount}</span>}
             </button>
@@ -245,7 +245,7 @@ const EducatorDashboard: React.FC = () => {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: 40, color: "#7c3aed" }}>Loading dashboard...</div>
+          <div style={{ textAlign: "center", padding: 40, color: "#FF1E56" }}>Loading dashboard...</div>
         ) : error ? (
           <div style={{ textAlign: "center", padding: 40 }}>
             <div style={{ color: "#f87171", marginBottom: 16 }}>{error}</div>
@@ -278,7 +278,7 @@ const EducatorDashboard: React.FC = () => {
                   style={{
                     padding: "9px 24px", borderRadius: 10, fontWeight: 700, fontSize: 14,
                     cursor: "pointer", border: "none",
-                    background: activeTab === key ? "#7c3aed" : "#13122a",
+                    background: activeTab === key ? "#FF1E56" : "#13122a",
                     color: activeTab === key ? "#fff" : "#9ca3af",
                   }}
                 >
@@ -291,7 +291,7 @@ const EducatorDashboard: React.FC = () => {
             {activeTab === "applications" && (
               <div>
                 {appsLoading ? (
-                  <div style={{ padding: 40, textAlign: "center", color: "#7c3aed" }}>Loading applications…</div>
+                  <div style={{ padding: 40, textAlign: "center", color: "#FF1E56" }}>Loading applications…</div>
                 ) : myApps.length === 0 ? (
                   <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, padding: 40, textAlign: "center", color: "#6b7280" }}>
                     <div style={{ fontSize: 48, marginBottom: 12 }}>✋</div>
@@ -300,7 +300,7 @@ const EducatorDashboard: React.FC = () => {
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                     {myApps.map(a => {
-                      const statusColor = a.status === "approved" ? "#22c55e" : a.status === "rejected" ? "#ef4444" : a.status === "trainer_proposed" ? "#f59e0b" : a.status === "completed" ? "#a78bfa" : "#60a5fa";
+                      const statusColor = a.status === "approved" ? "#22c55e" : a.status === "rejected" ? "#ef4444" : a.status === "trainer_proposed" ? "#f59e0b" : a.status === "completed" ? "#FF6B8A" : "#60a5fa";
                       const statusLabel = a.status === "trainer_proposed" ? "Awaiting Admin Approval" : a.status;
                       return (
                         <div key={a._id} style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, padding: 20 }}>
@@ -327,7 +327,7 @@ const EducatorDashboard: React.FC = () => {
                               <button
                                 onClick={() => startApplicationSession(a._id)}
                                 disabled={startingAppId === a._id}
-                                style={{ background: startingAppId === a._id ? "#4b5563" : "linear-gradient(90deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", padding: "10px 24px", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: startingAppId === a._id ? "not-allowed" : "pointer" }}>
+                                style={{ background: startingAppId === a._id ? "#4b5563" : "linear-gradient(90deg,#FF1E56,#D4003F)", border: "none", color: "#fff", padding: "10px 24px", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: startingAppId === a._id ? "not-allowed" : "pointer" }}>
                                 {startingAppId === a._id ? "Starting…" : "🔴 Start Live Session"}
                               </button>
                             </div>
@@ -356,7 +356,7 @@ const EducatorDashboard: React.FC = () => {
                                 />
                                 <div style={{ display: "flex", gap: 8 }}>
                                   <button onClick={() => proposeAppSchedule(a._id)} disabled={appSubmitting || !appSchedule.trim()}
-                                    style={{ flex: 1, padding: "10px", background: "linear-gradient(90deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: appSubmitting ? "not-allowed" : "pointer" }}>
+                                    style={{ flex: 1, padding: "10px", background: "linear-gradient(90deg,#FF1E56,#D4003F)", border: "none", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: appSubmitting ? "not-allowed" : "pointer" }}>
                                     {appSubmitting ? "Submitting…" : "Submit to Admin"}
                                   </button>
                                   <button onClick={() => { setProposingAppId(null); setAppSchedule(""); setAppNote(""); }}
@@ -367,7 +367,7 @@ const EducatorDashboard: React.FC = () => {
                               </div>
                             ) : (
                               <button onClick={() => { setProposingAppId(a._id); setAppSchedule(""); setAppNote(""); }}
-                                style={{ width: "100%", padding: "10px", background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.3)", color: "#a78bfa", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", marginTop: 4 }}>
+                                style={{ width: "100%", padding: "10px", background: "rgba(255,30,86,0.12)", border: "1px solid rgba(255,30,86,0.3)", color: "#FF6B8A", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", marginTop: 4 }}>
                                 📅 Propose Schedule → Send to Admin
                               </button>
                             )
@@ -384,7 +384,7 @@ const EducatorDashboard: React.FC = () => {
             {activeTab === "sessions" && (
               <div>
                 {sessionsLoading ? (
-                  <div style={{ padding: 40, textAlign: "center", color: "#7c3aed" }}>Loading sessions...</div>
+                  <div style={{ padding: 40, textAlign: "center", color: "#FF1E56" }}>Loading sessions...</div>
                 ) : sessionBookings.length === 0 ? (
                   <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, padding: 40, textAlign: "center", color: "#6b7280" }}>
                     <div style={{ fontSize: 48, marginBottom: 12 }}>📅</div>
@@ -395,7 +395,7 @@ const EducatorDashboard: React.FC = () => {
                     {sessionBookings.map(b => {
                       const statusColors: Record<string, string> = {
                         paid: "#3b82f6", trainer_proposed: "#f59e0b",
-                        admin_approved: "#7c3aed", live: "#ef4444",
+                        admin_approved: "#FF1E56", live: "#ef4444",
                         completed: "#16a34a", cancelled: "#dc2626",
                       };
                       const color = statusColors[b.status] ?? "#6b7280";
@@ -415,23 +415,23 @@ const EducatorDashboard: React.FC = () => {
 
                           {b.status === "paid" && (
                             proposingId === b._id ? (
-                              <div style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 12, padding: 16 }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: "#c4b5fd", marginBottom: 12 }}>Propose a Time Slot</div>
+                              <div style={{ background: "rgba(255,30,86,0.08)", border: "1px solid rgba(255,30,86,0.2)", borderRadius: 12, padding: 16 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: "#FF6B8A", marginBottom: 12 }}>Propose a Time Slot</div>
                                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
                                   <div>
                                     <label style={{ fontSize: 12, color: "#9ca3af", display: "block", marginBottom: 4 }}>Date & Time</label>
                                     <input type="datetime-local" value={proposedDate} onChange={e => setProposedDate(e.target.value)}
-                                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #1e1b4b", background: "#0a0914", color: "#f3f4f6", fontSize: 13 }} />
+                                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #1e1b4b", background: "#0D0D0D", color: "#f3f4f6", fontSize: 13 }} />
                                   </div>
                                   <div>
                                     <label style={{ fontSize: 12, color: "#9ca3af", display: "block", marginBottom: 4 }}>Duration (min)</label>
                                     <select value={proposedDuration} onChange={e => setProposedDuration(Number(e.target.value))}
-                                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #1e1b4b", background: "#0a0914", color: "#f3f4f6", fontSize: 13 }}>
+                                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #1e1b4b", background: "#0D0D0D", color: "#f3f4f6", fontSize: 13 }}>
                                       {[30, 45, 60, 90, 120].map(d => <option key={d} value={d}>{d} min</option>)}
                                     </select>
                                   </div>
                                   <button onClick={() => proposeSlot(b._id)} disabled={proposing || !proposedDate}
-                                    style={{ padding: "9px 20px", background: proposing || !proposedDate ? "#374151" : "#7c3aed", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: proposing || !proposedDate ? "not-allowed" : "pointer" }}>
+                                    style={{ padding: "9px 20px", background: proposing || !proposedDate ? "#374151" : "#FF1E56", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: proposing || !proposedDate ? "not-allowed" : "pointer" }}>
                                     {proposing ? "Sending..." : "Propose & Send to Admin"}
                                   </button>
                                   <button onClick={() => setProposingId(null)}
@@ -442,7 +442,7 @@ const EducatorDashboard: React.FC = () => {
                               </div>
                             ) : (
                               <button onClick={() => { setProposingId(b._id); setProposedDate(""); setProposedDuration(60); }}
-                                style={{ padding: "10px 22px", background: "linear-gradient(135deg,#7c3aed,#5b21b6)", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                                style={{ padding: "10px 22px", background: "linear-gradient(135deg,#FF1E56,#D4003F)", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                                 Propose Time Slot
                               </button>
                             )
@@ -459,7 +459,7 @@ const EducatorDashboard: React.FC = () => {
                               ✅ Confirmed: {new Date(b.confirmedSlot.datetime).toLocaleString("en-IN")} · {b.confirmedSlot.duration} min
                               {b.status === "admin_approved" && (
                                 <button onClick={() => navigate("/live")}
-                                  style={{ marginLeft: 12, padding: "5px 14px", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                                  style={{ marginLeft: 12, padding: "5px 14px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
                                   Go to Live Page →
                                 </button>
                               )}
@@ -488,7 +488,7 @@ const EducatorDashboard: React.FC = () => {
                 </div>
 
                 {convsLoading ? (
-                  <div style={{ textAlign: "center", padding: 60, color: "#7c3aed", fontSize: 14 }}>Loading conversations…</div>
+                  <div style={{ textAlign: "center", padding: 60, color: "#FF1E56", fontSize: 14 }}>Loading conversations…</div>
                 ) : conversations.length === 0 ? (
                   <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, padding: 60, textAlign: "center" }}>
                     <div style={{ fontSize: 48, marginBottom: 14 }}>💬</div>
@@ -496,7 +496,7 @@ const EducatorDashboard: React.FC = () => {
                     <div style={{ color: "#6b7280", fontSize: 13, maxWidth: 340, margin: "0 auto", lineHeight: 1.6 }}>
                       When students send you a message from the Consultation page, their conversation will appear here.
                     </div>
-                    <div style={{ marginTop: 20, fontSize: 12, color: "#4b5563", background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 10, padding: "10px 16px", display: "inline-block" }}>
+                    <div style={{ marginTop: 20, fontSize: 12, color: "#4b5563", background: "rgba(255,30,86,0.08)", border: "1px solid rgba(255,30,86,0.2)", borderRadius: 10, padding: "10px 16px", display: "inline-block" }}>
                       Tip: Go online using the button above so students can see and message you
                     </div>
                   </div>
@@ -512,11 +512,11 @@ const EducatorDashboard: React.FC = () => {
                       >
                         {/* Avatar */}
                         <div style={{ position: "relative", flexShrink: 0 }}>
-                          <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#5b21b6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16 }}>
+                          <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#FF1E56,#D4003F)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16 }}>
                             {(conv.user.name?.[0] || "?").toUpperCase()}
                           </div>
                           {conv.user.isOnline && (
-                            <span style={{ position: "absolute", bottom: 1, right: 1, width: 11, height: 11, background: "#22c55e", borderRadius: "50%", border: "2px solid #0a0914" }} />
+                            <span style={{ position: "absolute", bottom: 1, right: 1, width: 11, height: 11, background: "#22c55e", borderRadius: "50%", border: "2px solid #0D0D0D" }} />
                           )}
                         </div>
                         {/* Text */}
@@ -551,7 +551,7 @@ const EducatorDashboard: React.FC = () => {
                 <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 14, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 32, flexWrap: "wrap" }}>
                   <div>
                     <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>How it works</div>
-                    <div style={{ color: "#c4b5fd", fontSize: 13 }}>Sale price → <span style={{ color: "#f87171" }}>18% GST deducted</span> → remaining split <span style={{ color: "#a78bfa" }}>50% to you</span> + <span style={{ color: "#60a5fa" }}>50% to admin</span></div>
+                    <div style={{ color: "#FF6B8A", fontSize: 13 }}>Sale price → <span style={{ color: "#f87171" }}>18% GST deducted</span> → remaining split <span style={{ color: "#FF6B8A" }}>50% to you</span> + <span style={{ color: "#60a5fa" }}>50% to admin</span></div>
                   </div>
                   <div style={{ borderLeft: "1px solid #1e1b4b", paddingLeft: 32 }}>
                     <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Pending Income</div>
@@ -572,7 +572,7 @@ const EducatorDashboard: React.FC = () => {
                       style={{
                         padding: "7px 18px", borderRadius: 8, fontWeight: 600, fontSize: 13,
                         cursor: "pointer", border: "none",
-                        background: earningsTab === t ? "#7c3aed" : "#13122a",
+                        background: earningsTab === t ? "#FF1E56" : "#13122a",
                         color: earningsTab === t ? "#fff" : "#9ca3af",
                       }}
                     >
@@ -583,7 +583,7 @@ const EducatorDashboard: React.FC = () => {
 
                 <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, overflow: "hidden" }}>
                   {earningsLoading ? (
-                    <div style={{ padding: 40, textAlign: "center", color: "#7c3aed" }}>Loading earnings...</div>
+                    <div style={{ padding: 40, textAlign: "center", color: "#FF1E56" }}>Loading earnings...</div>
                   ) : filteredPayouts.length === 0 ? (
                     <div style={{ padding: 40, textAlign: "center", color: "#6b7280" }}>
                       <div style={{ fontSize: 40, marginBottom: 10 }}>💸</div>
@@ -602,7 +602,7 @@ const EducatorDashboard: React.FC = () => {
                         <tbody>
                           {filteredPayouts.map((p) => (
                             <tr key={p._id} style={{ borderBottom: "1px solid #1e1b4b" }}>
-                              <td style={{ padding: "12px 14px", color: "#c4b5fd", fontSize: 13, maxWidth: 200 }}>
+                              <td style={{ padding: "12px 14px", color: "#FF6B8A", fontSize: 13, maxWidth: 200 }}>
                                 <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.course.title}</div>
                               </td>
                               <td style={{ padding: "12px 14px" }}>
@@ -613,7 +613,7 @@ const EducatorDashboard: React.FC = () => {
                               <td style={{ padding: "12px 14px", color: "#f87171", fontSize: 13 }}>−{fmt(p.gstPaise)}</td>
                               <td style={{ padding: "12px 14px", color: "#34d399", fontSize: 13 }}>{fmt(p.netPaise)}</td>
                               <td style={{ padding: "12px 14px" }}>
-                                <span style={{ color: "#a78bfa", fontSize: 14, fontWeight: 800 }}>{fmt(p.trainerSharePaise)}</span>
+                                <span style={{ color: "#FF6B8A", fontSize: 14, fontWeight: 800 }}>{fmt(p.trainerSharePaise)}</span>
                               </td>
                               <td style={{ padding: "12px 14px", color: "#9ca3af", fontSize: 12 }}>
                                 {earningsTab === "pending"

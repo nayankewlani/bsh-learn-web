@@ -155,10 +155,14 @@ const AdminHeroBanners: React.FC = () => {
   };
 
   const handleVideoUrlSave = async (id: string) => {
-    await client.patch(`/hero-banners/${id}/video-url`, { videoUrl: videoUrlDraft });
-    setBanners(prev => prev.map(b => b._id === id ? { ...b, videoUrl: videoUrlDraft } : b));
-    setVideoUrlInputId(null);
-    setVideoUrlDraft('');
+    try {
+      await client.patch(`/hero-banners/${id}/video-url`, { videoUrl: videoUrlDraft });
+      setBanners(prev => prev.map(b => b._id === id ? { ...b, videoUrl: videoUrlDraft } : b));
+      setVideoUrlInputId(null);
+      setVideoUrlDraft('');
+    } catch (e: any) {
+      alert('Failed to save URL: ' + (e?.response?.data?.message || e.message || 'Unknown error'));
+    }
   };
 
   const fmtDate = (d?: string) => d ? new Date(d).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';

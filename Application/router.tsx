@@ -42,7 +42,10 @@ import AdminReports       from "./pages/admin/AdminReports";
 import AdminHomeClasses   from "./pages/admin/AdminHomeClasses";
 import AdminBulkEnroll    from "./pages/admin/AdminBulkEnroll";
 import AdminProgramPosts  from "./pages/admin/AdminProgramPosts";
-import AdminHeroBanners  from "./pages/admin/AdminHeroBanners";
+import AdminHeroBanners      from "./pages/admin/AdminHeroBanners";
+import AdminUpcomingClasses  from "./pages/admin/AdminUpcomingClasses";
+import AdminChat             from "./pages/admin/AdminChat";
+import AdminBroadcast        from "./pages/admin/AdminBroadcast";
 
 const Layout: React.FC = () => (
   <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0914" }}>
@@ -123,6 +126,9 @@ const AppRouter: React.FC = () => (
           <Route path="program-posts"           element={<AdminProgramPosts />} />
           <Route path="home-classes"            element={<AdminHomeClasses />} />
           <Route path="hero-banners"            element={<AdminHeroBanners />} />
+          <Route path="upcoming-classes"        element={<AdminUpcomingClasses />} />
+          <Route path="chat"                    element={<AdminChat />} />
+          <Route path="broadcast"               element={<AdminBroadcast />} />
           <Route path="reports"                 element={<AdminReports />} />
         </Route>
       </Route>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import client from "../../api/client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -21,9 +21,9 @@ interface HomeClass {
 }
 
 const BLANK: Omit<HomeClass, "_id" | "createdAt"> = {
-  title: "", educator: "", subject: "", subjectColor: "#7c3aed",
+  title: "", educator: "", subject: "", subjectColor: "#FF1E56",
   lang: "Hindi", thumbnailUrl: "", recordingUrl: "",
-  views: "0", bgColor: "#1e1b4b", isFeatured: false, isActive: true, order: 0,
+  views: "0", bgColor: "#1A1A1A", isFeatured: false, isActive: true, order: 0,
 };
 
 const SUBJECTS = [
@@ -137,7 +137,7 @@ const AdminHomeClasses: React.FC = () => {
 
   // ── Pill toggle ───────────────────────────────────────────────────────────────
   const Pill = ({ on, label, onClick }: { on: boolean; label: string; onClick: () => void }) => (
-    <button onClick={onClick} style={{ padding: "4px 12px", borderRadius: 50, border: on ? "1.5px solid #7c3aed" : "1.5px solid #374151", background: on ? "rgba(124,58,237,0.18)" : "transparent", color: on ? "#a78bfa" : "#9ca3af", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.15s" }}>
+    <button onClick={onClick} style={{ padding: "4px 12px", borderRadius: 50, border: on ? "1.5px solid #FF1E56" : "1.5px solid #374151", background: on ? "rgba(255,30,86,0.18)" : "transparent", color: on ? "#FF6B8A" : "#9ca3af", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.15s" }}>
       {label}
     </button>
   );
@@ -160,7 +160,7 @@ const AdminHomeClasses: React.FC = () => {
           </p>
         </div>
         <button onClick={openAdd}
-          style={{ background: "#7c3aed", border: "none", color: "#fff", padding: "10px 22px", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          style={{ background: "#FF1E56", border: "none", color: "#fff", padding: "10px 22px", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
           + Add New Class
         </button>
       </div>
@@ -172,7 +172,7 @@ const AdminHomeClasses: React.FC = () => {
       </div>
 
       {/* Info banner */}
-      <div style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#c4b5fd", lineHeight: 1.6 }}>
+      <div style={{ background: "rgba(255,30,86,0.08)", border: "1px solid rgba(255,30,86,0.25)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#FF6B8A", lineHeight: 1.6 }}>
         <strong>⭐ Featured classes</strong> appear in the <em>"Most Engaging Spiritual Classes"</em> row (top 8 shown). All active classes appear in the <em>"Classes by BSH Subjects"</em> filtered section. Recording URLs can be YouTube, Google Drive, or any direct video link — users click to watch.
       </div>
 
@@ -203,7 +203,7 @@ const AdminHomeClasses: React.FC = () => {
 
                   {/* Thumbnail */}
                   <td style={{ padding: "12px 12px", width: 56 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 8, background: cls.bgColor || "#1e1b4b", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 8, background: cls.bgColor || "#1A1A1A", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {cls.thumbnailUrl ? (
                         <img src={cls.thumbnailUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
@@ -230,7 +230,7 @@ const AdminHomeClasses: React.FC = () => {
                   <td style={{ padding: "12px 12px", maxWidth: 180 }}>
                     {cls.recordingUrl ? (
                       <a href={cls.recordingUrl} target="_blank" rel="noopener noreferrer"
-                        style={{ color: "#7c3aed", fontSize: 12, textDecoration: "underline", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>
+                        style={{ color: "#FF1E56", fontSize: 12, textDecoration: "underline", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>
                         ▶ {cls.recordingUrl.includes("youtu") ? "YouTube" : cls.recordingUrl.includes("drive") ? "Drive" : "Video link"}
                       </a>
                     ) : (
@@ -257,7 +257,7 @@ const AdminHomeClasses: React.FC = () => {
                   {/* Actions */}
                   <td style={{ padding: "12px 12px", whiteSpace: "nowrap" }}>
                     <button onClick={() => openEdit(cls)}
-                      style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)", color: "#a78bfa", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600, marginRight: 6 }}>
+                      style={{ background: "rgba(255,30,86,0.15)", border: "1px solid rgba(255,30,86,0.3)", color: "#FF6B8A", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600, marginRight: 6 }}>
                       Edit
                     </button>
                     <button onClick={() => del(cls._id)} disabled={deleting === cls._id}
@@ -320,7 +320,7 @@ const AdminHomeClasses: React.FC = () => {
                   <input type="color" value={form.subjectColor} onChange={e => setForm(f => ({ ...f, subjectColor: e.target.value }))}
                     style={{ width: 44, height: 38, borderRadius: 6, border: "1px solid #374151", background: "none", cursor: "pointer", padding: 3 }} />
                   <input value={form.subjectColor} onChange={e => setForm(f => ({ ...f, subjectColor: e.target.value }))}
-                    style={{ ...inputSt, flex: 1 }} placeholder="#7c3aed" />
+                    style={{ ...inputSt, flex: 1 }} placeholder="#FF1E56" />
                 </div>
               </div>
 
@@ -346,7 +346,7 @@ const AdminHomeClasses: React.FC = () => {
                   <input type="color" value={form.bgColor} onChange={e => setForm(f => ({ ...f, bgColor: e.target.value }))}
                     style={{ width: 44, height: 38, borderRadius: 6, border: "1px solid #374151", background: "none", cursor: "pointer", padding: 3 }} />
                   <input value={form.bgColor} onChange={e => setForm(f => ({ ...f, bgColor: e.target.value }))}
-                    style={{ ...inputSt, flex: 1 }} placeholder="#1e1b4b" />
+                    style={{ ...inputSt, flex: 1 }} placeholder="#1A1A1A" />
                 </div>
               </div>
 
@@ -394,7 +394,7 @@ const AdminHomeClasses: React.FC = () => {
                 {form.recordingUrl && (
                   <div style={{ marginTop: 6 }}>
                     <a href={form.recordingUrl} target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#7c3aed", fontSize: 12 }}>▶ Preview link</a>
+                      style={{ color: "#FF1E56", fontSize: 12 }}>▶ Preview link</a>
                   </div>
                 )}
               </div>
@@ -403,12 +403,12 @@ const AdminHomeClasses: React.FC = () => {
               <div style={{ gridColumn: "1 / -1", display: "flex", gap: 24, flexWrap: "wrap" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                   <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))}
-                    style={{ width: 18, height: 18, accentColor: "#7c3aed", cursor: "pointer" }} />
+                    style={{ width: 18, height: 18, accentColor: "#FF1E56", cursor: "pointer" }} />
                   <span style={{ color: "#d1d5db", fontSize: 14 }}>⭐ <strong>Featured</strong> — show in "Most Engaging" section (max 8)</span>
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                   <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
-                    style={{ width: 18, height: 18, accentColor: "#7c3aed", cursor: "pointer" }} />
+                    style={{ width: 18, height: 18, accentColor: "#FF1E56", cursor: "pointer" }} />
                   <span style={{ color: "#d1d5db", fontSize: 14 }}><strong>Active</strong> — visible on Home page</span>
                 </label>
               </div>
@@ -421,7 +421,7 @@ const AdminHomeClasses: React.FC = () => {
                 Cancel
               </button>
               <button onClick={save} disabled={saving}
-                style={{ padding: "10px 28px", borderRadius: 8, border: "none", background: saving ? "#4c1d95" : "#7c3aed", color: "#fff", cursor: saving ? "wait" : "pointer", fontSize: 14, fontWeight: 700 }}>
+                style={{ padding: "10px 28px", borderRadius: 8, border: "none", background: saving ? "#9A0030" : "#FF1E56", color: "#fff", cursor: saving ? "wait" : "pointer", fontSize: 14, fontWeight: 700 }}>
                 {saving ? "Saving..." : editing ? "Save Changes" : "Add Class"}
               </button>
             </div>

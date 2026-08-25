@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import type { AdminCourse } from '../../api/admin';
 import { adminGetCourses, adminUpdateCourse } from '../../api/admin';
 
@@ -7,7 +7,7 @@ const fmt = (p: number) => p === 0 ? 'Free' : '₹' + (p / 100).toLocaleString('
 const Toggle: React.FC<{ on: boolean; loading: boolean; onChange: (v: boolean) => void; color?: string }> = ({ on, loading, onChange, color = '#22c55e' }) => (
   <button
     className="adm-toggle"
-    style={{ background: on ? color : '#2a2a5a', cursor: loading ? 'wait' : 'pointer' }}
+    style={{ background: on ? color : '#2D2D2D', cursor: loading ? 'wait' : 'pointer' }}
     onClick={() => !loading && onChange(!on)}
     disabled={loading}
   >
@@ -87,7 +87,7 @@ const AdminCourses: React.FC = () => {
                         <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
                       </td>
                       <td style={{ color: '#94a3b8' }}>{c.educator?.name ?? '—'}</td>
-                      <td style={{ color: '#a78bfa', fontWeight: 700 }}>{fmt(c.price)}</td>
+                      <td style={{ color: '#FF6B8A', fontWeight: 700 }}>{fmt(c.price)}</td>
                       <td style={{ textAlign: 'center' }}>{(c.enrollmentCount ?? 0).toLocaleString()}</td>
                       <td>
                         <Toggle on={c.isPublished} loading={updating === c._id + 'isPublished'} onChange={v => toggle(c._id, 'isPublished', v)} />

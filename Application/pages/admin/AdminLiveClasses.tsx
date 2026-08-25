@@ -100,10 +100,11 @@ const AdminLiveClasses: React.FC = () => {
 
   useEffect(() => { load(); loadPerms(); }, []);
 
-  const handleAction = async (id: string, action: 'approve' | 'reject') => {
+  const handleAction = async (id: string, action: 'approve' | 'reject' | 'end') => {
+    if (action === 'end' && !window.confirm('End this class for all participants?')) return;
     setActionId(id);
     try {
-      await adminApproveLiveClass(id, action);
+      await adminApproveLiveClass(id, action as any);
       load();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed');
@@ -234,6 +235,7 @@ const AdminLiveClasses: React.FC = () => {
                         <th>Duration</th>
                         <th>Status</th>
                         <th>Hero Video</th>
+                        <th>Recording</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -296,6 +298,36 @@ const AdminLiveClasses: React.FC = () => {
                               )}
                             </td>
 
+                            {/* Recording column */}
+                            <td style={{ minWidth: 130 }}>
+                              {c.recordingActive ? (
+                                <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+                                  Recording…
+                                </span>
+                              ) : c.recordingMuxPlaybackId ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✅ Ready</span>
+                                  <a
+                                    href={`https://stream.mux.com/${c.recordingMuxPlaybackId}.m3u8`}
+                                    target="_blank" rel="noreferrer"
+                                    style={{ fontSize: 10, color: '#7c3aed', display: 'block' }}>
+                                    ▶ Stream URL
+                                  </a>
+                                  <button
+                                    className="adm-btn adm-btn-sm"
+                                    style={{ fontSize: 10, padding: '2px 8px', background: '#1e293b' }}
+                                    onClick={() => navigator.clipboard.writeText(`https://stream.mux.com/${c.recordingMuxPlaybackId}.m3u8`)}>
+                                    Copy URL
+                                  </button>
+                                </div>
+                              ) : status === 'past' && c.status === 'ended' ? (
+                                <span style={{ color: '#475569', fontSize: 11 }}>No recording</span>
+                              ) : (
+                                <span style={{ color: '#334155', fontSize: 11 }}>—</span>
+                              )}
+                            </td>
+
                             <td>
                               {status === 'pending' && (
                                 <div style={{ display: 'flex', gap: 6 }}>
@@ -306,6 +338,16 @@ const AdminLiveClasses: React.FC = () => {
                                     {actionId === c._id ? '…' : '✕ Reject'}
                                   </button>
                                 </div>
+                              )}
+                              {status === 'live' && (
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-danger"
+                                  onClick={() => handleAction(c._id, 'end')}
+                                  disabled={actionId === c._id}
+                                  style={{ fontWeight: 700 }}
+                                >
+                                  {actionId === c._id ? 'Ending…' : '⏹ End Class'}
+                                </button>
                               )}
                             </td>
                           </tr>

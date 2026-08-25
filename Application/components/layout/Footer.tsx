@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaInstagram, FaYoutube, FaTelegram, FaTwitter } from "react-icons/fa";
+import { FaInstagram, FaYoutube, FaTelegram, FaTwitter, FaLinkedin } from "react-icons/fa";
 import bshIcon from "../../assets/BSH-logo-02.png";
 
 const Footer: React.FC = () => (
@@ -14,19 +14,22 @@ const Footer: React.FC = () => (
             <span style={{ color: "#f3f4f6", fontWeight: 800, fontSize: 20, letterSpacing: -0.3 }}>BSH</span>
           </div>
           <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>
-            India's best learning platform for Hypnosis, Reiki, Shadow Work & Akashik practices.
+            Spiritual guidance for every chapter of life — live workshops, 1-on-1 sessions, and healing courses from India's most trusted practitioners.
           </p>
           {/* Social icons */}
           <div style={{ display: "flex", gap: 12 }}>
             {[
-              { icon: <FaInstagram size={18} />, href: "#", label: "Instagram" },
-              { icon: <FaYoutube size={18} />, href: "#", label: "YouTube" },
+              { icon: <FaInstagram size={18} />, href: "https://www.instagram.com/drpradeepkumarofficial/", label: "Instagram" },
+              { icon: <FaYoutube size={18} />, href: "https://www.youtube.com/@drpradeepkumar3912", label: "YouTube" },
               { icon: <FaTelegram size={18} />, href: "#", label: "Telegram" },
               { icon: <FaTwitter size={18} />, href: "#", label: "Twitter" },
+              { icon: <FaLinkedin size={18} />, href: "https://www.linkedin.com/in/drpradeepkumar3912", label: "LinkedIn" },
             ].map((social) => (
               <a
                 key={social.label}
                 href={social.href}
+                target={social.href !== "#" ? "_blank" : undefined}
+                rel={social.href !== "#" ? "noopener noreferrer" : undefined}
                 aria-label={social.label}
                 style={{
                   width: 36, height: 36, borderRadius: 10,
@@ -50,6 +53,9 @@ const Footer: React.FC = () => (
               </a>
             ))}
           </div>
+          <p style={{ color:"#4b5563", fontSize:11, marginTop:10 }}>
+            Follow <a href="https://www.instagram.com/drpradeepkumarofficial/" target="_blank" rel="noopener noreferrer" style={{ color:"#a78bfa", textDecoration:"none" }}>@drpradeepkumarofficial</a> on Instagram
+          </p>
         </div>
 
         {/* Link columns */}
@@ -78,7 +84,15 @@ const Footer: React.FC = () => (
               { label: "About Us", to: "/" },
               { label: "Careers", to: "/" },
               { label: "Contact Us", to: "/" },
-              { label: "Privacy Policy", to: "/" },
+            ],
+          },
+          {
+            title: "Legal",
+            links: [
+              { label: "Privacy Policy",      to: "/" },
+              { label: "Terms of Service",    to: "/" },
+              { label: "Cancellation Policy", to: "/" },
+              { label: "Refund Policy",       to: "/" },
             ],
           },
         ].map((col) => (

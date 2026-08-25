@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useCourseStore } from "../stores/courseStore";
 import { useThemeStore } from "../stores/themeStore";
@@ -102,9 +102,9 @@ const ExplorePage: React.FC = () => {
         {(programsLoading || programs.length > 0) && (
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-              <div style={{ width: 4, height: 24, background: "linear-gradient(180deg,#7c3aed,#5b21b6)", borderRadius: 2 }} />
+              <div style={{ width: 4, height: 24, background: "linear-gradient(180deg,#FF1E56,#D4003F)", borderRadius: 2 }} />
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: t.textPrimary }}>Flagship Programs</h2>
-              <span style={{ fontSize: 12, background: "rgba(124,58,237,0.12)", color: "#7c3aed", padding: "3px 10px", borderRadius: 20, fontWeight: 700 }}>
+              <span style={{ fontSize: 12, background: "rgba(255,30,86,0.12)", color: "#FF1E56", padding: "3px 10px", borderRadius: 20, fontWeight: 700 }}>
                 BSH Healers Certified
               </span>
             </div>
@@ -127,17 +127,17 @@ const ExplorePage: React.FC = () => {
                   <div key={p._id}
                     onClick={() => navigate(`/courses/${p.programId}`)}
                     style={{ background: t.bgCard, border: `1.5px solid ${t.border}`, borderRadius: 16, overflow: "hidden", cursor: "pointer", transition: "transform 0.18s, box-shadow 0.18s" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 32px rgba(124,58,237,0.18)"; }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 32px rgba(255,30,86,0.18)"; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = ""; }}
                   >
                     {/* Thumbnail */}
                     <div style={{ position: "relative", aspectRatio: "16/9", background: t.bgInput, overflow: "hidden" }}>
                       {p.thumbnail
                         ? <img src={p.thumbnail} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#1a0a2e,#2d1065)", fontSize: 48 }}>🧠</div>
+                        : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#1A0008,#3D0020)", fontSize: 48 }}>🧠</div>
                       }
                       {p.programType && (
-                        <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(124,58,237,0.9)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, backdropFilter: "blur(4px)" }}>
+                        <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(255,30,86,0.9)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, backdropFilter: "blur(4px)" }}>
                           {typeLabel[p.programType] || p.programType}
                         </span>
                       )}
@@ -152,7 +152,7 @@ const ExplorePage: React.FC = () => {
                     <div style={{ padding: "16px 18px 18px" }}>
                       <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
                         {p.level && (
-                          <span style={{ fontSize: 11, fontWeight: 600, color: levelColor[p.level] || "#7c3aed", background: `${levelColor[p.level] || "#7c3aed"}18`, padding: "2px 8px", borderRadius: 12 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: levelColor[p.level] || "#FF1E56", background: `${levelColor[p.level] || "#FF1E56"}18`, padding: "2px 8px", borderRadius: 12 }}>
                             {p.level.charAt(0).toUpperCase() + p.level.slice(1)}
                           </span>
                         )}
@@ -182,7 +182,7 @@ const ExplorePage: React.FC = () => {
                         </div>
                         <button
                           onClick={e => { e.stopPropagation(); navigate(`/courses/${p.programId}`); }}
-                          style={{ padding: "8px 16px", background: "linear-gradient(135deg,#7c3aed,#5b21b6)", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                          style={{ padding: "8px 16px", background: "linear-gradient(135deg,#FF1E56,#D4003F)", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                           View Program
                         </button>
                       </div>

@@ -30,7 +30,7 @@ const ConsultBookingPage: React.FC = () => {
     <div style={{ background: t.bgPrimary, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
         <p style={{ color: t.textSecond }}>No trainer selected.</p>
-        <button onClick={() => navigate("/consultation")} style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, cursor: "pointer", marginTop: 12 }}>Back</button>
+        <button onClick={() => navigate("/consultation")} style={{ background: "#FF1E56", color: "#fff", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, cursor: "pointer", marginTop: 12 }}>Back</button>
       </div>
     </div>
   );
@@ -79,7 +79,7 @@ const ConsultBookingPage: React.FC = () => {
           } catch { setError("Payment verification failed. Contact support."); }
         },
         prefill: { name: user.name, email: user.email, contact: user.phone || "" },
-        theme: { color: "#7c3aed" },
+        theme: { color: "#FF1E56" },
       });
       rzp.open();
     } catch (err: any) {
@@ -103,7 +103,7 @@ const ConsultBookingPage: React.FC = () => {
           The trainer will propose a schedule. Once admin approves, you'll be notified with your session link.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button onClick={() => navigate("/dashboard")} style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "12px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Go to Dashboard</button>
+          <button onClick={() => navigate("/dashboard")} style={{ background: "#FF1E56", color: "#fff", border: "none", borderRadius: 10, padding: "12px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Go to Dashboard</button>
           <button onClick={() => navigate("/consultation")} style={{ background: "none", border: `1.5px solid ${t.border}`, color: t.textPrimary, borderRadius: 10, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Browse Trainers</button>
         </div>
       </div>
@@ -125,7 +125,7 @@ const ConsultBookingPage: React.FC = () => {
           <div>
             <div style={{ fontWeight: 800, color: t.textPrimary, fontSize: 15 }}>{expert.name}</div>
             <div style={{ color: t.textSecond, fontSize: 12 }}>{expert.role}</div>
-            <div style={{ color: "#7c3aed", fontSize: 12, fontWeight: 700, marginTop: 2 }}>
+            <div style={{ color: "#FF1E56", fontSize: 12, fontWeight: 700, marginTop: 2 }}>
               {`₹${ratePerMin.toLocaleString("en-IN")}/min`}
             </div>
           </div>
@@ -138,9 +138,9 @@ const ConsultBookingPage: React.FC = () => {
             {SESSION_OPTIONS.map(n => (
               <button key={n} onClick={() => setSessions(n)}
                 style={{
-                  width: 52, height: 52, borderRadius: 12, border: `2px solid ${sessions === n ? "#7c3aed" : t.border}`,
-                  background: sessions === n ? "rgba(124,58,237,0.12)" : t.bgPrimary,
-                  color: sessions === n ? "#7c3aed" : t.textPrimary, fontWeight: sessions === n ? 800 : 500,
+                  width: 52, height: 52, borderRadius: 12, border: `2px solid ${sessions === n ? "#FF1E56" : t.border}`,
+                  background: sessions === n ? "rgba(255,30,86,0.12)" : t.bgPrimary,
+                  color: sessions === n ? "#FF1E56" : t.textPrimary, fontWeight: sessions === n ? 800 : 500,
                   fontSize: 15, cursor: "pointer", position: "relative",
                 }}>
                 {n}
@@ -169,9 +169,9 @@ const ConsultBookingPage: React.FC = () => {
             {DURATIONS.map(d => (
               <button key={d} onClick={() => setDuration(d)}
                 style={{
-                  flex: 1, padding: "12px 8px", borderRadius: 12, border: `2px solid ${duration === d ? "#7c3aed" : t.border}`,
-                  background: duration === d ? "rgba(124,58,237,0.12)" : t.bgPrimary,
-                  color: duration === d ? "#7c3aed" : t.textPrimary, fontWeight: duration === d ? 800 : 500,
+                  flex: 1, padding: "12px 8px", borderRadius: 12, border: `2px solid ${duration === d ? "#FF1E56" : t.border}`,
+                  background: duration === d ? "rgba(255,30,86,0.12)" : t.bgPrimary,
+                  color: duration === d ? "#FF1E56" : t.textPrimary, fontWeight: duration === d ? 800 : 500,
                   fontSize: 14, cursor: "pointer", textAlign: "center",
                 }}>
                 <div>{d} min</div>
@@ -218,7 +218,7 @@ const ConsultBookingPage: React.FC = () => {
             </div>
             <div style={{ borderTop: `1px solid ${t.border}`, paddingTop: 12, display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: t.textPrimary, fontWeight: 800, fontSize: 16 }}>Total</span>
-              <span style={{ color: "#7c3aed", fontWeight: 900, fontSize: 20 }}>₹{totalRupees.toLocaleString("en-IN")}</span>
+              <span style={{ color: "#FF1E56", fontWeight: 900, fontSize: 20 }}>₹{totalRupees.toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
@@ -226,7 +226,7 @@ const ConsultBookingPage: React.FC = () => {
         {error && <div style={{ color: "#dc2626", background: "rgba(239,68,68,0.08)", padding: "10px 14px", borderRadius: 10, fontSize: 13, marginBottom: 16 }}>⚠️ {error}</div>}
 
         <button onClick={handlePay} disabled={paying}
-          style={{ width: "100%", padding: "16px", background: paying ? "#9ca3af" : "linear-gradient(135deg,#7c3aed,#5b21b6)", color: "#fff", border: "none", borderRadius: 14, fontWeight: 800, fontSize: 17, cursor: paying ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 6px 20px rgba(124,58,237,0.35)" }}>
+          style={{ width: "100%", padding: "16px", background: paying ? "#9ca3af" : "linear-gradient(135deg,#FF1E56,#D4003F)", color: "#fff", border: "none", borderRadius: 14, fontWeight: 800, fontSize: 17, cursor: paying ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 6px 20px rgba(255,30,86,0.35)" }}>
           {paying
             ? <><div style={{ width: 20, height: 20, border: "3px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Processing...</>
             : `Pay ₹${totalRupees.toLocaleString("en-IN")}`}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import type { AdminEarnings } from '../../api/admin';
 import { adminGetTransactions, adminGetEarnings } from '../../api/admin';
 
@@ -42,7 +42,7 @@ const AdminTransactions: React.FC = () => {
       {earnings && (
         <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
           {[
-            { label: 'Total Revenue', value: fmt(earnings.totalRevenuePaise), color: '#a78bfa' },
+            { label: 'Total Revenue', value: fmt(earnings.totalRevenuePaise), color: '#FF6B8A' },
             ...(earnings.byType ?? []).map(t => ({ label: t.type, value: fmt(t.revenuePaise), color: '#22c55e' })),
           ].map(s => (
             <div key={s.label} className="adm-card" style={{ flex: 1, minWidth: 130, padding: '12px 16px' }}>
@@ -88,7 +88,7 @@ const AdminTransactions: React.FC = () => {
                         <div style={{ fontSize: 11, color: '#64748b' }}>{t.user?.email ?? ''}</div>
                       </td>
                       <td><span className="pill pill-blue">{t.type}</span></td>
-                      <td style={{ fontWeight: 700, color: '#a78bfa' }}>{fmt(t.amount)}</td>
+                      <td style={{ fontWeight: 700, color: '#FF6B8A' }}>{fmt(t.amount)}</td>
                       <td>{sPill(t.status)}</td>
                       <td style={{ color: '#64748b', fontSize: 12 }}>{fmtDate(t.createdAt)}</td>
                     </tr>
@@ -112,7 +112,7 @@ const AdminTransactions: React.FC = () => {
                   <div className="adm-bar-track">
                     <div className="adm-bar-fill" style={{ width: `${Math.round((m.revenuePaise / max) * 100)}%` }} />
                   </div>
-                  <div style={{ width: 86, textAlign: 'right', fontSize: 12, color: '#a78bfa', fontWeight: 600 }}>{fmt(m.revenuePaise)}</div>
+                  <div style={{ width: 86, textAlign: 'right', fontSize: 12, color: '#FF6B8A', fontWeight: 600 }}>{fmt(m.revenuePaise)}</div>
                 </div>
               );
             })}

@@ -50,10 +50,10 @@ type Tab = 'details' | 'batches' | 'members' | 'razorpay' | 'ghl' | 'showcase';
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const S = {
-  label: { display: 'block', color: '#a78bfa', fontSize: 12, fontWeight: 700, marginBottom: 5, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
-  input: { width: '100%', background: '#1e1b4b', border: '1.5px solid #312e81', borderRadius: 8, color: '#e2e8f0', padding: '9px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const, fontFamily: 'inherit' },
-  btn: (c = '#7c3aed') => ({ background: c, color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } as React.CSSProperties),
-  card: { background: '#13103a', border: '1.5px solid #312e81', borderRadius: 12, padding: '16px 18px', marginBottom: 14 },
+  label: { display: 'block', color: '#FF6B8A', fontSize: 12, fontWeight: 700, marginBottom: 5, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
+  input: { width: '100%', background: '#111827', border: '1.5px solid #D4003F', borderRadius: 8, color: '#e2e8f0', padding: '9px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const, fontFamily: 'inherit' },
+  btn: (c = '#FF1E56') => ({ background: c, color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } as React.CSSProperties),
+  card: { background: '#13103a', border: '1.5px solid #D4003F', borderRadius: 12, padding: '16px 18px', marginBottom: 14 },
   row: { display: 'flex', gap: 12, marginBottom: 14 } as React.CSSProperties,
   pill: (c: string, bg: string) => ({ background: bg, color: c, fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 10 } as React.CSSProperties),
 };
@@ -72,16 +72,16 @@ const ChipInput: React.FC<{ label: string; values: string[]; onChange: (v: strin
       <label style={S.label}>{label}</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
         {values.map(v => (
-          <span key={v} style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa', border: '1px solid #4c1d95', borderRadius: 8, padding: '3px 8px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span key={v} style={{ background: 'rgba(255,30,86,0.15)', color: '#FF6B8A', border: '1px solid #D4003F', borderRadius: 8, padding: '3px 8px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
             {v}
-            <button onClick={() => onChange(values.filter(x => x !== v))} style={{ background: 'none', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+            <button onClick={() => onChange(values.filter(x => x !== v))} style={{ background: 'none', border: 'none', color: '#FF6B8A', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
           </span>
         ))}
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())}
           placeholder={`Add ${label.toLowerCase()}…`} style={{ ...S.input, flex: 1 }} />
-        <button onClick={add} style={S.btn('#312e81')}>Add</button>
+        <button onClick={add} style={S.btn('#D4003F')}>Add</button>
       </div>
     </div>
   );
@@ -151,7 +151,7 @@ const AdminCourseManager: React.FC = () => {
           <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => setShowCreate(true)}>
             + New Course
           </button>
-          <button className="adm-btn adm-btn-sm" style={{ background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', border: '1.5px solid #4c1d95' }} onClick={() => setShowCreateProgram(true)}>
+          <button className="adm-btn adm-btn-sm" style={{ background: 'rgba(255,30,86,0.2)', color: '#FF6B8A', border: '1.5px solid #D4003F' }} onClick={() => setShowCreateProgram(true)}>
             ⭐ New Program
           </button>
           {(['all', 'pending', 'program', 'course'] as const).map(f => (
@@ -236,8 +236,8 @@ const ItemCard: React.FC<{ item: Item; onManage: () => void }> = ({ item, onMana
   const priceRs = (item.discountPrice ?? item.price) / 100;
 
   return (
-    <div style={{ background: '#13103a', border: `1.5px solid ${isProgram ? '#4c1d95' : '#312e81'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ height: 140, background: isProgram ? 'linear-gradient(135deg,#1e1b4b,#2e1065)' : '#1e1b4b', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ background: '#13103a', border: `1.5px solid ${isProgram ? '#D4003F' : '#D4003F'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: 140, background: isProgram ? 'linear-gradient(135deg,#111827,#2e1065)' : '#111827', position: 'relative', overflow: 'hidden' }}>
         {item.thumbnail ? (
           <img src={item.thumbnail} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
@@ -246,22 +246,22 @@ const ItemCard: React.FC<{ item: Item; onManage: () => void }> = ({ item, onMana
           </div>
         )}
         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
-          {isProgram && <span style={S.pill('#c4b5fd', 'rgba(124,58,237,0.5)')}>PROGRAM</span>}
+          {isProgram && <span style={S.pill('#FF6B8A', 'rgba(255,30,86,0.5)')}>PROGRAM</span>}
           {!isProgram && item.isPublished && <span style={S.pill('#16a34a', 'rgba(22,163,74,0.25)')}>Live</span>}
           {!isProgram && !item.isPublished && item.submittedForReview && <span style={S.pill('#f59e0b', 'rgba(245,158,11,0.3)')}>⏳ Review</span>}
           {!isProgram && !item.isPublished && !item.submittedForReview && <span style={S.pill('#94a3b8', 'rgba(148,163,184,0.15)')}>Draft</span>}
         </div>
         <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4 }}>
           {item.isFeatured && <span style={S.pill('#f59e0b', 'rgba(245,158,11,0.25)')}>⭐</span>}
-          {item.showcaseWork && <span style={S.pill('#a78bfa', 'rgba(167,139,250,0.2)')}>🎬</span>}
+          {item.showcaseWork && <span style={S.pill('#FF6B8A', 'rgba(167,139,250,0.2)')}>🎬</span>}
         </div>
       </div>
       <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
         <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14, lineHeight: 1.4 }}>{item.title}</div>
         {item.educator && <div style={{ color: '#64748b', fontSize: 12 }}>by {item.educator.name}</div>}
-        {isProgram && <div style={{ color: '#a78bfa', fontSize: 11, fontWeight: 600 }}>ID: {item.programId}</div>}
+        {isProgram && <div style={{ color: '#FF6B8A', fontSize: 11, fontWeight: 600 }}>ID: {item.programId}</div>}
         <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
-          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: 14 }}>
+          <span style={{ color: '#FF6B8A', fontWeight: 800, fontSize: 14 }}>
             {priceRs === 0 ? 'Free' : `₹${priceRs.toLocaleString('en-IN')}`}
           </span>
           <span style={{ color: '#94a3b8', fontSize: 12 }}>👥 {item.enrollmentCount || 0}</span>
@@ -271,7 +271,7 @@ const ItemCard: React.FC<{ item: Item; onManage: () => void }> = ({ item, onMana
           {item.ghlConfig?.isConnected && <span style={{ color: '#16a34a', fontSize: 11, fontWeight: 700 }}>✓ GHL</span>}
           {item.razorpayPaymentLink && <span style={{ color: '#22d3ee', fontSize: 11, fontWeight: 700 }}>✓ Razorpay</span>}
         </div>
-        <button onClick={onManage} style={{ ...S.btn('#7c3aed'), marginTop: 'auto', justifyContent: 'center', paddingTop: 10, paddingBottom: 10 }}>
+        <button onClick={onManage} style={{ ...S.btn('#FF1E56'), marginTop: 'auto', justifyContent: 'center', paddingTop: 10, paddingBottom: 10 }}>
           ⚙️ Manage
         </button>
       </div>
@@ -329,13 +329,13 @@ const ManagementDrawer: React.FC<DrawerProps> = ({ item, onClose, onUpdate, onDe
   ];
 
   return (
-    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: 780, background: '#0f0c2e', borderLeft: '1.5px solid #312e81', zIndex: 1000, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(0,0,0,0.6)' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #312e81', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: 780, background: '#0f0c2e', borderLeft: '1.5px solid #D4003F', zIndex: 1000, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(0,0,0,0.6)' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4003F', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 20, padding: 0 }}>←</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ color: '#e2e8f0', fontWeight: 800, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
-            {isProgram && <span style={S.pill('#c4b5fd', 'rgba(124,58,237,0.35)')}>PROGRAM</span>}
+            {isProgram && <span style={S.pill('#FF6B8A', 'rgba(255,30,86,0.35)')}>PROGRAM</span>}
           </div>
           <div style={{ color: '#64748b', fontSize: 12 }}>
             {isProgram ? `programId: ${item.programId}` : `by ${item.educator?.name || '—'}`}
@@ -367,10 +367,10 @@ const ManagementDrawer: React.FC<DrawerProps> = ({ item, onClose, onUpdate, onDe
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 2, padding: '10px 20px 0', borderBottom: '1px solid #1e1b4b', flexShrink: 0, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 2, padding: '10px 20px 0', borderBottom: '1px solid #111827', flexShrink: 0, overflowX: 'auto' }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            style={{ background: 'none', border: 'none', color: tab === t.key ? '#a78bfa' : '#64748b', borderBottom: `2px solid ${tab === t.key ? '#7c3aed' : 'transparent'}`, padding: '6px 12px', fontSize: 12, fontWeight: tab === t.key ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            style={{ background: 'none', border: 'none', color: tab === t.key ? '#FF6B8A' : '#64748b', borderBottom: `2px solid ${tab === t.key ? '#FF1E56' : 'transparent'}`, padding: '6px 12px', fontSize: 12, fontWeight: tab === t.key ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
             {t.label}
           </button>
         ))}
@@ -445,7 +445,7 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
   return (
     <div>
       {isProgram && (
-        <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid #4c1d95', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#a78bfa', fontSize: 12 }}>
+        <div style={{ background: 'rgba(255,30,86,0.08)', border: '1px solid #D4003F', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#FF6B8A', fontSize: 12 }}>
           ⭐ <strong>Program:</strong> {item.programId} — This is a built-in program with its own dedicated page on the site. You can edit pricing, thumbnail, description, and GHL/Razorpay settings here.
         </div>
       )}
@@ -530,7 +530,7 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
           <ChipInput label="📋 Requirements / Who Should Join" values={requirements} onChange={setRequirements} />
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 20 }}>
             <div onClick={() => set('isActive', !form.isActive)}
-              style={{ width: 44, height: 24, borderRadius: 12, background: form.isActive ? '#16a34a' : '#312e81', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+              style={{ width: 44, height: 24, borderRadius: 12, background: form.isActive ? '#16a34a' : '#D4003F', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
               <div style={{ position: 'absolute', top: 3, left: form.isActive ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
             </div>
             <div>
@@ -556,7 +556,7 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
         <label style={S.label}>Thumbnail URL</label>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-          {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid #312e81', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
+          {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
         </div>
       </div>
 
@@ -574,7 +574,7 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
             {([{ key: 'isPublished', label: '🟢 Published', color: '#16a34a' }, { key: 'isFeatured', label: '⭐ Featured', color: '#f59e0b' }] as const).map(toggle => (
               <label key={toggle.key} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#e2e8f0' }}>
                 <div onClick={() => set(toggle.key, !(form as any)[toggle.key])}
-                  style={{ width: 44, height: 24, borderRadius: 12, background: (form as any)[toggle.key] ? toggle.color : '#312e81', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ width: 44, height: 24, borderRadius: 12, background: (form as any)[toggle.key] ? toggle.color : '#D4003F', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
                   <div style={{ position: 'absolute', top: 3, left: (form as any)[toggle.key] ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                 </div>
                 {toggle.label}
@@ -585,7 +585,7 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
       )}
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <button onClick={save} disabled={saving} style={{ ...S.btn(saving ? '#374151' : '#7c3aed'), padding: '11px 24px', fontSize: 14 }}>
+        <button onClick={save} disabled={saving} style={{ ...S.btn(saving ? '#374151' : '#FF1E56'), padding: '11px 24px', fontSize: 14 }}>
           {saving ? 'Saving…' : '💾 Save Details'}
         </button>
         {!isProgram && !item.isPublished && (
@@ -683,25 +683,25 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: 860, background: '#0d0a2e', borderLeft: '1.5px solid #4c1d95', zIndex: 1000, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 48px rgba(0,0,0,0.7)' }}>
+    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: 860, background: '#0d0a2e', borderLeft: '1.5px solid #D4003F', zIndex: 1000, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 48px rgba(0,0,0,0.7)' }}>
       {/* Header */}
-      <div style={{ padding: '16px 22px', borderBottom: '1px solid #4c1d95', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'rgba(124,58,237,0.08)' }}>
+      <div style={{ padding: '16px 22px', borderBottom: '1px solid #D4003F', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'rgba(255,30,86,0.08)' }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 20, padding: 0 }}>←</button>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 18 }}>⭐</span>
             <div style={{ color: '#e2e8f0', fontWeight: 800, fontSize: 15 }}>Create New Program</div>
-            <span style={S.pill('#c4b5fd', 'rgba(124,58,237,0.35)')}>PROGRAM</span>
+            <span style={S.pill('#FF6B8A', 'rgba(255,30,86,0.35)')}>PROGRAM</span>
           </div>
           <div style={{ color: '#64748b', fontSize: 12 }}>Full configuration — thumbnail, GHL, Razorpay, batches all in one place</div>
         </div>
       </div>
 
       {/* Step indicator */}
-      <div style={{ display: 'flex', padding: '0 22px', borderBottom: '1px solid #1e1b4b', flexShrink: 0, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', padding: '0 22px', borderBottom: '1px solid #111827', flexShrink: 0, overflowX: 'auto' }}>
         {STEPS.map((s, i) => (
           <button key={s} onClick={() => i < step && setStep(i)}
-            style={{ flex: 1, padding: '10px 4px', background: 'none', border: 'none', borderBottom: `2px solid ${i === step ? '#7c3aed' : i < step ? '#4c1d95' : 'transparent'}`, color: i === step ? '#a78bfa' : i < step ? '#6d4ec4' : '#475569', fontSize: 11, fontWeight: i === step ? 700 : 500, cursor: i < step ? 'pointer' : 'default', whiteSpace: 'nowrap', textAlign: 'center', transition: 'all 0.15s' }}>
+            style={{ flex: 1, padding: '10px 4px', background: 'none', border: 'none', borderBottom: `2px solid ${i === step ? '#FF1E56' : i < step ? '#D4003F' : 'transparent'}`, color: i === step ? '#FF6B8A' : i < step ? '#6d4ec4' : '#475569', fontSize: 11, fontWeight: i === step ? 700 : 500, cursor: i < step ? 'pointer' : 'default', whiteSpace: 'nowrap', textAlign: 'center', transition: 'all 0.15s' }}>
             {i < step ? '✓ ' : `${i + 1}. `}{s}
           </button>
         ))}
@@ -712,8 +712,8 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
         {/* ── Step 0: Identity ── */}
         {step === 0 && (
           <div>
-            <div style={{ ...S.card, borderColor: '#4c1d95', background: 'rgba(124,58,237,0.05)', marginBottom: 20 }}>
-              <div style={{ color: '#a78bfa', fontSize: 12, lineHeight: 1.7 }}>
+            <div style={{ ...S.card, borderColor: '#D4003F', background: 'rgba(255,30,86,0.05)', marginBottom: 20 }}>
+              <div style={{ color: '#FF6B8A', fontSize: 12, lineHeight: 1.7 }}>
                 ⭐ <strong>Programs</strong> are premium flagship offerings (like Advance Hypnosis, Hypnosis 2.0) with dedicated pages. The <strong>Program ID</strong> becomes part of the URL and is permanent — choose carefully.
               </div>
             </div>
@@ -726,11 +726,11 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
             <div style={{ marginBottom: 14 }}>
               <label style={S.label}>Program ID (URL slug) *</label>
               <div style={{ display: 'flex', gap: 8 }}>
-                <input value={form.programId} onChange={e => { setSlugEdited(true); set('programId', toSlug(e.target.value)); }} style={{ ...S.input, flex: 1, fontFamily: 'monospace', color: '#a78bfa' }} placeholder="advance-reiki-healing" />
-                <button onClick={() => { setSlugEdited(false); set('programId', toSlug(form.title)); }} style={{ ...S.btn('#1e1b4b'), fontSize: 11, padding: '6px 12px', whiteSpace: 'nowrap' }}>↺ Auto</button>
+                <input value={form.programId} onChange={e => { setSlugEdited(true); set('programId', toSlug(e.target.value)); }} style={{ ...S.input, flex: 1, fontFamily: 'monospace', color: '#FF6B8A' }} placeholder="advance-reiki-healing" />
+                <button onClick={() => { setSlugEdited(false); set('programId', toSlug(form.title)); }} style={{ ...S.btn('#111827'), fontSize: 11, padding: '6px 12px', whiteSpace: 'nowrap' }}>↺ Auto</button>
               </div>
               <div style={{ color: '#475569', fontSize: 11, marginTop: 4 }}>
-                URL: <code style={{ color: '#a78bfa' }}>/courses/{form.programId || 'your-slug'}</code> · Used in GHL webhook URL
+                URL: <code style={{ color: '#FF6B8A' }}>/courses/{form.programId || 'your-slug'}</code> · Used in GHL webhook URL
               </div>
             </div>
 
@@ -772,7 +772,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginTop: 4 }}>
               <div onClick={() => set('isActive', !form.isActive)}
-                style={{ width: 44, height: 24, borderRadius: 12, background: form.isActive ? '#16a34a' : '#312e81', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+                style={{ width: 44, height: 24, borderRadius: 12, background: form.isActive ? '#16a34a' : '#D4003F', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
                 <div style={{ position: 'absolute', top: 3, left: form.isActive ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </div>
               <div>
@@ -790,7 +790,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
               <label style={S.label}>Thumbnail / Cover Image URL</label>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 70, height: 46, objectFit: 'cover', borderRadius: 6, border: '1px solid #4c1d95', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
+                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 70, height: 46, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
               </div>
             </div>
 
@@ -798,7 +798,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
               <label style={S.label}>Preview / Promo Video URL</label>
               <input value={form.previewVideoUrl} onChange={e => set('previewVideoUrl', e.target.value)} style={S.input} placeholder="YouTube or Vimeo — a short intro or testimonial reel" />
               {form.previewVideoUrl && (
-                <div style={{ color: '#a78bfa', fontSize: 11, marginTop: 4 }}>▶ <a href={form.previewVideoUrl} target="_blank" rel="noreferrer" style={{ color: '#a78bfa' }}>Preview link</a></div>
+                <div style={{ color: '#FF6B8A', fontSize: 11, marginTop: 4 }}>▶ <a href={form.previewVideoUrl} target="_blank" rel="noreferrer" style={{ color: '#FF6B8A' }}>Preview link</a></div>
               )}
             </div>
 
@@ -837,7 +837,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {[['Free', '0'], ['₹999', '999'], ['₹1999', '1999'], ['₹4999', '4999'], ['₹9999', '9999'], ['₹14999', '14999'], ['₹19999', '19999'], ['₹29999', '29999'], ['₹49999', '49999']].map(([label, price]) => (
                   <button key={label} onClick={() => set('price', price)}
-                    style={{ ...S.btn(form.price === price ? '#7c3aed' : '#1e1b4b'), fontSize: 12 }}>{label}</button>
+                    style={{ ...S.btn(form.price === price ? '#FF1E56' : '#111827'), fontSize: 12 }}>{label}</button>
                 ))}
               </div>
             </div>
@@ -892,7 +892,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
               <div style={{ display: 'flex', gap: 8 }}>
                 <input value={form.ghlTagId} onChange={e => set('ghlTagId', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder={`e.g. bsh-enrolled-${form.programId || 'your-program'}`} />
                 {form.programId && (
-                  <button onClick={() => set('ghlTagId', `bsh-enrolled-${form.programId}`)} style={{ ...S.btn('#1e1b4b'), fontSize: 11, whiteSpace: 'nowrap' }}>↺ Auto-fill</button>
+                  <button onClick={() => set('ghlTagId', `bsh-enrolled-${form.programId}`)} style={{ ...S.btn('#111827'), fontSize: 11, whiteSpace: 'nowrap' }}>↺ Auto-fill</button>
                 )}
               </div>
               <div style={{ color: '#475569', fontSize: 11, marginTop: 4 }}>This tag is added to the GHL contact record when a student enrolls. Must match the tag in your GHL workflow.</div>
@@ -901,7 +901,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
             <div style={{ marginBottom: 14 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <label style={S.label}>Custom HTTP Headers (optional)</label>
-                <button onClick={() => setGhlHeaders(h => [...h, { key: '', value: '' }])} style={{ ...S.btn('#1e1b4b'), fontSize: 11, padding: '4px 10px' }}>+ Add Header</button>
+                <button onClick={() => setGhlHeaders(h => [...h, { key: '', value: '' }])} style={{ ...S.btn('#111827'), fontSize: 11, padding: '4px 10px' }}>+ Add Header</button>
               </div>
               {ghlHeaders.length === 0 && <div style={{ color: '#475569', fontSize: 12 }}>No custom headers — add if your GHL endpoint requires auth headers.</div>}
               {ghlHeaders.map((h, i) => (
@@ -928,7 +928,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
               <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>🎬 Homepage Showcase</div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: form.showcaseWork ? 16 : 0 }}>
                 <div onClick={() => set('showcaseWork', !form.showcaseWork)}
-                  style={{ width: 48, height: 26, borderRadius: 13, background: form.showcaseWork ? '#7c3aed' : '#312e81', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ width: 48, height: 26, borderRadius: 13, background: form.showcaseWork ? '#FF1E56' : '#D4003F', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
                   <div style={{ position: 'absolute', top: 3, left: form.showcaseWork ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                 </div>
                 <div>
@@ -942,13 +942,13 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
                   <div>
                     <label style={S.label}>Showcase Video (student testimonial / demo)</label>
                     <input value={form.showcaseVideoUrl} onChange={e => set('showcaseVideoUrl', e.target.value)} style={S.input} placeholder="YouTube / Vimeo URL" />
-                    {form.showcaseVideoUrl && <div style={{ color: '#a78bfa', fontSize: 11, marginTop: 4 }}>▶ <a href={form.showcaseVideoUrl} target="_blank" rel="noreferrer" style={{ color: '#a78bfa' }}>Preview</a></div>}
+                    {form.showcaseVideoUrl && <div style={{ color: '#FF6B8A', fontSize: 11, marginTop: 4 }}>▶ <a href={form.showcaseVideoUrl} target="_blank" rel="noreferrer" style={{ color: '#FF6B8A' }}>Preview</a></div>}
                   </div>
                   <div>
                     <label style={S.label}>Showcase Feature Image</label>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                       <input value={form.showcaseImageUrl} onChange={e => set('showcaseImageUrl', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-                      {form.showcaseImageUrl && <img src={form.showcaseImageUrl} alt="" style={{ width: 80, height: 50, objectFit: 'cover', borderRadius: 6, border: '1px solid #312e81' }} onError={e => (e.currentTarget.style.display = 'none')} />}
+                      {form.showcaseImageUrl && <img src={form.showcaseImageUrl} alt="" style={{ width: 80, height: 50, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F' }} onError={e => (e.currentTarget.style.display = 'none')} />}
                     </div>
                   </div>
                 </div>
@@ -986,7 +986,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
                 ['Initial Batch', form.initialBatchName || 'None'],
                 ['Status', form.isActive ? '🟢 Active' : '🔴 Hidden'],
               ].map(([k, v]) => (
-                <div key={k} style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid #1e1b4b' }}>
+                <div key={k} style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid #111827' }}>
                   <span style={{ color: '#64748b', fontSize: 12, minWidth: 110 }}>{k}</span>
                   <span style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 600, flex: 1, wordBreak: 'break-all' }}>{v}</span>
                 </div>
@@ -1008,22 +1008,22 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
       </div>
 
       {/* Footer nav */}
-      <div style={{ padding: '16px 24px', borderTop: '1px solid #4c1d95', display: 'flex', justifyContent: 'space-between', flexShrink: 0, background: 'rgba(124,58,237,0.04)' }}>
+      <div style={{ padding: '16px 24px', borderTop: '1px solid #D4003F', display: 'flex', justifyContent: 'space-between', flexShrink: 0, background: 'rgba(255,30,86,0.04)' }}>
         {step > 0 ? (
-          <button onClick={() => setStep(s => s - 1)} style={S.btn('#1e1b4b')}>← Back</button>
+          <button onClick={() => setStep(s => s - 1)} style={S.btn('#111827')}>← Back</button>
         ) : (
-          <button onClick={onClose} style={S.btn('#1e1b4b')}>Cancel</button>
+          <button onClick={onClose} style={S.btn('#111827')}>Cancel</button>
         )}
         <div style={{ display: 'flex', gap: 10 }}>
           <span style={{ color: '#475569', fontSize: 12, alignSelf: 'center' }}>{step + 1} / {STEPS.length}</span>
           {step < 4 ? (
             <button onClick={() => setStep(s => s + 1)} disabled={!canNext[step]}
-              style={S.btn(!canNext[step] ? '#374151' : '#7c3aed')}>
+              style={S.btn(!canNext[step] ? '#374151' : '#FF1E56')}>
               Next →
             </button>
           ) : (
             <button onClick={create} disabled={creating || !form.title || !form.programId}
-              style={{ ...S.btn(creating ? '#374151' : '#7c3aed'), padding: '10px 28px', fontSize: 14 }}>
+              style={{ ...S.btn(creating ? '#374151' : '#FF1E56'), padding: '10px 28px', fontSize: 14 }}>
               {creating ? 'Creating…' : '⭐ Create Program'}
             </button>
           )}
@@ -1082,8 +1082,8 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: 820, background: '#0f0c2e', borderLeft: '1.5px solid #312e81', zIndex: 1000, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(0,0,0,0.6)' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #312e81', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: 820, background: '#0f0c2e', borderLeft: '1.5px solid #D4003F', zIndex: 1000, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(0,0,0,0.6)' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4003F', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 20, padding: 0 }}>←</button>
         <div style={{ flex: 1 }}>
           <div style={{ color: '#e2e8f0', fontWeight: 800, fontSize: 15 }}>+ Create New Course</div>
@@ -1092,10 +1092,10 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
       </div>
 
       {/* Step indicator */}
-      <div style={{ display: 'flex', padding: '12px 20px 0', borderBottom: '1px solid #1e1b4b', flexShrink: 0 }}>
+      <div style={{ display: 'flex', padding: '12px 20px 0', borderBottom: '1px solid #111827', flexShrink: 0 }}>
         {STEPS.map((s, i) => (
           <button key={s} onClick={() => i < step && setStep(i)}
-            style={{ flex: 1, padding: '6px 4px', background: 'none', border: 'none', borderBottom: `2px solid ${i === step ? '#7c3aed' : i < step ? '#4c1d95' : 'transparent'}`, color: i === step ? '#a78bfa' : i < step ? '#7c3aed' : '#64748b', fontSize: 11, fontWeight: i === step ? 700 : 500, cursor: i < step ? 'pointer' : 'default', whiteSpace: 'nowrap', textAlign: 'center' }}>
+            style={{ flex: 1, padding: '6px 4px', background: 'none', border: 'none', borderBottom: `2px solid ${i === step ? '#FF1E56' : i < step ? '#D4003F' : 'transparent'}`, color: i === step ? '#FF6B8A' : i < step ? '#FF1E56' : '#64748b', fontSize: 11, fontWeight: i === step ? 700 : 500, cursor: i < step ? 'pointer' : 'default', whiteSpace: 'nowrap', textAlign: 'center' }}>
             {i < step ? '✓ ' : ''}{s}
           </button>
         ))}
@@ -1104,8 +1104,8 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
       <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
         {step === 0 && (
           <div>
-            <div style={{ ...S.card, borderColor: '#4c1d95', marginBottom: 20 }}>
-              <div style={{ color: '#a78bfa', fontSize: 12 }}>📌 This creates a course shell with full admin control. The educator can then add chapters & lessons in their editor. You can publish it immediately or keep it as draft.</div>
+            <div style={{ ...S.card, borderColor: '#D4003F', marginBottom: 20 }}>
+              <div style={{ color: '#FF6B8A', fontSize: 12 }}>📌 This creates a course shell with full admin control. The educator can then add chapters & lessons in their editor. You can publish it immediately or keep it as draft.</div>
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={S.label}>Course Title *</label>
@@ -1156,7 +1156,7 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
               <label style={S.label}>Thumbnail URL</label>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid #312e81', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
+                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
               </div>
             </div>
             <div style={{ marginBottom: 14 }}>
@@ -1188,7 +1188,7 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
             <div style={{ ...S.card, marginBottom: 16 }}>
               <div style={{ color: '#64748b', fontSize: 12, marginBottom: 12 }}>Quick price templates</div>
               {[['Free', '0'], ['₹499', '499'], ['₹999', '999'], ['₹1999', '1999'], ['₹4999', '4999'], ['₹9999', '9999']].map(([label, price]) => (
-                <button key={label} onClick={() => set('price', price)} style={{ ...S.btn(form.price === price ? '#7c3aed' : '#1e1b4b'), margin: '0 6px 6px 0', fontSize: 12 }}>{label}</button>
+                <button key={label} onClick={() => set('price', price)} style={{ ...S.btn(form.price === price ? '#FF1E56' : '#111827'), margin: '0 6px 6px 0', fontSize: 12 }}>{label}</button>
               ))}
             </div>
             <div style={{ display: 'flex', gap: 24, marginBottom: 20 }}>
@@ -1198,7 +1198,7 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
               ] as const).map(t => (
                 <label key={t.key} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
                   <div onClick={() => set(t.key, !(form as any)[t.key])}
-                    style={{ width: 44, height: 24, borderRadius: 12, background: (form as any)[t.key] ? t.color : '#312e81', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0, marginTop: 2 }}>
+                    style={{ width: 44, height: 24, borderRadius: 12, background: (form as any)[t.key] ? t.color : '#D4003F', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0, marginTop: 2 }}>
                     <div style={{ position: 'absolute', top: 3, left: (form as any)[t.key] ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                   </div>
                   <div>
@@ -1226,7 +1226,7 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
                 ['Objectives', objectives.length ? `${objectives.length} added` : '—'],
                 ['Requirements', requirements.length ? `${requirements.length} added` : '—'],
               ].map(([k, v]) => (
-                <div key={k} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: '1px solid #1e1b4b' }}>
+                <div key={k} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: '1px solid #111827' }}>
                   <span style={{ color: '#64748b', fontSize: 13, minWidth: 110 }}>{k}</span>
                   <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, flex: 1 }}>{v}</span>
                 </div>
@@ -1250,15 +1250,15 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
         )}
       </div>
 
-      <div style={{ padding: '16px 24px', borderTop: '1px solid #312e81', display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ padding: '16px 24px', borderTop: '1px solid #D4003F', display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
         {step > 0 ? (
-          <button onClick={() => setStep(s => s - 1)} style={S.btn('#1e1b4b')}>← Back</button>
+          <button onClick={() => setStep(s => s - 1)} style={S.btn('#111827')}>← Back</button>
         ) : (
-          <button onClick={onClose} style={S.btn('#1e1b4b')}>Cancel</button>
+          <button onClick={onClose} style={S.btn('#111827')}>Cancel</button>
         )}
         {step < 3 ? (
           <button onClick={() => setStep(s => s + 1)} disabled={!canNext[step]}
-            style={S.btn(!canNext[step] ? '#374151' : '#7c3aed')}>
+            style={S.btn(!canNext[step] ? '#374151' : '#FF1E56')}>
             Next →
           </button>
         ) : (
@@ -1342,13 +1342,13 @@ const BatchesTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
           <div style={{ flex: 1 }}><label style={S.label}>Start Date</label><input type="date" value={newBatch.startDate} onChange={e => setNewBatch(f => ({ ...f, startDate: e.target.value }))} style={S.input} /></div>
           <div style={{ flex: 1 }}><label style={S.label}>Max Students</label><input type="number" value={newBatch.maxStudents} onChange={e => setNewBatch(f => ({ ...f, maxStudents: e.target.value }))} style={S.input} min="1" /></div>
         </div>
-        <button onClick={addBatch} disabled={adding || !newBatch.name.trim()} style={S.btn(adding ? '#374151' : '#7c3aed')}>{adding ? 'Adding…' : '+ Add Batch'}</button>
+        <button onClick={addBatch} disabled={adding || !newBatch.name.trim()} style={S.btn(adding ? '#374151' : '#FF1E56')}>{adding ? 'Adding…' : '+ Add Batch'}</button>
       </div>
 
       {item.batches.length === 0 ? (
         <div style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>No batches yet.</div>
       ) : item.batches.map(batch => (
-        <div key={batch._id} style={{ ...S.card, borderColor: editId === batch._id ? '#7c3aed' : '#312e81' }}>
+        <div key={batch._id} style={{ ...S.card, borderColor: editId === batch._id ? '#FF1E56' : '#D4003F' }}>
           {editId === batch._id ? (
             <>
               <div style={S.row}>
@@ -1371,17 +1371,17 @@ const BatchesTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => { setEditId(batch._id); setEditForm({ name: batch.name, startDate: batch.startDate?.slice(0, 10) || '', maxStudents: String(batch.maxStudents) }); }} style={S.btn('#1e1b4b')}>✏️</button>
+                <button onClick={() => { setEditId(batch._id); setEditForm({ name: batch.name, startDate: batch.startDate?.slice(0, 10) || '', maxStudents: String(batch.maxStudents) }); }} style={S.btn('#111827')}>✏️</button>
                 <button onClick={() => deleteBatch(batch._id)} style={S.btn('#450a0a')}>🗑</button>
               </div>
             </div>
           )}
 
           {batch.members.length > 0 && (
-            <div style={{ marginTop: 14, borderTop: '1px solid #1e1b4b', paddingTop: 12 }}>
-              <div style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, marginBottom: 8 }}>MEMBERS ({batch.members.length})</div>
+            <div style={{ marginTop: 14, borderTop: '1px solid #111827', paddingTop: 12 }}>
+              <div style={{ color: '#FF6B8A', fontSize: 12, fontWeight: 700, marginBottom: 8 }}>MEMBERS ({batch.members.length})</div>
               {batch.members.map(m => (
-                <div key={m._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1e1b4b', borderRadius: 8, padding: '6px 10px', marginBottom: 4 }}>
+                <div key={m._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111827', borderRadius: 8, padding: '6px 10px', marginBottom: 4 }}>
                   <div><span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{m.name}</span><span style={{ color: '#64748b', fontSize: 12, marginLeft: 8 }}>{m.email}</span></div>
                   <button onClick={() => removeMember(batch._id, m._id)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 16, padding: '0 4px' }}>×</button>
                 </div>
@@ -1393,7 +1393,7 @@ const BatchesTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
             <input value={memberEmail[batch._id] || ''} onChange={e => setMemberEmail(m => ({ ...m, [batch._id]: e.target.value }))}
               placeholder="Add member by email…" style={{ ...S.input, flex: 1 }}
               onKeyDown={e => e.key === 'Enter' && addMember(batch._id)} />
-            <button onClick={() => addMember(batch._id)} disabled={addingMember === batch._id} style={S.btn(addingMember === batch._id ? '#374151' : '#7c3aed')}>
+            <button onClick={() => addMember(batch._id)} disabled={addingMember === batch._id} style={S.btn(addingMember === batch._id ? '#374151' : '#FF1E56')}>
               {addingMember === batch._id ? '…' : '+ Add'}
             </button>
           </div>
@@ -1434,13 +1434,13 @@ const MembersTab: React.FC<{ item: Item }> = ({ item }) => {
       {loading ? <div style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>Loading…</div>
       : filtered.length === 0 ? <div style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>No members found</div>
       : filtered.map(e => (
-        <div key={e._id} style={{ background: '#13103a', border: '1px solid #1e1b4b', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div key={e._id} style={{ background: '#13103a', border: '1px solid #111827', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <div>
             <div style={{ color: '#e2e8f0', fontWeight: 600, fontSize: 13 }}>{getName(e)}</div>
             <div style={{ color: '#64748b', fontSize: 12 }}>{getEmail(e)}{getPhone(e) && ` · ${getPhone(e)}`}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            {e.progress !== undefined && <div style={{ color: '#a78bfa', fontSize: 12 }}>{e.progress}%</div>}
+            {e.progress !== undefined && <div style={{ color: '#FF6B8A', fontSize: 12 }}>{e.progress}%</div>}
             {e.isActive !== undefined && <div style={S.pill(e.isActive ? '#16a34a' : '#94a3b8', 'transparent')}>{e.isActive ? 'Active' : 'Inactive'}</div>}
             <div style={{ color: '#64748b', fontSize: 11 }}>{new Date(e.purchasedAt).toLocaleDateString('en-IN')}</div>
           </div>
@@ -1471,7 +1471,7 @@ const RazorpayTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m
       <div style={S.card}>
         <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14, marginBottom: 12 }}>💳 Razorpay Payment Link</div>
         <div style={{ display: 'flex', gap: 24, marginBottom: 16 }}>
-          <div><div style={{ color: '#64748b', fontSize: 12 }}>Charge Price</div><div style={{ color: '#a78bfa', fontWeight: 800, fontSize: 22 }}>₹{priceRs.toLocaleString('en-IN')}</div></div>
+          <div><div style={{ color: '#64748b', fontSize: 12 }}>Charge Price</div><div style={{ color: '#FF6B8A', fontWeight: 800, fontSize: 22 }}>₹{priceRs.toLocaleString('en-IN')}</div></div>
           {item.discountPrice && <div><div style={{ color: '#64748b', fontSize: 12 }}>Original</div><div style={{ color: '#64748b', fontSize: 16, textDecoration: 'line-through' }}>₹{(item.price / 100).toLocaleString('en-IN')}</div></div>}
         </div>
         {item.razorpayPaymentLink ? (
@@ -1479,14 +1479,14 @@ const RazorpayTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m
             <label style={S.label}>Shareable Link</label>
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               <input readOnly value={item.razorpayPaymentLink} style={{ ...S.input, flex: 1, color: '#22d3ee' }} />
-              <button onClick={() => { navigator.clipboard.writeText(item.razorpayPaymentLink!); flash('Copied!'); }} style={S.btn('#1e1b4b')}>📋</button>
-              <a href={item.razorpayPaymentLink} target="_blank" rel="noreferrer"><button type="button" style={S.btn('#1e1b4b')}>↗</button></a>
+              <button onClick={() => { navigator.clipboard.writeText(item.razorpayPaymentLink!); flash('Copied!'); }} style={S.btn('#111827')}>📋</button>
+              <a href={item.razorpayPaymentLink} target="_blank" rel="noreferrer"><button type="button" style={S.btn('#111827')}>↗</button></a>
             </div>
           </div>
         ) : (
-          <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px dashed #4c1d95', borderRadius: 10, padding: 16, marginBottom: 16, color: '#64748b', fontSize: 13 }}>No payment link yet.</div>
+          <div style={{ background: 'rgba(255,30,86,0.08)', border: '1px dashed #D4003F', borderRadius: 10, padding: 16, marginBottom: 16, color: '#64748b', fontSize: 13 }}>No payment link yet.</div>
         )}
-        <button onClick={generate} disabled={generating || !priceRs} style={S.btn(generating ? '#374151' : '#7c3aed')}>
+        <button onClick={generate} disabled={generating || !priceRs} style={S.btn(generating ? '#374151' : '#FF1E56')}>
           {generating ? 'Generating…' : item.razorpayPaymentLink ? '🔄 Regenerate' : '✨ Generate Payment Link'}
         </button>
       </div>
@@ -1546,13 +1546,13 @@ const GHLTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m: str
           <div style={{ color: '#4ade80', fontWeight: 700, fontSize: 13, marginBottom: 8 }}>📥 BSH Inbound Webhook (paste this in GHL)</div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
             <input readOnly value={inboundUrl} style={{ ...S.input, flex: 1, fontSize: 11, color: '#4ade80' }} />
-            <button onClick={() => { navigator.clipboard.writeText(inboundUrl); flash('Copied!'); }} style={S.btn('#1e1b4b')}>📋</button>
+            <button onClick={() => { navigator.clipboard.writeText(inboundUrl); flash('Copied!'); }} style={S.btn('#111827')}>📋</button>
           </div>
           {isProgram && ghl.tagId && <div style={{ color: '#64748b', fontSize: 12 }}>GHL Tag: <code style={{ background: '#0f172a', padding: '1px 6px', borderRadius: 4 }}>{ghl.tagId}</code></div>}
           <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>When GHL calls this URL with a student's email, BSH auto-grants access to this {isProgram ? 'program' : 'course'}.</div>
         </div>
       ) : (
-        <div style={{ ...S.card, borderColor: '#4c1d95' }}><div style={{ color: '#a78bfa', fontSize: 13 }}>💡 Save once to generate your unique inbound webhook URL.</div></div>
+        <div style={{ ...S.card, borderColor: '#D4003F' }}><div style={{ color: '#FF6B8A', fontSize: 13 }}>💡 Save once to generate your unique inbound webhook URL.</div></div>
       )}
 
       <div style={S.card}>
@@ -1572,7 +1572,7 @@ const GHLTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m: str
         <div style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <label style={S.label}>Custom Headers</label>
-            <button onClick={() => setHeaders(h => [...h, { key: '', value: '' }])} style={{ ...S.btn('#1e1b4b'), fontSize: 11, padding: '4px 10px' }}>+ Add</button>
+            <button onClick={() => setHeaders(h => [...h, { key: '', value: '' }])} style={{ ...S.btn('#111827'), fontSize: 11, padding: '4px 10px' }}>+ Add</button>
           </div>
           {headers.length === 0 && <div style={{ color: '#64748b', fontSize: 12 }}>No custom headers.</div>}
           {headers.map((h, i) => (
@@ -1584,7 +1584,7 @@ const GHLTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m: str
           ))}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={save} disabled={saving} style={S.btn(saving ? '#374151' : '#7c3aed')}>{saving ? 'Saving…' : '💾 Save GHL Settings'}</button>
+          <button onClick={save} disabled={saving} style={S.btn(saving ? '#374151' : '#FF1E56')}>{saving ? 'Saving…' : '💾 Save GHL Settings'}</button>
           {form.outboundWebhookUrl && <button onClick={testWebhook} disabled={testing} style={S.btn(testing ? '#374151' : '#0f766e')}>{testing ? 'Testing…' : '🧪 Test Webhook'}</button>}
         </div>
       </div>
@@ -1642,7 +1642,7 @@ const ShowcaseTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m
         <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>🎬 Best Work / Showcase</div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginBottom: 20 }}>
           <div onClick={() => setForm(f => ({ ...f, showcaseWork: !f.showcaseWork }))}
-            style={{ width: 52, height: 28, borderRadius: 14, background: form.showcaseWork ? '#7c3aed' : '#312e81', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+            style={{ width: 52, height: 28, borderRadius: 14, background: form.showcaseWork ? '#FF1E56' : '#D4003F', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
             <div style={{ position: 'absolute', top: 4, left: form.showcaseWork ? 28 : 4, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
           </div>
           <div>
@@ -1656,18 +1656,18 @@ const ShowcaseTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m
             <div style={{ marginBottom: 14 }}>
               <label style={S.label}>Showcase Video URL</label>
               <input value={form.showcaseVideoUrl} onChange={e => setForm(f => ({ ...f, showcaseVideoUrl: e.target.value }))} style={S.input} placeholder="YouTube / Vimeo — student testimonial or demo" />
-              {form.showcaseVideoUrl && <div style={{ color: '#a78bfa', fontSize: 12, marginTop: 4 }}>▶ <a href={form.showcaseVideoUrl} target="_blank" rel="noreferrer" style={{ color: '#a78bfa' }}>Preview</a></div>}
+              {form.showcaseVideoUrl && <div style={{ color: '#FF6B8A', fontSize: 12, marginTop: 4 }}>▶ <a href={form.showcaseVideoUrl} target="_blank" rel="noreferrer" style={{ color: '#FF6B8A' }}>Preview</a></div>}
             </div>
             <div style={{ marginBottom: 20 }}>
               <label style={S.label}>Featured Image URL</label>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <input value={form.showcaseImageUrl} onChange={e => setForm(f => ({ ...f, showcaseImageUrl: e.target.value }))} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-                {form.showcaseImageUrl && <img src={form.showcaseImageUrl} alt="" style={{ width: 80, height: 50, objectFit: 'cover', borderRadius: 6, border: '1px solid #312e81', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
+                {form.showcaseImageUrl && <img src={form.showcaseImageUrl} alt="" style={{ width: 80, height: 50, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
               </div>
             </div>
           </>
         )}
-        <button onClick={save} disabled={saving} style={{ ...S.btn(saving ? '#374151' : '#7c3aed'), padding: '11px 24px', fontSize: 14 }}>{saving ? 'Saving…' : '💾 Save'}</button>
+        <button onClick={save} disabled={saving} style={{ ...S.btn(saving ? '#374151' : '#FF1E56'), padding: '11px 24px', fontSize: 14 }}>{saving ? 'Saving…' : '💾 Save'}</button>
       </div>
     </div>
   );

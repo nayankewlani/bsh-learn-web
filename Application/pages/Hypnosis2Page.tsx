@@ -4,6 +4,7 @@ import { useThemeStore } from "../stores/themeStore";
 import { useAuthStore } from "../stores/authStore";
 import hypnosis2Img from "../assets/hypnosis-2.png";
 import client from "../api/client";
+import ProgramPostsBoard from "../components/ProgramPostsBoard";
 
 declare global {
   interface Window { Razorpay: new (opts: unknown) => { open(): void }; }
@@ -70,6 +71,8 @@ const Hypnosis2Page: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [accessExpiry, setAccessExpiry] = useState<string | null>(null);
 
   useEffect(() => {
     client.get("/courses/programs/public")
@@ -87,6 +90,18 @@ const Hypnosis2Page: React.FC = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!user) { setHasAccess(false); return; }
+    client.get("/payments/program-access/hypnosis-2")
+      .then(({ data }) => {
+        setHasAccess(!!data.hasAccess);
+        if (data.access?.accessExpiresAt) {
+          setAccessExpiry(new Date(data.access.accessExpiresAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }));
+        }
+      })
+      .catch(() => setHasAccess(false));
+  }, [user]);
+
   const PLANS = buildPlans(monthlyPrice);
 
   const handleJoin = async (planId?: string) => {
@@ -95,7 +110,6 @@ const Hypnosis2Page: React.FC = () => {
     setLoading(true);
     setError("");
     try {
-      // planId in backend: hypnosis-2-monthly / hypnosis-2-quarterly / hypnosis-2-biannual
       const { data } = await client.post("/payments/create-order", {
         type: "hypnosis2",
         plan: `hypnosis-2-${plan}`,
@@ -116,6 +130,7 @@ const Hypnosis2Page: React.FC = () => {
               razorpaySignature: r.razorpay_signature,
             });
             setSuccess(true);
+            setHasAccess(true);
           } catch {
             setError("Payment received but verification failed — please contact support with your payment ID.");
           }
@@ -132,6 +147,55 @@ const Hypnosis2Page: React.FC = () => {
 
   const activePlan = PLANS.find(p => p.id === selectedPlan)!;
 
+  // ── LOADING ──────────────────────────────────────────────────────────────────
+  if (hasAccess === null && !!user) {
+    return (
+      <div style={{ background: t.bgPrimary, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: 44, height: 44, border: "3px solid rgba(99,102,241,0.2)", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin 0.9s linear infinite", margin: "0 auto 16px" }} />
+          <div style={{ color: t.textMuted, fontSize: 14 }}>Loading your access…</div>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // ── MEMBER VIEW — enrolled or admin ─────────────────────────────────────────
+  if (hasAccess === true || user?.role === "admin") {
+    return (
+      <div style={{ background: t.bgPrimary, minHeight: "100vh" }}>
+        {/* Compact top bar */}
+        <div style={{ background: "linear-gradient(135deg,#0d0824 0%,#1a0a3a 100%)", padding: "16px 24px", borderBottom: "1px solid rgba(99,102,241,0.25)" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>
+              <span style={{ cursor: "pointer", color: "#a78bfa" }} onClick={() => navigate("/")}>Home</span>
+              <span>/</span>
+              <span style={{ cursor: "pointer", color: "#a78bfa" }} onClick={() => navigate("/explore")}>Courses</span>
+              <span>/</span>
+              <span style={{ color: "rgba(255,255,255,0.7)" }}>Hypnosis 2.0</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {accessExpiry && (
+                <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>
+                  Access until: <strong style={{ color: "#86efac" }}>{accessExpiry}</strong>
+                </span>
+              )}
+              {user?.role === "admin" && (
+                <span style={{ background: "rgba(99,102,241,0.25)", border: "1px solid rgba(99,102,241,0.5)", color: "#c7d2fe", borderRadius: 50, padding: "3px 12px", fontSize: 11, fontWeight: 700 }}>
+                  Admin Preview
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <ProgramPostsBoard programId="hypnosis-2" accent="#6366f1" />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // ── MARKETING VIEW — not enrolled ───────────────────────────────────────────
   return (
     <div style={{ background: t.bgPrimary, minHeight: "100vh" }}>
 
@@ -229,25 +293,18 @@ const Hypnosis2Page: React.FC = () => {
                 onMouseEnter={e => { if (!plan.highlight) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(99,102,241,0.18)"; e.currentTarget.style.transform = "translateY(-3px)"; } }}
                 onMouseLeave={e => { if (!plan.highlight) { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; } }}
               >
-                {/* Badge */}
                 {plan.tag && (
                   <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: plan.tag === "Most Popular" ? "linear-gradient(90deg,#6366f1,#4f46e5)" : "linear-gradient(90deg,#f59e0b,#d97706)", color: "#fff", borderRadius: 50, padding: "4px 18px", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(0,0,0,0.3)" }}>
                     {plan.tag === "Most Popular" ? "⭐ Most Popular" : "💎 Best Value"}
                   </div>
                 )}
-
-                {/* Plan label */}
                 <div style={{ color: plan.highlight ? "#818cf8" : t.textAccent, fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: 1 }}>{plan.label}</div>
-
-                {/* Price */}
                 <div style={{ display: "flex", alignItems: "flex-end", gap: 6 }}>
                   <div style={{ color: plan.highlight ? (isDark ? "#fff" : "#1e1040") : t.textPrimary, fontWeight: 900, fontSize: 42, lineHeight: 1 }}>
                     ₹{plan.price.toLocaleString()}
                   </div>
                   <div style={{ color: plan.highlight ? (isDark ? "rgba(255,255,255,0.55)" : "#6b7280") : t.textMuted, fontSize: 14, paddingBottom: 4 }}>{plan.period}</div>
                 </div>
-
-                {/* Strikethrough if original */}
                 {plan.original && (
                   <div style={{ color: t.textMuted, fontSize: 13, marginTop: -10 }}>
                     <span style={{ textDecoration: "line-through" }}>₹{plan.original.toLocaleString()}</span>
@@ -256,10 +313,7 @@ const Hypnosis2Page: React.FC = () => {
                     </span>
                   </div>
                 )}
-
                 <p style={{ color: plan.highlight ? (isDark ? "rgba(255,255,255,0.65)" : "#4b5563") : t.textSecond, fontSize: 14, lineHeight: 1.6, margin: 0 }}>{plan.desc}</p>
-
-                {/* What's included */}
                 <div style={{ borderTop: `1px solid ${plan.highlight ? "rgba(99,102,241,0.3)" : t.border}`, paddingTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
                   {["40+ Live Classes / Month", "Full Past Recordings", "Practice Group Access", "Expert Q&A Sessions", "Monthly Certificate"].map(item => (
                     <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, color: plan.highlight ? (isDark ? "rgba(255,255,255,0.75)" : "#374151") : t.textSecond, fontSize: 13 }}>
@@ -268,8 +322,6 @@ const Hypnosis2Page: React.FC = () => {
                     </div>
                   ))}
                 </div>
-
-                {/* CTA */}
                 <button onClick={() => { setSelectedPlan(plan.id); handleJoin(plan.id); }} disabled={loading || success}
                   style={{ marginTop: 4, width: "100%", background: success ? "linear-gradient(135deg,#22c55e,#16a34a)" : plan.highlight ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent", border: plan.highlight || success ? "none" : `2px solid #6366f1`, color: plan.highlight || success ? "#fff" : "#6366f1", padding: "14px", borderRadius: 50, fontWeight: 800, fontSize: 15, cursor: loading || success ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: plan.highlight ? "0 6px 20px rgba(99,102,241,0.4)" : "none", transition: "all 0.2s" }}
                   onMouseEnter={e => { if (!loading && !success) { e.currentTarget.style.background = "linear-gradient(135deg,#6366f1,#4f46e5)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(99,102,241,0.4)"; e.currentTarget.style.border = "none"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
@@ -280,7 +332,6 @@ const Hypnosis2Page: React.FC = () => {
             ))}
           </div>
 
-          {/* Trust strip */}
           <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 28, flexWrap: "wrap" }}>
             {[["🔒","Secure Payment"],["⚡","Instant Access"],["🔄","Cancel Anytime"],["🌐","Online Anywhere"]].map(([ic,lb]) => (
               <span key={lb as string} style={{ color: t.textMuted, fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}>
@@ -306,7 +357,7 @@ const Hypnosis2Page: React.FC = () => {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 18 }}>
-          {BENEFITS.map((b, i) => (
+          {BENEFITS.map((b) => (
             <div key={b.title}
               style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 16, padding: "24px 22px", display: "flex", alignItems: "flex-start", gap: 16, transition: "all 0.22s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(99,102,241,0.16)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
@@ -392,6 +443,8 @@ const Hypnosis2Page: React.FC = () => {
           {loading ? "Processing…" : success ? "✅ Subscribed!" : "Join Now →"}
         </button>
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useThemeStore } from "../stores/themeStore";
 import client from "../api/client";
@@ -211,7 +211,7 @@ const ScheduleLiveClassPage: React.FC = () => {
                 style={{
                   padding: "14px 10px", borderRadius: 12, textAlign: "left", cursor: "pointer",
                   border: `2px solid ${accessType === opt.key ? t.accent : t.border}`,
-                  background: accessType === opt.key ? `rgba(124,58,237,0.12)` : t.bgCard,
+                  background: accessType === opt.key ? `rgba(255,30,86,0.12)` : t.bgCard,
                   position: "relative",
                 }}>
                 <div style={{ fontSize: 20, marginBottom: 4 }}>{opt.icon}</div>
@@ -252,7 +252,7 @@ const ScheduleLiveClassPage: React.FC = () => {
                       {/* Client + status */}
                       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
+                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#FF1E56", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
                             {booking.client?.name?.[0]?.toUpperCase() || "?"}
                           </div>
                           <div>
@@ -305,7 +305,7 @@ const ScheduleLiveClassPage: React.FC = () => {
                           onClick={() => handleRequestLive(booking)}
                           disabled={requestingId === booking._id}
                           style={{
-                            background: requestingId === booking._id ? "#9ca3af" : "linear-gradient(135deg,#7c3aed,#5b21b6)",
+                            background: requestingId === booking._id ? "#9ca3af" : "linear-gradient(135deg,#FF1E56,#D4003F)",
                             color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px",
                             fontWeight: 700, fontSize: 14, cursor: requestingId === booking._id ? "not-allowed" : "pointer",
                             display: "flex", alignItems: "center", gap: 8,

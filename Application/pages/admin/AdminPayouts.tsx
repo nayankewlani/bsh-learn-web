@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import client from "../../api/client";
 import Avatar from "../../components/ui/Avatar";
 import Badge from "../../components/ui/Badge";
@@ -75,7 +75,7 @@ const AdminPayouts: React.FC = () => {
   };
 
   const statBox = (label: string, value: string, color: string) => (
-    <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 14, padding: "18px 20px", minWidth: 160 }}>
+    <div style={{ background: "#1A1A1A", border: "1px solid #1A1A1A", borderRadius: 14, padding: "18px 20px", minWidth: 160 }}>
       <div style={{ fontSize: 22, fontWeight: 900, color }}>{value}</div>
       <div style={{ color: "#9ca3af", fontSize: 13, marginTop: 4 }}>{label}</div>
     </div>
@@ -87,7 +87,7 @@ const AdminPayouts: React.FC = () => {
       {summary && (
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
           {statBox("Pending Payouts", summary.pendingCount.toString(), "#f59e0b")}
-          {statBox("Trainer Dues (Pending)", fmt(summary.pendingTrainerTotal), "#a78bfa")}
+          {statBox("Trainer Dues (Pending)", fmt(summary.pendingTrainerTotal), "#FF6B8A")}
           {statBox("Admin Share (Pending)", fmt(summary.pendingAdminTotal), "#34d399")}
           {statBox("Paid Payouts", summary.paidCount.toString(), "#4ade80")}
           {statBox("Total Paid to Trainers", fmt(summary.paidTrainerTotal), "#60a5fa")}
@@ -102,7 +102,7 @@ const AdminPayouts: React.FC = () => {
             onClick={() => setTab(t)}
             style={{
               padding: "8px 22px", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer", border: "none",
-              background: tab === t ? "#7c3aed" : "#13122a",
+              background: tab === t ? "#FF1E56" : "#1A1A1A",
               color: tab === t ? "#fff" : "#9ca3af",
             }}
           >
@@ -132,9 +132,9 @@ const AdminPayouts: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ background: "#1A1A1A", border: "1px solid #1A1A1A", borderRadius: 16, overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: "center", color: "#7c3aed" }}>Loading...</div>
+          <div style={{ padding: 40, textAlign: "center", color: "#FF1E56" }}>Loading...</div>
         ) : payouts.length === 0 ? (
           <div style={{ padding: 48, textAlign: "center", color: "#6b7280" }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>💸</div>
@@ -144,7 +144,7 @@ const AdminPayouts: React.FC = () => {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 820 }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid #1e1b4b" }}>
+                <tr style={{ borderBottom: "1px solid #1A1A1A" }}>
                   {["Trainer", "Course", "Student", "Sale Amount", "GST (18%)", "Net Amount", "Trainer Share (50%)", "Admin Share (50%)", "Date", tab === "pending" ? "Action" : "Paid On"].map((h) => (
                     <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: "#9ca3af", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
                   ))}
@@ -152,7 +152,7 @@ const AdminPayouts: React.FC = () => {
               </thead>
               <tbody>
                 {payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || p.course.title.toLowerCase().includes(search.toLowerCase()) || p.student.name.toLowerCase().includes(search.toLowerCase())).map((p) => (
-                  <tr key={p._id} style={{ borderBottom: "1px solid #1e1b4b" }}>
+                  <tr key={p._id} style={{ borderBottom: "1px solid #1A1A1A" }}>
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <Avatar src={p.trainer.avatar} name={p.trainer.name} size={28} />
@@ -162,7 +162,7 @@ const AdminPayouts: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 14px", color: "#c4b5fd", fontSize: 13, maxWidth: 200 }}>
+                    <td style={{ padding: "12px 14px", color: "#FF6B8A", fontSize: 13, maxWidth: 200 }}>
                       <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.course.title}</div>
                     </td>
                     <td style={{ padding: "12px 14px" }}>
@@ -173,7 +173,7 @@ const AdminPayouts: React.FC = () => {
                     <td style={{ padding: "12px 14px", color: "#f87171", fontSize: 13 }}>{fmt(p.gstPaise)}</td>
                     <td style={{ padding: "12px 14px", color: "#34d399", fontSize: 13 }}>{fmt(p.netPaise)}</td>
                     <td style={{ padding: "12px 14px" }}>
-                      <span style={{ color: "#a78bfa", fontSize: 13, fontWeight: 700 }}>{fmt(p.trainerSharePaise)}</span>
+                      <span style={{ color: "#FF6B8A", fontSize: 13, fontWeight: 700 }}>{fmt(p.trainerSharePaise)}</span>
                     </td>
                     <td style={{ padding: "12px 14px" }}>
                       <span style={{ color: "#60a5fa", fontSize: 13, fontWeight: 700 }}>{fmt(p.adminSharePaise)}</span>
@@ -207,10 +207,10 @@ const AdminPayouts: React.FC = () => {
       {/* Pay confirmation modal */}
       {noteModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-          <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 18, padding: 28, width: "100%", maxWidth: 420 }}>
+          <div style={{ background: "#1A1A1A", border: "1px solid #1A1A1A", borderRadius: 18, padding: 28, width: "100%", maxWidth: 420 }}>
             <h3 style={{ margin: "0 0 6px", color: "#f3f4f6", fontSize: 18, fontWeight: 800 }}>Confirm Payment</h3>
             <p style={{ color: "#9ca3af", fontSize: 14, margin: "0 0 18px" }}>
-              Mark {fmt(noteModal.amount)} as paid to <strong style={{ color: "#a78bfa" }}>{noteModal.trainerName}</strong>?
+              Mark {fmt(noteModal.amount)} as paid to <strong style={{ color: "#FF6B8A" }}>{noteModal.trainerName}</strong>?
             </p>
 
             <label style={{ display: "block", color: "#9ca3af", fontSize: 13, marginBottom: 6 }}>Payment Note (optional)</label>
@@ -219,7 +219,7 @@ const AdminPayouts: React.FC = () => {
               onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. UPI transfer ref #123456"
               style={{
-                width: "100%", padding: "10px 12px", background: "#0f0e1a", border: "1px solid #1e1b4b",
+                width: "100%", padding: "10px 12px", background: "#111111", border: "1px solid #1A1A1A",
                 borderRadius: 10, color: "#f3f4f6", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 20,
               }}
             />

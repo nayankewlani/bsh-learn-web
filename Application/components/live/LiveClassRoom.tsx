@@ -32,9 +32,11 @@ interface CoHost     { user: string; name: string; token: string; uid?: number; 
 interface WbStroke   { id: string; tool: string; color: string; size: number; points: number[][]; userId: string; ts: number; }
 interface BreakoutRoom { id: string; name: string; participantCount: number; }
 interface MyBreakout   { id: string; name: string; channel: string; }
+interface Reaction    { user: string; name: string; emoji: string; ts: number; }
 
 type Panel = "participants" | "chat" | "whiteboard" | "breakout";
 type WbTool = "pen" | "eraser";
+const REACTION_EMOJIS = ["❤️", "👍", "😂", "👏", "😮", "🎉"];
 
 /* ─── Video players (safe: play inside own useEffect) ───────────────────── */
 const LocalVideo: React.FC<{ track: ILocalVideoTrack; label: string }> = ({ track, label }) => {
@@ -63,6 +65,15 @@ const RemoteVideo: React.FC<{ track: IRemoteVideoTrack; label: string }> = ({ tr
   );
 };
 const pill: React.CSSProperties = { position: "absolute", bottom: 8, left: 8, background: "rgba(0,0,0,0.72)", padding: "2px 9px", borderRadius: 5, fontSize: 12, color: "#fff" };
+
+const FloatingReaction: React.FC<{ emoji: string; left: number; onDone: () => void }> = ({ emoji, left, onDone }) => (
+  <div
+    onAnimationEnd={onDone}
+    style={{ position: "absolute", bottom: 70, left: `${left}%`, fontSize: 34, animation: "floatReactionUp 2.2s ease-out forwards", pointerEvents: "none", zIndex: 6 }}
+  >
+    {emoji}
+  </div>
+);
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 const nqColor = (n: number) => n === 0 ? "#6b7280" : n <= 2 ? "#22c55e" : n <= 4 ? "#f59e0b" : "#ef4444";
@@ -218,6 +229,16 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   const [recordingBusy,  setRecordingBusy]  = useState(false);
   const coHostRef        = useRef(false); // track current co-host mode to detect changes
 
+  // Reactions
+  const [floatingReactions, setFloatingReactions] = useState<{ id: string; emoji: string; left: number }[]>([]);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const lastReactionTsRef = useRef(0);
+
+  // Main/small view swap — purely local to this viewer, never synced to the
+  // backend or other participants. null = default (first remote is main, self
+  // is small); "local" or a specific uid = that participant is pinned to main.
+  const [mainId, setMainId] = useState<string | number | "local" | null>(null);
+
   // Whiteboard
   const [wbStrokes,      setWbStrokes]      = useState<WbStroke[]>([]);
   const [wbTool,         setWbTool]         = useState<WbTool>("pen");
@@ -323,6 +344,14 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
       }
       msgCountRef.current = incoming.length;
       setMessages(incoming);
+
+      // Reactions
+      const incomingReactions: Reaction[] = data.reactions || [];
+      const freshReactions = incomingReactions.filter(r => r.ts > lastReactionTsRef.current);
+      if (freshReactions.length) {
+        lastReactionTsRef.current = Math.max(...freshReactions.map(r => r.ts));
+        freshReactions.forEach(r => addFloatingReaction(r.emoji));
+      }
     } catch {}
   }, [classId, user?._id, flushStrokes, inBreakout]);
 
@@ -480,6 +509,19 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
     try { await apiClient.post(`/live-classes/${classId}/chat`, { text }); await pollState(); } catch {}
   };
 
+  /* ── reactions ────────────────────────────────────────────────────────── */
+  const addFloatingReaction = (emoji: string) => {
+    const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const left = 10 + Math.random() * 80;
+    setFloatingReactions(prev => [...prev, { id, emoji, left }]);
+  };
+  const removeFloatingReaction = (id: string) => setFloatingReactions(prev => prev.filter(r => r.id !== id));
+  const sendReaction = async (emoji: string) => {
+    setShowReactionPicker(false);
+    addFloatingReaction(emoji); // instant local echo, don't wait on the next poll
+    try { await apiClient.post(`/live-classes/${classId}/react`, { emoji }); } catch {}
+  };
+
   /* ── raise hand ──────────────────────────────────────────────────────── */
   const toggleHand = async () => {
     try { const { data } = await apiClient.post(`/live-classes/${classId}/hand`); setIsHandRaised(data.raised); } catch {}
@@ -591,6 +633,13 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
     return role === "audience" && !isCoHost ? "Host" : "Participant";
   };
   const mutedRemoteUids = activeParticipants.filter(p => mutedUserIds.includes(p.user)).map(p => p.uid);
+  // Which participant this viewer currently has pinned to the main tile — falls
+  // back to the default (first remote, or self if alone) if nothing is pinned,
+  // or if the pinned remote has since left the call.
+  const effectiveMainId: string | number | "local" =
+    mainId !== null && (mainId === "local" || remoteUsers.some(u => u.uid === mainId)) ? mainId
+    : remoteUsers.length > 0 ? remoteUsers[0].uid
+    : "local";
 
   return (
     <div ref={containerRef} style={{ background: "#0a0910", borderRadius: isFullScreen ? 0 : 14, overflow: "hidden", display: "flex", flexDirection: "column", height: isFullScreen ? "100vh" : undefined }}>
@@ -666,45 +715,80 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
           )}
           {joined && (
             <div style={{ position: "relative", height: "100%", minHeight: 340 }}>
-              {/* Main area: the other participant(s) — this is the primary view, like Zoom's speaker view */}
-              {remoteUsers.length > 0 ? (
-                <div style={{ position: "absolute", inset: 0, display: "grid", gridTemplateColumns: remoteUsers.length > 1 ? "repeat(auto-fit,minmax(280px,1fr))" : "1fr", gap: 2 }}>
-                  {remoteUsers.map(u => (
-                    <div key={u.uid}>
-                      {u.videoTrack
-                        ? <RemoteVideo track={u.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(u.uid)}${mutedRemoteUids.includes(Number(u.uid)) ? " 🔇" : ""}`} />
-                        : <div style={{ minHeight: 200, height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a", flexDirection: "column", gap: 8 }}>
+              {/* Main tile: whichever participant this viewer has pinned — tap any
+                  small tile to pin it here; defaults to the first remote, or
+                  yourself if you're alone. Tapping the main tile pins yourself. */}
+              {effectiveMainId === "local" ? (
+                canPublish && localTracks ? (
+                  <div style={{ position: "absolute", inset: 0, cursor: remoteUsers.length > 0 ? "pointer" : "default" }}
+                    onClick={() => remoteUsers.length > 0 && setMainId(remoteUsers[0].uid)}>
+                    {isScreenSharing && screenRef.current
+                      ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" />
+                      : <LocalVideo track={localTracks[1]} label={`You${role === "host" ? " (Host)" : oneToOne ? "" : " (Co-host)"}${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
+                  </div>
+                ) : (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, color: "#6b7280" }}>
+                    <div style={{ fontSize: 40 }}>⏳</div>
+                    <p>Waiting for host…</p>
+                    {isHandRaised && <p style={{ color: "#f59e0b", fontSize: 13 }}>✋ Hand raised — host can see your request</p>}
+                  </div>
+                )
+              ) : (() => {
+                  const mainUser = remoteUsers.find(u => u.uid === effectiveMainId);
+                  if (!mainUser) return null;
+                  return (
+                    <div style={{ position: "absolute", inset: 0, cursor: "pointer" }} onClick={() => setMainId("local")}>
+                      {mainUser.videoTrack
+                        ? <RemoteVideo track={mainUser.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(mainUser.uid)}${mutedRemoteUids.includes(Number(mainUser.uid)) ? " 🔇" : ""}`} />
+                        : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a", flexDirection: "column", gap: 8 }}>
                             <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>👤</div>
-                            <span style={{ color: "#d1d5db", fontSize: 12, fontWeight: 600 }}>{inBreakout ? "Participant" : nameForUid(u.uid)}</span>
-                            <span style={{ color: "#9ca3af", fontSize: 12 }}>{u.audioTrack ? "🎤 Audio on" : "Camera off"}</span>
+                            <span style={{ color: "#d1d5db", fontSize: 12, fontWeight: 600 }}>{inBreakout ? "Participant" : nameForUid(mainUser.uid)}</span>
+                            <span style={{ color: "#9ca3af", fontSize: 12 }}>{mainUser.audioTrack ? "🎤 Audio on" : "Camera off"}</span>
                           </div>
                       }
                     </div>
+                  );
+                })()
+              }
+
+              {/* Small strip: everyone not currently pinned to main — click any to swap it into the main tile */}
+              <div style={{ position: "absolute", bottom: 14, right: 14, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, zIndex: 5 }}>
+                {effectiveMainId !== "local" && canPublish && localTracks && (
+                  <div style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
+                    onClick={() => setMainId("local")}>
+                    {isScreenSharing && screenRef.current
+                      ? <LocalVideo track={screenRef.current} label="🖥️ You" />
+                      : <LocalVideo track={localTracks[1]} label={`You${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
+                  </div>
+                )}
+                {remoteUsers.filter(u => u.uid !== effectiveMainId).map(u => (
+                  <div key={u.uid} style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
+                    onClick={() => setMainId(u.uid)}>
+                    {u.videoTrack
+                      ? <RemoteVideo track={u.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(u.uid)}${mutedRemoteUids.includes(Number(u.uid)) ? " 🔇" : ""}`} />
+                      : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a" }}>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>👤</div>
+                        </div>
+                    }
+                  </div>
+                ))}
+              </div>
+
+              {/* Floating reactions */}
+              {floatingReactions.map(r => (
+                <FloatingReaction key={r.id} emoji={r.emoji} left={r.left} onDone={() => removeFloatingReaction(r.id)} />
+              ))}
+
+              {/* Reaction picker popup */}
+              {showReactionPicker && (
+                <div style={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6, background: "rgba(19,18,42,0.95)", border: "1px solid #1e1b4b", borderRadius: 26, padding: "6px 10px", zIndex: 6 }}>
+                  {REACTION_EMOJIS.map(e => (
+                    <button key={e} onClick={() => sendReaction(e)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", padding: "4px 6px" }}>{e}</button>
                   ))}
-                </div>
-              ) : canPublish && localTracks ? (
-                // Nobody else here yet — nothing to show as "main", so your own video fills the space
-                <div style={{ position: "absolute", inset: 0 }}>
-                  {isScreenSharing && screenRef.current
-                    ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" />
-                    : <LocalVideo track={localTracks[1]} label={`You${role === "host" ? " (Host)" : oneToOne ? "" : " (Co-host)"}${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
-                </div>
-              ) : (
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, color: "#6b7280" }}>
-                  <div style={{ fontSize: 40 }}>⏳</div>
-                  <p>Waiting for host…</p>
-                  {isHandRaised && <p style={{ color: "#f59e0b", fontSize: 13 }}>✋ Hand raised — host can see your request</p>}
                 </div>
               )}
 
-              {/* Your own video — small corner thumbnail once someone else is on the main view */}
-              {remoteUsers.length > 0 && canPublish && localTracks && (
-                <div style={{ position: "absolute", bottom: 14, right: 14, width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", zIndex: 5 }}>
-                  {isScreenSharing && screenRef.current
-                    ? <LocalVideo track={screenRef.current} label="🖥️ You" />
-                    : <LocalVideo track={localTracks[1]} label={`You${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
-                </div>
-              )}
+              <style>{`@keyframes floatReactionUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-200px); opacity: 0; } }`}</style>
             </div>
           )}
         </div>
@@ -920,6 +1004,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
           <TBtn icon="💬" label="Chat" active={activePanel === "chat"} badge={unreadChat > 0 ? unreadChat : undefined} onClick={() => togglePanel("chat")} />
           <TBtn icon="🖊️" label="Board" active={activePanel === "whiteboard"} onClick={() => togglePanel("whiteboard")} />
           {role === "host" && <TBtn icon="🏠" label="Rooms" active={activePanel === "breakout"} badge={breakoutActive ? 1 : undefined} onClick={() => togglePanel("breakout")} />}
+          <TBtn icon="😊" label="React" active={showReactionPicker} onClick={() => setShowReactionPicker(v => !v)} />
 
           {/* Audience: raise hand */}
           {role === "audience" && !isCoHost && <TBtn icon="✋" label={isHandRaised ? "Lower Hand" : "Raise Hand"} active={isHandRaised} onClick={toggleHand} />}

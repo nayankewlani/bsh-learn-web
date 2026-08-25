@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -47,16 +47,16 @@ const CreateCoursePage: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  const inputStyle = { background: "#1e1b4b", border: "1.5px solid #3730a3", borderRadius: 10, color: "#f3f4f6", padding: "10px 14px", fontSize: 15, width: "100%", boxSizing: "border-box" as const };
+  const inputStyle = { background: "#222222", border: "1.5px solid #3730a3", borderRadius: 10, color: "#f3f4f6", padding: "10px 14px", fontSize: 15, width: "100%", boxSizing: "border-box" as const };
   const textareaStyle = { ...inputStyle, resize: "vertical" as const, minHeight: 100, fontFamily: "inherit" };
 
   return (
-    <div style={{ background: "#0a0914", minHeight: "100vh", padding: "32px 24px" }}>
+    <div style={{ background: "#0D0D0D", minHeight: "100vh", padding: "32px 24px" }}>
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: "#f3f4f6", marginBottom: 8 }}>Create New Course</h1>
         <div style={{ display: "flex", gap: 0, marginBottom: 32, borderRadius: 12, overflow: "hidden", border: "1px solid #1e1b4b" }}>
           {STEPS.map((s, i) => (
-            <button key={s} onClick={() => i <= step && setStep(i)} style={{ flex: 1, padding: "12px", border: "none", cursor: i <= step ? "pointer" : "default", fontWeight: 600, fontSize: 13, background: i === step ? "linear-gradient(135deg,#7c3aed,#5b21b6)" : i < step ? "#1e1b4b" : "#13122a", color: i === step ? "#fff" : i < step ? "#a78bfa" : "#4b5563" }}>
+            <button key={s} onClick={() => i <= step && setStep(i)} style={{ flex: 1, padding: "12px", border: "none", cursor: i <= step ? "pointer" : "default", fontWeight: 600, fontSize: 13, background: i === step ? "linear-gradient(135deg,#FF1E56,#D4003F)" : i < step ? "#222222" : "#13122a", color: i === step ? "#fff" : i < step ? "#FF6B8A" : "#4b5563" }}>
               {i < step ? "✓ " : ""}{s}
             </button>
           ))}
@@ -67,25 +67,25 @@ const CreateCoursePage: React.FC = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
               <Input label="Course Title *" value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g., Complete JEE Mathematics" />
               <div>
-                <label style={{ color: "#c4b5fd", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Description *</label>
+                <label style={{ color: "#FF6B8A", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Description *</label>
                 <textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Describe what students will learn..." style={textareaStyle} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <div>
-                  <label style={{ color: "#c4b5fd", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Category</label>
+                  <label style={{ color: "#FF6B8A", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Category</label>
                   <select value={form.category} onChange={(e) => set("category", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                     {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ color: "#c4b5fd", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Language</label>
+                  <label style={{ color: "#FF6B8A", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Language</label>
                   <select value={form.language} onChange={(e) => set("language", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                     {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label style={{ color: "#c4b5fd", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Level</label>
+                <label style={{ color: "#FF6B8A", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 6 }}>Level</label>
                 <select value={form.level} onChange={(e) => set("level", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                   {["beginner", "intermediate", "advanced"].map((l) => <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>)}
                 </select>
@@ -97,7 +97,7 @@ const CreateCoursePage: React.FC = () => {
           {step === 1 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <div>
-                <label style={{ color: "#c4b5fd", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 10 }}>What students will learn</label>
+                <label style={{ color: "#FF6B8A", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 10 }}>What students will learn</label>
                 {form.objectives.map((o, i) => (
                   <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                     <input value={o} onChange={(e) => setList("objectives", i, e.target.value)} placeholder={`Objective ${i + 1}`} style={{ ...inputStyle, flex: 1 }} />
@@ -107,7 +107,7 @@ const CreateCoursePage: React.FC = () => {
                 <Button variant="ghost" size="sm" onClick={() => addItem("objectives")}>+ Add Objective</Button>
               </div>
               <div>
-                <label style={{ color: "#c4b5fd", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 10 }}>Requirements</label>
+                <label style={{ color: "#FF6B8A", fontSize: 14, fontWeight: 500, display: "block", marginBottom: 10 }}>Requirements</label>
                 {form.requirements.map((r, i) => (
                   <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                     <input value={r} onChange={(e) => setList("requirements", i, e.target.value)} placeholder={`Requirement ${i + 1}`} style={{ ...inputStyle, flex: 1 }} />
@@ -122,12 +122,12 @@ const CreateCoursePage: React.FC = () => {
 
           {step === 2 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              <div style={{ background: "#0f0e1a", borderRadius: 12, padding: 16, marginBottom: 8 }}>
-                <h3 style={{ color: "#c4b5fd", margin: "0 0 12px", fontSize: 14 }}>Pricing Guide</h3>
+              <div style={{ background: "#111111", borderRadius: 12, padding: 16, marginBottom: 8 }}>
+                <h3 style={{ color: "#FF6B8A", margin: "0 0 12px", fontSize: 14 }}>Pricing Guide</h3>
                 {[["Free", "0", "Great for growing your audience"], ["Basic", "499", "Single course access"], ["Pro", "999", "Popular pricing point"], ["Premium", "1999", "Advanced content"]].map(([label, price, desc]) => (
                   <div key={label} onClick={() => set("price", price)} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", cursor: "pointer", borderBottom: "1px solid #1e1b4b" }}>
-                    <span style={{ color: "#c4b5fd", fontSize: 13 }}>{label}</span>
-                    <span style={{ color: "#a78bfa", fontWeight: 700, fontSize: 13 }}>₹{price}</span>
+                    <span style={{ color: "#FF6B8A", fontSize: 13 }}>{label}</span>
+                    <span style={{ color: "#FF6B8A", fontWeight: 700, fontSize: 13 }}>₹{price}</span>
                   </div>
                 ))}
               </div>
