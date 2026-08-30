@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { AdminLiveClass, AdminLivePermission } from '../../api/admin';
-import { adminGetLiveClasses, adminApproveLiveClass } from '../../api/admin';
+import { adminGetLiveClasses, adminApproveLiveClass, adminGenerateRecording, adminGetRecordingDownload } from '../../api/admin';
 import client from '../../api/client';
 
 const fmtDate = (d: string) => new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -20,7 +20,9 @@ const AdminLiveClasses: React.FC = () => {
   const [loading, setLoading]    = useState(true);
   const [search, setSearch]      = useState('');
   const [filter, setFilter]      = useState<'pending' | 'all' | 'live' | 'upcoming' | 'past'>('pending');
-  const [actionId, setActionId]  = useState<string | null>(null);
+  const [actionId, setActionId]       = useState<string | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   // Hero video upload state
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
@@ -120,6 +122,42 @@ const AdminLiveClasses: React.FC = () => {
       alert(err.response?.data?.message || 'Failed');
     } finally { setPermActionId(null); }
   };
+
+  const handleGenerateRecording = async (id: string) => {
+    setGeneratingId(id);
+    try {
+      await adminGenerateRecording(id);
+      // Optimistically mark as generating in the local list
+      setClasses(prev => prev.map(c => c._id === id ? { ...c, recordingGenerating: true } : c));
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to start recording generation');
+      setGeneratingId(null);
+    }
+  };
+
+  const handleDownloadRecording = async (id: string) => {
+    setDownloadingId(id);
+    try {
+      const { data } = await adminGetRecordingDownload(id);
+      window.open(data.url, '_blank');
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to get download URL');
+    } finally { setDownloadingId(null); }
+  };
+
+  // Poll every 8 seconds while any class has recordingGenerating=true
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    const anyGenerating = classes.some(c => c.recordingGenerating);
+    if (anyGenerating && !pollRef.current) {
+      pollRef.current = setInterval(() => { load(); }, 8000);
+    } else if (!anyGenerating && pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+      setGeneratingId(null);
+    }
+    return () => {};
+  }, [classes]);
 
   const getStatus = (c: AdminLiveClass) => {
     if (c.status === 'pending_approval') return 'pending';
@@ -299,7 +337,7 @@ const AdminLiveClasses: React.FC = () => {
                             </td>
 
                             {/* Recording column */}
-                            <td style={{ minWidth: 130 }}>
+                            <td style={{ minWidth: 150 }}>
                               {c.recordingActive ? (
                                 <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
@@ -307,22 +345,36 @@ const AdminLiveClasses: React.FC = () => {
                                 </span>
                               ) : c.recordingMuxPlaybackId ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✅ Ready</span>
-                                  <a
-                                    href={`https://stream.mux.com/${c.recordingMuxPlaybackId}.m3u8`}
-                                    target="_blank" rel="noreferrer"
-                                    style={{ fontSize: 10, color: '#7c3aed', display: 'block' }}>
-                                    ▶ Stream URL
-                                  </a>
-                                  <button
-                                    className="adm-btn adm-btn-sm"
-                                    style={{ fontSize: 10, padding: '2px 8px', background: '#1e293b' }}
+                                  <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✅ Mux Ready</span>
+                                  <a href={`https://stream.mux.com/${c.recordingMuxPlaybackId}.m3u8`} target="_blank" rel="noreferrer"
+                                    style={{ fontSize: 10, color: '#7c3aed', display: 'block' }}>▶ Stream URL</a>
+                                  <button className="adm-btn adm-btn-sm" style={{ fontSize: 10, padding: '2px 8px', background: '#1e293b' }}
                                     onClick={() => navigator.clipboard.writeText(`https://stream.mux.com/${c.recordingMuxPlaybackId}.m3u8`)}>
                                     Copy URL
                                   </button>
                                 </div>
+                              ) : c.recordingGenerating ? (
+                                <span style={{ color: '#f59e0b', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
+                                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', display: 'inline-block', animation: 'pulse 1.2s infinite' }} />
+                                  Generating…
+                                </span>
+                              ) : c.recordingGcsKey ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✅ MP4 Ready</span>
+                                  <button className="adm-btn adm-btn-sm adm-btn-success"
+                                    style={{ fontSize: 10, padding: '3px 10px' }}
+                                    disabled={downloadingId === c._id}
+                                    onClick={() => handleDownloadRecording(c._id)}>
+                                    {downloadingId === c._id ? '…' : '⬇ Download'}
+                                  </button>
+                                </div>
                               ) : status === 'past' && c.status === 'ended' ? (
-                                <span style={{ color: '#475569', fontSize: 11 }}>No recording</span>
+                                <button className="adm-btn adm-btn-sm"
+                                  style={{ fontSize: 10, padding: '3px 10px', background: '#1e3a5f' }}
+                                  disabled={generatingId === c._id}
+                                  onClick={() => handleGenerateRecording(c._id)}>
+                                  {generatingId === c._id ? '…' : '🎬 Generate MP4'}
+                                </button>
                               ) : (
                                 <span style={{ color: '#334155', fontSize: 11 }}>—</span>
                               )}
