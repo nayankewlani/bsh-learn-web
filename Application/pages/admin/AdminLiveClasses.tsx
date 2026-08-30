@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Hls from 'hls.js';
 import type { AdminLiveClass, AdminLivePermission } from '../../api/admin';
-import { adminGetLiveClasses, adminApproveLiveClass, adminGenerateRecording, adminGetRecordingDownload } from '../../api/admin';
+import { adminGetLiveClasses, adminApproveLiveClass, adminGetRecordingManifestUrl } from '../../api/admin';
 import client from '../../api/client';
 
 const fmtDate = (d: string) => new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -20,9 +21,10 @@ const AdminLiveClasses: React.FC = () => {
   const [loading, setLoading]    = useState(true);
   const [search, setSearch]      = useState('');
   const [filter, setFilter]      = useState<'pending' | 'all' | 'live' | 'upcoming' | 'past'>('pending');
-  const [actionId, setActionId]       = useState<string | null>(null);
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [actionId, setActionId]     = useState<string | null>(null);
+  const [watchingId, setWatchingId] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef   = useRef<Hls | null>(null);
 
   // Hero video upload state
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
@@ -123,41 +125,35 @@ const AdminLiveClasses: React.FC = () => {
     } finally { setPermActionId(null); }
   };
 
-  const handleGenerateRecording = async (id: string) => {
-    setGeneratingId(id);
-    try {
-      await adminGenerateRecording(id);
-      // Optimistically mark as generating in the local list
-      setClasses(prev => prev.map(c => c._id === id ? { ...c, recordingGenerating: true } : c));
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to start recording generation');
-      setGeneratingId(null);
-    }
-  };
-
-  const handleDownloadRecording = async (id: string) => {
-    setDownloadingId(id);
-    try {
-      const { data } = await adminGetRecordingDownload(id);
-      window.open(data.url, '_blank');
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to get download URL');
-    } finally { setDownloadingId(null); }
-  };
-
-  // Poll every 8 seconds while any class has recordingGenerating=true
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Initialise / tear down hls.js whenever the player modal opens or closes
   useEffect(() => {
-    const anyGenerating = classes.some(c => c.recordingGenerating);
-    if (anyGenerating && !pollRef.current) {
-      pollRef.current = setInterval(() => { load(); }, 8000);
-    } else if (!anyGenerating && pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-      setGeneratingId(null);
+    const video = videoRef.current;
+    if (!watchingId || !video) return;
+
+    const manifestUrl = adminGetRecordingManifestUrl(watchingId);
+    const token = localStorage.getItem("accessToken") || "";
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        xhrSetup: (xhr: XMLHttpRequest) => {
+          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        },
+      });
+      hlsRef.current = hls;
+      hls.loadSource(manifestUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      // Safari native HLS
+      video.src = manifestUrl;
+      video.play().catch(() => {});
     }
-    return () => {};
-  }, [classes]);
+
+    return () => {
+      hlsRef.current?.destroy();
+      hlsRef.current = null;
+    };
+  }, [watchingId]);
 
   const getStatus = (c: AdminLiveClass) => {
     if (c.status === 'pending_approval') return 'pending';
@@ -337,43 +333,17 @@ const AdminLiveClasses: React.FC = () => {
                             </td>
 
                             {/* Recording column */}
-                            <td style={{ minWidth: 150 }}>
+                            <td style={{ minWidth: 120 }}>
                               {c.recordingActive ? (
                                 <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
                                   Recording…
                                 </span>
-                              ) : c.recordingMuxPlaybackId ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✅ Mux Ready</span>
-                                  <a href={`https://stream.mux.com/${c.recordingMuxPlaybackId}.m3u8`} target="_blank" rel="noreferrer"
-                                    style={{ fontSize: 10, color: '#7c3aed', display: 'block' }}>▶ Stream URL</a>
-                                  <button className="adm-btn adm-btn-sm" style={{ fontSize: 10, padding: '2px 8px', background: '#1e293b' }}
-                                    onClick={() => navigator.clipboard.writeText(`https://stream.mux.com/${c.recordingMuxPlaybackId}.m3u8`)}>
-                                    Copy URL
-                                  </button>
-                                </div>
-                              ) : c.recordingGenerating ? (
-                                <span style={{ color: '#f59e0b', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
-                                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', display: 'inline-block', animation: 'pulse 1.2s infinite' }} />
-                                  Generating…
-                                </span>
                               ) : c.recordingGcsKey ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✅ MP4 Ready</span>
-                                  <button className="adm-btn adm-btn-sm adm-btn-success"
-                                    style={{ fontSize: 10, padding: '3px 10px' }}
-                                    disabled={downloadingId === c._id}
-                                    onClick={() => handleDownloadRecording(c._id)}>
-                                    {downloadingId === c._id ? '…' : '⬇ Download'}
-                                  </button>
-                                </div>
-                              ) : status === 'past' && c.status === 'ended' ? (
-                                <button className="adm-btn adm-btn-sm"
-                                  style={{ fontSize: 10, padding: '3px 10px', background: '#1e3a5f' }}
-                                  disabled={generatingId === c._id}
-                                  onClick={() => handleGenerateRecording(c._id)}>
-                                  {generatingId === c._id ? '…' : '🎬 Generate MP4'}
+                                <button className="adm-btn adm-btn-sm adm-btn-success"
+                                  style={{ fontSize: 10, padding: '3px 10px' }}
+                                  onClick={() => setWatchingId(c._id)}>
+                                  ▶ Watch
                                 </button>
                               ) : (
                                 <span style={{ color: '#334155', fontSize: 11 }}>—</span>
@@ -501,6 +471,38 @@ const AdminLiveClasses: React.FC = () => {
           )}
         </>
       )}
+
+      {/* ── HLS Video Player Modal ── */}
+      {watchingId && (() => {
+        const cls = classes.find(c => c._id === watchingId);
+        return (
+          <div
+            onClick={e => { if (e.target === e.currentTarget) { hlsRef.current?.destroy(); hlsRef.current = null; setWatchingId(null); } }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          >
+            <div style={{ background: '#0f172a', borderRadius: 16, width: '100%', maxWidth: 900, border: '1px solid #1e293b', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #1e293b' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: '#e2e8f0' }}>{cls?.title ?? 'Recording'}</div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>HLS stream from Agora Cloud Recording</div>
+                </div>
+                <button
+                  onClick={() => { hlsRef.current?.destroy(); hlsRef.current = null; setWatchingId(null); }}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: 4 }}>
+                  ✕
+                </button>
+              </div>
+              <div style={{ padding: 20 }}>
+                <video
+                  ref={videoRef}
+                  controls
+                  style={{ width: '100%', borderRadius: 10, background: '#000', display: 'block', maxHeight: '70vh' }}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 };

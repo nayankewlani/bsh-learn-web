@@ -98,10 +98,8 @@ export interface AdminLiveClass {
   agoraChannel?: string;
   maxParticipants?: number;
   heroVideoUrl?: string;
-  recordingMuxPlaybackId?: string;
   recordingActive?: boolean;
   recordingGcsKey?: string;
-  recordingGenerating?: boolean;
 }
 
 export interface AdminLivePermission {
@@ -180,8 +178,7 @@ export const adminGetTransactions   = ()                             => client.g
 export const adminGetEarnings       = ()                             => client.get('/admin/earnings');
 export const adminGetLiveClasses         = ()                                        => client.get('/admin/live-classes');
 export const adminApproveLiveClass       = (id: string, action: 'approve' | 'reject') => client.patch(`/admin/live-classes/${id}`, { action });
-export const adminGenerateRecording      = (id: string)                               => client.post(`/admin/live-classes/${id}/generate-recording`);
-export const adminGetRecordingDownload   = (id: string)                               => client.get<{ url: string }>(`/admin/live-classes/${id}/recording-download`);
+export const adminGetRecordingManifestUrl = (id: string) => `/api/admin/live-classes/${id}/recording-manifest`;
 export const adminGetSessions       = ()                             => client.get('/admin/private-sessions');
 export const adminUpdateSession     = (id: string, data: object)     => client.patch(`/admin/private-sessions/${id}`, data);
 export const adminUpdatePermissions = (userId: string, data: object) => client.patch(`/admin/permissions/${userId}`, data);
