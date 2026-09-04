@@ -34,8 +34,11 @@ interface BreakoutRoom { id: string; name: string; participantCount: number; }
 interface MyBreakout   { id: string; name: string; channel: string; }
 interface Reaction    { user: string; name: string; emoji: string; ts: number; }
 
-type Panel = "participants" | "chat" | "whiteboard" | "breakout";
+type Panel = "participants" | "chat" | "whiteboard" | "breakout" | "polls";
+type ViewMode = "speaker" | "gallery";
 type WbTool = "pen" | "eraser";
+interface PollOption { index: number; text: string; count: number; myVote: boolean; }
+interface Poll { id: string; question: string; options: PollOption[]; createdAt: string; }
 const REACTION_EMOJIS = ["❤️", "👍", "😂", "👏", "😮", "🎉"];
 
 /* ─── Video players (safe: play inside own useEffect) ───────────────────── */
@@ -66,6 +69,39 @@ const RemoteVideo: React.FC<{ track: IRemoteVideoTrack; label: string }> = ({ tr
 };
 const pill: React.CSSProperties = { position: "absolute", bottom: 8, left: 8, background: "rgba(0,0,0,0.72)", padding: "2px 9px", borderRadius: 5, fontSize: 12, color: "#fff" };
 
+/* ─── Professional SVG icon set ─────────────────────────────────────────── */
+const Ic = ({ d, extra }: { d: string | React.ReactNode; extra?: React.ReactNode }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    {typeof d === "string" ? <path d={d} /> : d}
+    {extra}
+  </svg>
+);
+const ICONS: Record<string, React.ReactNode> = {
+  "mic": <Ic d={<><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>} />,
+  "mic-off": <Ic d={<><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>} />,
+  "camera": <Ic d={<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></>} />,
+  "camera-off": <Ic d={<><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h3a2 2 0 0 1 2 2v9.34"/><circle cx="11" cy="13" r="3"/></>} />,
+  "screen": <Ic d={<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>} />,
+  "screen-stop": <Ic d={<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="9" y1="8" x2="15" y2="14"/><line x1="15" y1="8" x2="9" y2="14"/></>} />,
+  "record": <Ic d={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></>} />,
+  "record-stop": <Ic d={<><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" fill="currentColor" stroke="none"/></>} />,
+  "people": <Ic d={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
+  "chat": <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+  "board": <Ic d={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>} />,
+  "rooms": <Ic d={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+  "react": <Ic d={<><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="0.7" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="0.7" fill="currentColor" stroke="none"/></>} />,
+  "hand": <Ic d={<><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></>} />,
+  "settings": <Ic d={<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>} />,
+  "leave": <Ic d={<><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></>} />,
+  "end-call": <Ic d={<><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.42 19.42 0 0 1 4.5 9.5a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.42 0l3-.17a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.4 7.91"/><line x1="23" y1="1" x2="1" y2="23"/></>} />,
+  "main-room": <Ic d={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
+  "gallery": <Ic d={<><rect x="3" y="3" width="7" height="5" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="3" y="11" width="7" height="5" rx="1"/><rect x="14" y="11" width="7" height="5" rx="1"/><rect x="3" y="19" width="7" height="2" rx="1"/><rect x="14" y="19" width="7" height="2" rx="1"/></>} />,
+  "speaker": <Ic d={<><rect x="2" y="4" width="20" height="12" rx="2"/><rect x="7" y="19" width="10" height="2" rx="1"/><path d="M12 16v3"/></>} />,
+  "poll": <Ic d={<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>} />,
+  "kick": <Ic d={<><path d="M13 15l3-3-3-3"/><path d="M8 12h8"/><circle cx="12" cy="12" r="10"/></>} />,
+  "mute-all": <Ic d={<><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><path d="M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>} />,
+};
+
 const FloatingReaction: React.FC<{ emoji: string; left: number; onDone: () => void }> = ({ emoji, left, onDone }) => (
   <div
     onAnimationEnd={onDone}
@@ -87,12 +123,14 @@ const Av: React.FC<{ name: string; size?: number }> = ({ name, size = 28 }) => (
 
 const TBtn: React.FC<{ icon: string; label: string; active?: boolean; danger?: boolean; badge?: number; disabled?: boolean; onClick: () => void }> = ({ icon, label, active, danger, badge, disabled, onClick }) => (
   <button onClick={onClick} disabled={disabled} title={label}
-    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: danger ? "rgba(220,38,38,0.18)" : active ? "rgba(124,58,237,0.28)" : "transparent", border: `1px solid ${danger ? "rgba(220,38,38,0.5)" : active ? "#7c3aed" : "rgba(255,255,255,0.1)"}`, borderRadius: 10, padding: "8px 10px", cursor: disabled ? "not-allowed" : "pointer", color: danger ? "#f87171" : active ? "#a78bfa" : "#d1d5db", minWidth: 50, position: "relative", opacity: disabled ? 0.45 : 1, transition: "all .15s" }}
-    onMouseEnter={e => { if (!disabled) e.currentTarget.style.opacity = "0.78"; }}
-    onMouseLeave={e => { e.currentTarget.style.opacity = disabled ? "0.45" : "1"; }}>
-    {(badge ?? 0) > 0 && <div style={{ position: "absolute", top: 3, right: 3, background: "#ef4444", borderRadius: "50%", width: 15, height: 15, fontSize: 8, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>{(badge ?? 0) > 9 ? "9+" : badge}</div>}
-    <span style={{ fontSize: 17 }}>{icon}</span>
-    <span style={{ fontSize: 9, fontWeight: 600, whiteSpace: "nowrap" }}>{label}</span>
+    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, background: danger ? "rgba(220,38,38,0.18)" : active ? "rgba(124,58,237,0.28)" : "rgba(255,255,255,0.04)", border: `1px solid ${danger ? "rgba(220,38,38,0.45)" : active ? "#7c3aed" : "rgba(255,255,255,0.08)"}`, borderRadius: 12, padding: "9px 12px", cursor: disabled ? "not-allowed" : "pointer", color: danger ? "#f87171" : active ? "#a78bfa" : "#c9cdd6", minWidth: 54, position: "relative", opacity: disabled ? 0.4 : 1, transition: "all .15s", backdropFilter: "blur(4px)" }}
+    onMouseEnter={e => { if (!disabled) { e.currentTarget.style.background = danger ? "rgba(220,38,38,0.28)" : active ? "rgba(124,58,237,0.38)" : "rgba(255,255,255,0.09)"; } }}
+    onMouseLeave={e => { e.currentTarget.style.background = danger ? "rgba(220,38,38,0.18)" : active ? "rgba(124,58,237,0.28)" : "rgba(255,255,255,0.04)"; }}>
+    {(badge ?? 0) > 0 && <div style={{ position: "absolute", top: 4, right: 4, background: "#ef4444", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 0 0 2px #13122a" }}>{(badge ?? 0) > 9 ? "9+" : badge}</div>}
+    <span style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {ICONS[icon] ?? <span style={{ fontSize: 16 }}>{icon}</span>}
+    </span>
+    <span style={{ fontSize: 9, fontWeight: 600, whiteSpace: "nowrap", letterSpacing: 0.3 }}>{label}</span>
   </button>
 );
 
@@ -189,6 +227,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const pollRef     = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reactPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const panelRef    = useRef<Panel | null>(null);
   const msgCountRef = useRef(0);
   const chatEndRef  = useRef<HTMLDivElement>(null);
@@ -198,6 +237,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   const [joined,         setJoined]         = useState(false);
   const [connecting,     setConnecting]     = useState(true);
   const [joinError,      setJoinError]      = useState("");
+  const [reconnecting,   setReconnecting]   = useState(false);
   const [localTracks,    setLocalTracks]    = useState<[ILocalAudioTrack, ILocalVideoTrack] | null>(null);
   const [isMuted,        setIsMuted]        = useState(false);
   const [isVideoOff,     setIsVideoOff]     = useState(false);
@@ -255,6 +295,16 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   const [breakoutNotice, setBreakoutNotice] = useState<string | null>(null);
   const mainChannelRef   = useRef({ channel, token, uid }); // remember original channel for return
 
+  // View mode & polls
+  const [viewMode,        setViewMode]        = useState<ViewMode>("speaker");
+  const [polls,           setPolls]           = useState<Poll[]>([]);
+  const [activePollVote,  setActivePollVote]  = useState<Poll | null>(null); // audience voting card
+  const [showCreatePoll,  setShowCreatePoll]  = useState(false);
+  const [pollQuestion,    setPollQuestion]    = useState("");
+  const [pollOptions,     setPollOptions]     = useState(["", ""]);
+  const [isRemoved,       setIsRemoved]       = useState(false);
+  const votedPollIds      = useRef<Set<string>>(new Set()); // track locally so we don't re-show
+
   /* ── panel ref sync ──────────────────────────────────────────────────── */
   useEffect(() => { panelRef.current = activePanel; }, [activePanel]);
 
@@ -268,6 +318,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   /* ── disconnect helper ───────────────────────────────────────────────── */
   const disconnectAgora = useCallback((skipOnLeave = false) => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    if (reactPollRef.current) { clearInterval(reactPollRef.current); reactPollRef.current = null; }
     const client = clientRef.current;
     const tracks = tracksRef.current;
     const screen = screenRef.current;
@@ -345,21 +396,56 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
       msgCountRef.current = incoming.length;
       setMessages(incoming);
 
-      // Reactions
+      // Polls
+      const incomingPolls: Poll[] = data.polls || [];
+      setPolls(incomingPolls);
+      // Show the first active poll the audience hasn't voted on yet
+      if (role !== "host") {
+        const unvoted = incomingPolls.find(p => !votedPollIds.current.has(p.id) && !p.options.some(o => o.myVote));
+        if (unvoted) setActivePollVote(prev => prev?.id === unvoted.id ? prev : unvoted);
+        else setActivePollVote(null);
+      }
+
+      // Kicked by host
+      if (data.isRemoved && !isRemoved) {
+        setIsRemoved(true);
+        setTimeout(() => handleLeave(), 1500);
+      }
+
+      // Reactions — handled by the dedicated fast poll; skip here to avoid duplicates
+    } catch {}
+  }, [classId, user?._id, flushStrokes, inBreakout, isRemoved]);
+
+  /* ── fast reaction poll (1 s) — shows student reactions in near-real-time ── */
+  const pollReactions = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get(`/live-classes/${classId}/state`);
       const incomingReactions: Reaction[] = data.reactions || [];
-      const freshReactions = incomingReactions.filter(r => r.ts > lastReactionTsRef.current);
+      const freshReactions = incomingReactions.filter(r => {
+        // Normalise ts: server may return seconds or ms, or a createdAt ISO string
+        const raw = r.ts ?? (r as any).createdAt ?? 0;
+        const ts = typeof raw === "string" ? new Date(raw).getTime() : Number(raw) * (raw < 1e12 ? 1000 : 1);
+        return ts > lastReactionTsRef.current;
+      });
       if (freshReactions.length) {
-        lastReactionTsRef.current = Math.max(...freshReactions.map(r => r.ts));
+        const maxTs = Math.max(...freshReactions.map(r => {
+          const raw = r.ts ?? (r as any).createdAt ?? 0;
+          return typeof raw === "string" ? new Date(raw).getTime() : Number(raw) * (raw < 1e12 ? 1000 : 1);
+        }));
+        lastReactionTsRef.current = maxTs;
         freshReactions.forEach(r => addFloatingReaction(r.emoji));
       }
     } catch {}
-  }, [classId, user?._id, flushStrokes, inBreakout]);
+  }, [classId]);
 
   /* ── switch to co-host (audience → publisher) ────────────────────────── */
   const switchToCoHost = async (coHostToken: string) => {
     const client = clientRef.current;
     if (!client) return;
     try {
+      // Renew with PUBLISHER token first — Agora rejects publish attempts when
+      // the active token was issued as SUBSCRIBER, regardless of client role.
+      await client.renewToken(coHostToken);
       await client.setClientRole("host");
       const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
       tracksRef.current = tracks;
@@ -400,6 +486,21 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
       await client.setClientRole(agoraRole === "host" ? "host" : "audience");
 
       client.on("network-quality", s => setNetworkQuality(Math.max(s.uplinkNetworkQuality, s.downlinkNetworkQuality)));
+
+      // Show a banner while Agora is auto-reconnecting (e.g. after a brief network blip)
+      // but do NOT kick the educator — Agora handles reconnection automatically.
+      client.on("connection-state-change", (cur) => {
+        setReconnecting(cur === "RECONNECTING");
+        if (cur === "CONNECTED") setReconnecting(false);
+      });
+
+      // Proactively renew the Agora token before it expires (token TTL = 2 h).
+      client.on("token-privilege-will-expire", async () => {
+        try {
+          const { data } = await apiClient.post(`/live-classes/${classId}/renew-token`);
+          if (data.token) await client.renewToken(data.token);
+        } catch {}
+      });
 
       client.on("user-published", async (u, mediaType) => {
         await client.subscribe(u, mediaType);
@@ -510,11 +611,11 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   };
 
   /* ── reactions ────────────────────────────────────────────────────────── */
-  const addFloatingReaction = (emoji: string) => {
+  const addFloatingReaction = useCallback((emoji: string) => {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const left = 10 + Math.random() * 80;
     setFloatingReactions(prev => [...prev, { id, emoji, left }]);
-  };
+  }, []);
   const removeFloatingReaction = (id: string) => setFloatingReactions(prev => prev.filter(r => r.id !== id));
   const sendReaction = async (emoji: string) => {
     setShowReactionPicker(false);
@@ -542,6 +643,32 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   };
   const clearWhiteboard = async () => {
     try { await apiClient.delete(`/live-classes/${classId}/whiteboard`); setWbStrokes([]); } catch {}
+  };
+  const removeParticipant = async (userId: string) => {
+    try { await apiClient.post(`/live-classes/${classId}/remove/${userId}`); await pollState(); } catch {}
+  };
+  const muteAll = async () => {
+    try { await apiClient.post(`/live-classes/${classId}/mute-all`); await pollState(); } catch {}
+  };
+  const createPoll = async () => {
+    const opts = pollOptions.filter(o => o.trim());
+    if (!pollQuestion.trim() || opts.length < 2) return;
+    try {
+      await apiClient.post(`/live-classes/${classId}/polls`, { question: pollQuestion.trim(), options: opts });
+      setPollQuestion(""); setPollOptions(["", ""]); setShowCreatePoll(false);
+      await pollState();
+    } catch {}
+  };
+  const votePoll = async (pollId: string, optionIndex: number) => {
+    try {
+      await apiClient.post(`/live-classes/${classId}/polls/${pollId}/vote`, { optionIndex });
+      votedPollIds.current.add(pollId);
+      setActivePollVote(null);
+      await pollState();
+    } catch {}
+  };
+  const endPoll = async (pollId: string) => {
+    try { await apiClient.delete(`/live-classes/${classId}/polls/${pollId}`); await pollState(); } catch {}
   };
   const createBreakout = async () => {
     try { await apiClient.post(`/live-classes/${classId}/breakout`, { count: breakoutCount }); await pollState(); } catch {}
@@ -571,6 +698,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
 
   const handleLeave = () => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    if (reactPollRef.current) { clearInterval(reactPollRef.current); reactPollRef.current = null; }
     disconnectAgora(true);
     setJoined(false); setLocalTracks(null); setRemoteUsers([]);
     onLeave?.();
@@ -582,6 +710,8 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
     joinChannel(channel, token, agoraRole, role === "host" || oneToOne).then(() => {
       pollState();
       pollRef.current = setInterval(pollState, 3000);
+      // 1-second reaction poll so floating emojis from mobile appear in near-real-time
+      reactPollRef.current = setInterval(pollReactions, 1000);
     });
     return () => { disconnectAgora(true); };
   }, []);
@@ -663,6 +793,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
             {inBreakout && myBreakout && <span style={{ color: "#f59e0b", fontSize: 11 }}>{myBreakout.name}</span>}
           </>}
           {connecting && <span style={{ color: "#9ca3af", fontSize: 12 }}>{breakoutNotice || "Connecting…"}</span>}
+          {reconnecting && !connecting && <span style={{ color: "#f59e0b", fontSize: 12 }}>⚠ Reconnecting…</span>}
           {joinError && <span style={{ color: "#f87171", fontSize: 12 }}>Connection failed</span>}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -715,64 +846,102 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
           )}
           {joined && (
             <div style={{ position: "relative", height: "100%", minHeight: 340 }}>
-              {/* Main tile: whichever participant this viewer has pinned — tap any
-                  small tile to pin it here; defaults to the first remote, or
-                  yourself if you're alone. Tapping the main tile pins yourself. */}
-              {effectiveMainId === "local" ? (
-                canPublish && localTracks ? (
-                  <div style={{ position: "absolute", inset: 0, cursor: remoteUsers.length > 0 ? "pointer" : "default" }}
-                    onClick={() => remoteUsers.length > 0 && setMainId(remoteUsers[0].uid)}>
-                    {isScreenSharing && screenRef.current
-                      ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" />
-                      : <LocalVideo track={localTracks[1]} label={`You${role === "host" ? " (Host)" : oneToOne ? "" : " (Co-host)"}${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
-                  </div>
-                ) : (
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, color: "#6b7280" }}>
-                    <div style={{ fontSize: 40 }}>⏳</div>
-                    <p>Waiting for host…</p>
-                    {isHandRaised && <p style={{ color: "#f59e0b", fontSize: 13 }}>✋ Hand raised — host can see your request</p>}
-                  </div>
-                )
-              ) : (() => {
-                  const mainUser = remoteUsers.find(u => u.uid === effectiveMainId);
-                  if (!mainUser) return null;
-                  return (
-                    <div style={{ position: "absolute", inset: 0, cursor: "pointer" }} onClick={() => setMainId("local")}>
-                      {mainUser.videoTrack
-                        ? <RemoteVideo track={mainUser.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(mainUser.uid)}${mutedRemoteUids.includes(Number(mainUser.uid)) ? " 🔇" : ""}`} />
-                        : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a", flexDirection: "column", gap: 8 }}>
-                            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>👤</div>
-                            <span style={{ color: "#d1d5db", fontSize: 12, fontWeight: 600 }}>{inBreakout ? "Participant" : nameForUid(mainUser.uid)}</span>
-                            <span style={{ color: "#9ca3af", fontSize: 12 }}>{mainUser.audioTrack ? "🎤 Audio on" : "Camera off"}</span>
+
+              {/* ── Gallery view: CSS grid of all participants ── */}
+              {viewMode === "gallery" && (() => {
+                const tiles: React.ReactNode[] = [];
+                if (canPublish && localTracks) {
+                  tiles.push(
+                    <div key="local" style={{ background: "#14122a", borderRadius: 10, overflow: "hidden", aspectRatio: "4/3", cursor: "pointer" }} onClick={() => { setViewMode("speaker"); setMainId("local"); }}>
+                      {isScreenSharing && screenRef.current
+                        ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" />
+                        : <LocalVideo track={localTracks[1]} label={`You${role === "host" ? " (Host)" : isCoHost ? " (Co-host)" : ""}${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
+                    </div>
+                  );
+                }
+                remoteUsers.forEach(u => {
+                  tiles.push(
+                    <div key={u.uid} style={{ background: "#14122a", borderRadius: 10, overflow: "hidden", aspectRatio: "4/3", cursor: "pointer" }} onClick={() => { setViewMode("speaker"); setMainId(u.uid); }}>
+                      {u.videoTrack
+                        ? <RemoteVideo track={u.videoTrack} label={`${nameForUid(u.uid)}${mutedRemoteUids.includes(Number(u.uid)) ? " 🔇" : ""}`} />
+                        : <div style={{ height: "100%", minHeight: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+                            <span style={{ color: "#d1d5db", fontSize: 11 }}>{nameForUid(u.uid)}</span>
                           </div>
                       }
                     </div>
                   );
-                })()
-              }
+                });
+                if (tiles.length === 0) {
+                  tiles.push(<div key="empty" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280", fontSize: 13, gridColumn: "1/-1" }}>⏳ Waiting for participants…</div>);
+                }
+                const cols = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(tiles.length))));
+                return (
+                  <div style={{ position: "absolute", inset: 0, overflow: "auto", padding: 10, display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 8, alignContent: "start" }}>
+                    {tiles}
+                  </div>
+                );
+              })()}
 
-              {/* Small strip: everyone not currently pinned to main — click any to swap it into the main tile */}
-              <div style={{ position: "absolute", bottom: 14, right: 14, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, zIndex: 5 }}>
-                {effectiveMainId !== "local" && canPublish && localTracks && (
-                  <div style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
-                    onClick={() => setMainId("local")}>
-                    {isScreenSharing && screenRef.current
-                      ? <LocalVideo track={screenRef.current} label="🖥️ You" />
-                      : <LocalVideo track={localTracks[1]} label={`You${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
-                  </div>
-                )}
-                {remoteUsers.filter(u => u.uid !== effectiveMainId).map(u => (
-                  <div key={u.uid} style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
-                    onClick={() => setMainId(u.uid)}>
-                    {u.videoTrack
-                      ? <RemoteVideo track={u.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(u.uid)}${mutedRemoteUids.includes(Number(u.uid)) ? " 🔇" : ""}`} />
-                      : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a" }}>
-                          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>👤</div>
-                        </div>
-                    }
-                  </div>
-                ))}
-              </div>
+              {/* ── Speaker view (default) ── */}
+              {viewMode === "speaker" && <>
+                {/* Main tile */}
+                {effectiveMainId === "local" ? (
+                  canPublish && localTracks ? (
+                    <div style={{ position: "absolute", inset: 0, cursor: remoteUsers.length > 0 ? "pointer" : "default" }}
+                      onClick={() => remoteUsers.length > 0 && setMainId(remoteUsers[0].uid)}>
+                      {isScreenSharing && screenRef.current
+                        ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" />
+                        : <LocalVideo track={localTracks[1]} label={`You${role === "host" ? " (Host)" : oneToOne ? "" : " (Co-host)"}${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
+                    </div>
+                  ) : (
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, color: "#6b7280" }}>
+                      <div style={{ fontSize: 40 }}>⏳</div>
+                      <p>Waiting for host…</p>
+                      {isHandRaised && <p style={{ color: "#f59e0b", fontSize: 13 }}>✋ Hand raised — host can see your request</p>}
+                    </div>
+                  )
+                ) : (() => {
+                    const mainUser = remoteUsers.find(u => u.uid === effectiveMainId);
+                    if (!mainUser) return null;
+                    return (
+                      <div style={{ position: "absolute", inset: 0, cursor: "pointer" }} onClick={() => setMainId("local")}>
+                        {mainUser.videoTrack
+                          ? <RemoteVideo track={mainUser.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(mainUser.uid)}${mutedRemoteUids.includes(Number(mainUser.uid)) ? " 🔇" : ""}`} />
+                          : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a", flexDirection: "column", gap: 8 }}>
+                              <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>👤</div>
+                              <span style={{ color: "#d1d5db", fontSize: 12, fontWeight: 600 }}>{inBreakout ? "Participant" : nameForUid(mainUser.uid)}</span>
+                              <span style={{ color: "#9ca3af", fontSize: 12 }}>{mainUser.audioTrack ? "🎤 Audio on" : "Camera off"}</span>
+                            </div>
+                        }
+                      </div>
+                    );
+                  })()
+                }
+
+                {/* Small strip */}
+                <div style={{ position: "absolute", bottom: 14, right: 14, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, zIndex: 5 }}>
+                  {effectiveMainId !== "local" && canPublish && localTracks && (
+                    <div style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
+                      onClick={() => setMainId("local")}>
+                      {isScreenSharing && screenRef.current
+                        ? <LocalVideo track={screenRef.current} label="🖥️ You" />
+                        : <LocalVideo track={localTracks[1]} label={`You${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
+                    </div>
+                  )}
+                  {remoteUsers.filter(u => u.uid !== effectiveMainId).map(u => (
+                    <div key={u.uid} style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
+                      onClick={() => setMainId(u.uid)}>
+                      {u.videoTrack
+                        ? <RemoteVideo track={u.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(u.uid)}${mutedRemoteUids.includes(Number(u.uid)) ? " 🔇" : ""}`} />
+                        : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a" }}>
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>👤</div>
+                          </div>
+                      }
+                    </div>
+                  ))}
+                </div>
+              </>}
 
               {/* Floating reactions */}
               {floatingReactions.map(r => (
@@ -788,6 +957,36 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                 </div>
               )}
 
+              {/* Active poll voting card (audience) */}
+              {activePollVote && role !== "host" && (
+                <div style={{ position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)", background: "rgba(19,18,42,0.97)", border: "1px solid #3730a3", borderRadius: 14, padding: "14px 18px", minWidth: 260, maxWidth: 340, zIndex: 10, boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
+                  <div style={{ color: "#a78bfa", fontSize: 10, fontWeight: 700, letterSpacing: 0.6, marginBottom: 6 }}>📊 POLL</div>
+                  <div style={{ color: "#f3f4f6", fontSize: 14, fontWeight: 600, marginBottom: 12 }}>{activePollVote.question}</div>
+                  {activePollVote.options.map(opt => (
+                    <button key={opt.index} onClick={() => votePoll(activePollVote.id, opt.index)}
+                      style={{ display: "block", width: "100%", marginBottom: 6, padding: "8px 12px", background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 8, color: "#d1d5db", fontSize: 13, textAlign: "left", cursor: "pointer" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(124,58,237,0.35)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(124,58,237,0.15)"; }}>
+                      {opt.text}
+                    </button>
+                  ))}
+                  <button onClick={() => { votedPollIds.current.add(activePollVote.id); setActivePollVote(null); }}
+                    style={{ background: "none", border: "none", color: "#6b7280", fontSize: 11, cursor: "pointer", marginTop: 2 }}>
+                    Skip
+                  </button>
+                </div>
+              )}
+
+              {/* Removed banner */}
+              {isRemoved && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
+                  <div style={{ textAlign: "center", color: "#f87171", padding: 24 }}>
+                    <div style={{ fontSize: 40, marginBottom: 10 }}>🚫</div>
+                    <p style={{ fontWeight: 700, fontSize: 16 }}>You have been removed from this meeting.</p>
+                  </div>
+                </div>
+              )}
+
               <style>{`@keyframes floatReactionUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-200px); opacity: 0; } }`}</style>
             </div>
           )}
@@ -799,11 +998,12 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
 
             {/* Tab bar */}
             <div style={{ display: "flex", borderBottom: "1px solid #1e1b4b", flexShrink: 0, overflowX: "auto" }}>
-              {(["participants", "chat", "whiteboard", ...(role === "host" ? ["breakout"] : [])] as Panel[]).map(p => (
+              {(["participants", "chat", "whiteboard", ...(role === "host" ? ["breakout", "polls"] : [])] as Panel[]).map(p => (
                 <button key={p} onClick={() => { setActivePanel(p); if (p === "chat") setUnreadChat(0); }}
                   style={{ flex: "0 0 auto", padding: "9px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, color: activePanel === p ? "#a78bfa" : "#6b7280", borderBottom: `2px solid ${activePanel === p ? "#7c3aed" : "transparent"}`, textTransform: "uppercase", whiteSpace: "nowrap", position: "relative" }}>
-                  {{ participants: "👥 People", chat: "💬 Chat", whiteboard: "🖊 Board", breakout: "🏠 Rooms" }[p]}
+                  {{ participants: "👥 People", chat: "💬 Chat", whiteboard: "🖊 Board", breakout: "🏠 Rooms", polls: "📊 Polls" }[p]}
                   {p === "chat" && unreadChat > 0 && <span style={{ marginLeft: 3, background: "#ef4444", borderRadius: 10, fontSize: 8, padding: "1px 4px", color: "#fff" }}>{unreadChat}</span>}
+                  {p === "polls" && polls.length > 0 && <span style={{ marginLeft: 3, background: "#7c3aed", borderRadius: 10, fontSize: 8, padding: "1px 4px", color: "#fff" }}>{polls.length}</span>}
                 </button>
               ))}
             </div>
@@ -811,6 +1011,12 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
             {/* ── Participants Panel ── */}
             {activePanel === "participants" && (
               <div style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}>
+                {/* Host toolbar: mute-all */}
+                {role === "host" && (
+                  <button onClick={muteAll} style={{ width: "100%", marginBottom: 10, padding: "7px 0", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                    🔇 Mute All Participants
+                  </button>
+                )}
                 {/* Raised hands */}
                 {raisedHands.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
@@ -866,9 +1072,15 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                       {!u.videoTrack && <span style={{ fontSize: 9, color: "#6b7280" }}>📷✕</span>}
                       {(remoteMuted || !u.audioTrack) && <span style={{ fontSize: 9, color: remoteMuted ? "#ef4444" : "#6b7280" }}>🔇</span>}
                       {role === "host" && p && (
-                        <button onClick={() => muteUser(p.user)} style={{ background: "none", border: `1px solid ${remoteMuted ? "#3730a3" : "rgba(239,68,68,0.4)"}`, color: remoteMuted ? "#a78bfa" : "#f87171", borderRadius: 5, padding: "2px 6px", fontSize: 10, cursor: "pointer" }}>
-                          {remoteMuted ? "Unmute" : "Mute"}
-                        </button>
+                        <>
+                          <button onClick={() => muteUser(p.user)} style={{ background: "none", border: `1px solid ${remoteMuted ? "#3730a3" : "rgba(239,68,68,0.4)"}`, color: remoteMuted ? "#a78bfa" : "#f87171", borderRadius: 5, padding: "2px 6px", fontSize: 10, cursor: "pointer" }}>
+                            {remoteMuted ? "Unmute" : "Mute"}
+                          </button>
+                          <button onClick={() => { if (confirm(`Remove ${nameForUid(u.uid)} from the meeting?`)) removeParticipant(p.user); }}
+                            style={{ background: "none", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", borderRadius: 5, padding: "2px 6px", fontSize: 10, cursor: "pointer" }} title="Remove from meeting">
+                            ✕
+                          </button>
+                        </>
                       )}
                     </div>
                   );
@@ -936,6 +1148,66 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
               </div>
             )}
 
+            {/* ── Polls Panel (host only) ── */}
+            {activePanel === "polls" && role === "host" && (
+              <div style={{ flex: 1, overflowY: "auto", padding: "12px 10px" }}>
+                {!showCreatePoll ? (
+                  <button onClick={() => setShowCreatePoll(true)}
+                    style={{ width: "100%", background: "linear-gradient(135deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", borderRadius: 10, padding: "11px 0", fontSize: 13, fontWeight: 700, cursor: "pointer", marginBottom: 14 }}>
+                    + Create Poll
+                  </button>
+                ) : (
+                  <div style={{ background: "#1e1b4b", borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
+                    <div style={{ color: "#a78bfa", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>NEW POLL</div>
+                    <input value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} placeholder="Question…"
+                      style={{ width: "100%", background: "#0a0910", border: "1px solid #1e1b4b", borderRadius: 7, color: "#f3f4f6", padding: "7px 9px", fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: 8 }} />
+                    {pollOptions.map((opt, i) => (
+                      <div key={i} style={{ display: "flex", gap: 5, marginBottom: 5 }}>
+                        <input value={opt} onChange={e => setPollOptions(prev => prev.map((o, idx) => idx === i ? e.target.value : o))} placeholder={`Option ${i + 1}`}
+                          style={{ flex: 1, background: "#0a0910", border: "1px solid #1e1b4b", borderRadius: 7, color: "#f3f4f6", padding: "6px 8px", fontSize: 12, outline: "none", fontFamily: "inherit" }} />
+                        {pollOptions.length > 2 && <button onClick={() => setPollOptions(prev => prev.filter((_, idx) => idx !== i))} style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 14 }}>✕</button>}
+                      </div>
+                    ))}
+                    {pollOptions.length < 5 && (
+                      <button onClick={() => setPollOptions(prev => [...prev, ""])} style={{ background: "none", border: "1px dashed #3730a3", color: "#a78bfa", borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", width: "100%", marginBottom: 8 }}>+ Add Option</button>
+                    )}
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button onClick={createPoll} style={{ flex: 1, background: "#7c3aed", border: "none", color: "#fff", borderRadius: 8, padding: "8px 0", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Launch</button>
+                      <button onClick={() => { setShowCreatePoll(false); setPollQuestion(""); setPollOptions(["", ""]); }} style={{ flex: 1, background: "none", border: "1px solid #3730a3", color: "#a78bfa", borderRadius: 8, padding: "8px 0", fontSize: 12, cursor: "pointer" }}>Cancel</button>
+                    </div>
+                  </div>
+                )}
+
+                {polls.length === 0 && !showCreatePoll && (
+                  <p style={{ color: "#6b7280", fontSize: 12, textAlign: "center", marginTop: 20 }}>No polls yet. Create one above to engage your audience.</p>
+                )}
+
+                {polls.map(p => (
+                  <div key={p.id} style={{ background: "#1e1b4b", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                    <div style={{ color: "#f3f4f6", fontSize: 13, fontWeight: 600, marginBottom: 8 }}>{p.question}</div>
+                    {(() => {
+                      const total = p.options.reduce((s, o) => s + o.count, 0);
+                      return p.options.map(opt => (
+                        <div key={opt.index} style={{ marginBottom: 6 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                            <span style={{ color: "#d1d5db", fontSize: 11 }}>{opt.text}</span>
+                            <span style={{ color: "#9ca3af", fontSize: 11 }}>{opt.count} vote{opt.count !== 1 ? "s" : ""} {total > 0 ? `(${Math.round(opt.count / total * 100)}%)` : ""}</span>
+                          </div>
+                          <div style={{ background: "#0a0910", borderRadius: 4, height: 6, overflow: "hidden" }}>
+                            <div style={{ height: "100%", background: "#7c3aed", width: `${total > 0 ? opt.count / total * 100 : 0}%`, transition: "width .4s" }} />
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+                      <span style={{ color: "#6b7280", fontSize: 10 }}>Total: {p.options.reduce((s, o) => s + o.count, 0)} votes</span>
+                      <button onClick={() => endPoll(p.id)} style={{ background: "none", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171", borderRadius: 6, padding: "3px 10px", fontSize: 10, cursor: "pointer" }}>End Poll</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* ── Breakout Rooms Panel (host only) ── */}
             {activePanel === "breakout" && role === "host" && (
               <div style={{ flex: 1, overflowY: "auto", padding: "12px 10px" }}>
@@ -992,27 +1264,33 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
         <div style={{ background: "#13122a", borderTop: "1px solid #1e1b4b", padding: "9px 12px", display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", flexShrink: 0 }}>
           {/* Publisher controls */}
           {canPublish && <>
-            <TBtn icon={isMuted ? "🔇" : "🎤"} label={mutedByHost ? "Muted by host" : isMuted ? "Unmute" : "Mute"} active={isMuted} disabled={mutedByHost} onClick={toggleMute} />
-            <TBtn icon={isVideoOff ? "📷" : "📹"} label={isVideoOff ? "Start Video" : "Stop Video"} active={isVideoOff} onClick={toggleVideo} />
-            {role === "host" && <TBtn icon="🖥️" label={isScreenSharing ? "Stop Share" : "Share Screen"} active={isScreenSharing} onClick={toggleScreenShare} />}
-            {role === "host" && <TBtn icon="⏺️" label={recordingActive ? "Stop Recording" : "Record"} active={recordingActive} disabled={recordingBusy} onClick={toggleRecording} />}
+            <TBtn icon={isMuted ? "mic-off" : "mic"} label={mutedByHost ? "Muted" : isMuted ? "Unmute" : "Mute"} active={isMuted} disabled={mutedByHost} onClick={toggleMute} />
+            <TBtn icon={isVideoOff ? "camera-off" : "camera"} label={isVideoOff ? "Start Video" : "Stop Video"} active={isVideoOff} onClick={toggleVideo} />
+            {role === "host" && <TBtn icon={isScreenSharing ? "screen-stop" : "screen"} label={isScreenSharing ? "Stop Share" : "Share Screen"} active={isScreenSharing} onClick={toggleScreenShare} />}
+            {role === "host" && <TBtn icon={recordingActive ? "record-stop" : "record"} label={recordingActive ? "Stop Rec" : "Record"} active={recordingActive} disabled={recordingBusy} onClick={toggleRecording} />}
             <div style={{ width: 1, height: 36, background: "#2a274a", margin: "0 2px" }} />
           </>}
 
+          {/* View toggle */}
+          <TBtn icon={viewMode === "gallery" ? "speaker" : "gallery"} label={viewMode === "gallery" ? "Speaker" : "Gallery"} onClick={() => setViewMode(v => v === "gallery" ? "speaker" : "gallery")} />
+          <div style={{ width: 1, height: 36, background: "#2a274a", margin: "0 2px" }} />
+
           {/* Common */}
-          <TBtn icon="👥" label="People" active={activePanel === "participants"} badge={handBadge > 0 ? handBadge : undefined} onClick={() => togglePanel("participants")} />
-          <TBtn icon="💬" label="Chat" active={activePanel === "chat"} badge={unreadChat > 0 ? unreadChat : undefined} onClick={() => togglePanel("chat")} />
-          <TBtn icon="🖊️" label="Board" active={activePanel === "whiteboard"} onClick={() => togglePanel("whiteboard")} />
-          {role === "host" && <TBtn icon="🏠" label="Rooms" active={activePanel === "breakout"} badge={breakoutActive ? 1 : undefined} onClick={() => togglePanel("breakout")} />}
-          <TBtn icon="😊" label="React" active={showReactionPicker} onClick={() => setShowReactionPicker(v => !v)} />
+          <TBtn icon="people" label="People" active={activePanel === "participants"} badge={handBadge > 0 ? handBadge : undefined} onClick={() => togglePanel("participants")} />
+          <TBtn icon="chat" label="Chat" active={activePanel === "chat"} badge={unreadChat > 0 ? unreadChat : undefined} onClick={() => togglePanel("chat")} />
+          <TBtn icon="board" label="Board" active={activePanel === "whiteboard"} onClick={() => togglePanel("whiteboard")} />
+          {role === "host" && <TBtn icon="rooms" label="Rooms" active={activePanel === "breakout"} badge={breakoutActive ? 1 : undefined} onClick={() => togglePanel("breakout")} />}
+          {role === "host" && <TBtn icon="poll" label="Polls" active={activePanel === "polls"} badge={polls.length > 0 ? polls.length : undefined} onClick={() => togglePanel("polls")} />}
+          {role === "host" && <TBtn icon="mute-all" label="Mute All" onClick={muteAll} />}
+          <TBtn icon="react" label="React" active={showReactionPicker} onClick={() => setShowReactionPicker(v => !v)} />
 
           {/* Audience: raise hand */}
-          {role === "audience" && !isCoHost && <TBtn icon="✋" label={isHandRaised ? "Lower Hand" : "Raise Hand"} active={isHandRaised} onClick={toggleHand} />}
+          {role === "audience" && !isCoHost && <TBtn icon="hand" label={isHandRaised ? "Lower Hand" : "Raise Hand"} active={isHandRaised} onClick={toggleHand} />}
 
           {/* Host: settings */}
           {role === "host" && (
             <div style={{ position: "relative" }}>
-              <TBtn icon="⚙️" label="Settings" active={showSettings} onClick={() => setShowSettings(!showSettings)} />
+              <TBtn icon="settings" label="Settings" active={showSettings} onClick={() => setShowSettings(!showSettings)} />
               {showSettings && (
                 <div style={{ position: "absolute", bottom: "calc(100% + 8px)", left: 0, background: "#1a1730", border: "1px solid #1e1b4b", borderRadius: 12, padding: 12, minWidth: 220, zIndex: 50 }}>
                   <div style={{ color: "#a78bfa", fontSize: 10, fontWeight: 700, marginBottom: 6, letterSpacing: 0.6 }}>📷 CAMERA</div>
@@ -1026,7 +1304,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
 
           {/* Leave - right end */}
           <div style={{ marginLeft: "auto" }}>
-            <TBtn icon="🚪" label={inBreakout ? "Main Room" : role === "host" ? "End" : "Leave"} danger onClick={inBreakout ? returnFromBreakout : handleLeave} />
+            <TBtn icon={inBreakout ? "main-room" : "end-call"} label={inBreakout ? "Main Room" : role === "host" ? "End" : "Leave"} danger onClick={inBreakout ? returnFromBreakout : handleLeave} />
           </div>
         </div>
       )}
