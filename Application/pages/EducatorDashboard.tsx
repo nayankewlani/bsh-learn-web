@@ -23,6 +23,22 @@ interface SessionBooking {
   createdAt: string;
 }
 
+interface ConsultationBooking {
+  _id: string;
+  client: { _id: string; name: string; email: string; phone?: string };
+  trainerName: string;
+  sessions: number;
+  bonusSessions: number;
+  durationMins: number;
+  ratePerMin: number;
+  totalPaise: number;
+  status: "paid" | "scheduled" | "completed" | "cancelled";
+  clientNote?: string;
+  preferredTime?: string;
+  liveClassId?: { _id: string; status: string; agoraChannel: string; scheduledAt: string } | null;
+  createdAt: string;
+}
+
 interface Payout {
   _id: string;
   course: { _id: string; title: string };
@@ -48,7 +64,7 @@ const EducatorDashboard: React.FC = () => {
   const [error, setError] = useState("");
 
   // Earnings state
-  const [activeTab, setActiveTab] = useState<"earnings" | "sessions" | "applications" | "messages">("applications");
+  const [activeTab, setActiveTab] = useState<"earnings" | "sessions" | "applications" | "messages" | "consultations">("consultations");
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [earningsTab, setEarningsTab] = useState<"pending" | "paid">("pending");
   const [pendingTotal, setPendingTotal] = useState(0);
@@ -62,6 +78,11 @@ const EducatorDashboard: React.FC = () => {
   const [proposedDate, setProposedDate] = useState("");
   const [proposedDuration, setProposedDuration] = useState(60);
   const [proposing, setProposing] = useState(false);
+
+  // Consultation bookings (paid sessions via book-session flow)
+  const [consultBookings, setConsultBookings] = useState<ConsultationBooking[]>([]);
+  const [consultLoading, setConsultLoading] = useState(false);
+  const [requestingLiveId, setRequestingLiveId] = useState<string | null>(null);
 
   // 1:1 Applications state
   interface MyApplication {
@@ -108,6 +129,7 @@ const EducatorDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboard();
+    loadConsultBookings();
     // Load initial online status from user object
     if ((user as any)?.isOnline) setIsOnline(true);
     // Load unread count
@@ -145,6 +167,28 @@ const EducatorDashboard: React.FC = () => {
       setSessionBookings(data.bookings ?? []);
     } finally {
       setSessionsLoading(false);
+    }
+  };
+
+  const loadConsultBookings = async () => {
+    setConsultLoading(true);
+    try {
+      const { data } = await client.get("/consultation-bookings/for-trainer");
+      setConsultBookings(data.bookings ?? []);
+    } finally {
+      setConsultLoading(false);
+    }
+  };
+
+  const requestLiveClass = async (bookingId: string) => {
+    setRequestingLiveId(bookingId);
+    try {
+      await client.post(`/consultation-bookings/${bookingId}/request-live`);
+      await loadConsultBookings();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to request live class");
+    } finally {
+      setRequestingLiveId(null);
     }
   };
 
@@ -189,6 +233,7 @@ const EducatorDashboard: React.FC = () => {
     if (activeTab === "sessions") loadSessions();
     if (activeTab === "applications") loadMyApps();
     if (activeTab === "messages") loadConversations();
+    if (activeTab === "consultations") loadConsultBookings();
   }, [activeTab]);
 
   const proposeSlot = async (bookingId: string) => {
@@ -267,6 +312,7 @@ const EducatorDashboard: React.FC = () => {
             {/* Tab switcher */}
             <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
               {([
+                { key: "consultations", label: `💳 Paid Sessions${consultBookings.filter(b => b.status === "paid").length > 0 ? ` (${consultBookings.filter(b => b.status === "paid").length} new)` : consultBookings.length > 0 ? ` (${consultBookings.length})` : ""}` },
                 { key: "applications", label: `✋ 1:1 Applications${myApps.filter(a => a.status === "pending").length > 0 ? ` (${myApps.filter(a => a.status === "pending").length} new)` : myApps.length > 0 ? ` (${myApps.length})` : ""}` },
                 { key: "sessions",     label: `📅 1:1 Sessions${sessionBookings.filter(b => b.status === "paid").length > 0 ? ` (${sessionBookings.filter(b => b.status === "paid").length} need action)` : ""}` },
                 { key: "messages",     label: `💬 Messages${unreadCount > 0 ? ` (${unreadCount})` : ""}` },
@@ -286,6 +332,117 @@ const EducatorDashboard: React.FC = () => {
                 </button>
               ))}
             </div>
+
+            {/* Consultation Bookings tab — paid sessions booked via mobile book-session flow */}
+            {activeTab === "consultations" && (
+              <div>
+                {consultLoading ? (
+                  <div style={{ padding: 40, textAlign: "center", color: "#FF1E56" }}>Loading paid sessions…</div>
+                ) : consultBookings.length === 0 ? (
+                  <div style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, padding: 40, textAlign: "center", color: "#6b7280" }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
+                    <p>No paid sessions yet. When a client books and pays for a session with you, it will appear here.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {consultBookings.map(b => {
+                      const statusColors: Record<string, string> = {
+                        paid: "#3b82f6", scheduled: "#f59e0b",
+                        completed: "#22c55e", cancelled: "#ef4444",
+                      };
+                      const color = statusColors[b.status] ?? "#6b7280";
+                      const totalRs = Math.round(b.totalPaise / 100);
+                      return (
+                        <div key={b._id} style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, padding: "20px 22px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                                <span style={{ fontWeight: 700, color: "#f3f4f6", fontSize: 15 }}>
+                                  {b.client?.name ?? "Client"}
+                                </span>
+                                <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: `${color}22`, color }}>
+                                  {b.status.replace(/_/g, " ")}
+                                </span>
+                              </div>
+                              <div style={{ color: "#9ca3af", fontSize: 12 }}>
+                                {b.client?.email}
+                                {b.client?.phone ? ` · ${b.client.phone}` : ""}
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div style={{ color: "#4ade80", fontWeight: 800, fontSize: 18 }}>₹{totalRs.toLocaleString("en-IN")}</div>
+                              <div style={{ color: "#6b7280", fontSize: 12 }}>
+                                {b.sessions} session{b.sessions > 1 ? "s" : ""} × {b.durationMins} min
+                                {b.bonusSessions > 0 && <span style={{ color: "#f59e0b" }}> + {b.bonusSessions} bonus</span>}
+                              </div>
+                              <div style={{ color: "#6b7280", fontSize: 11, marginTop: 2 }}>
+                                {new Date(b.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                              </div>
+                            </div>
+                          </div>
+
+                          {(b.clientNote || b.preferredTime) && (
+                            <div style={{ background: "#0f172a", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
+                              {b.preferredTime && (
+                                <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: b.clientNote ? 4 : 0 }}>
+                                  Preferred time: <strong style={{ color: "#e2e8f0" }}>{b.preferredTime}</strong>
+                                </div>
+                              )}
+                              {b.clientNote && (
+                                <div style={{ fontSize: 13, color: "#cbd5e1" }}>{b.clientNote}</div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Status-specific actions */}
+                          {b.status === "paid" && !b.liveClassId && (
+                            <button
+                              onClick={() => requestLiveClass(b._id)}
+                              disabled={requestingLiveId === b._id}
+                              style={{
+                                width: "100%", padding: "11px", borderRadius: 10, border: "none",
+                                background: requestingLiveId === b._id ? "#374151" : "linear-gradient(90deg,#FF1E56,#D4003F)",
+                                color: "#fff", fontWeight: 700, fontSize: 14,
+                                cursor: requestingLiveId === b._id ? "not-allowed" : "pointer",
+                              }}
+                            >
+                              {requestingLiveId === b._id ? "Requesting…" : "📅 Schedule Live Session → Send to Admin"}
+                            </button>
+                          )}
+
+                          {b.status === "scheduled" && b.liveClassId && (
+                            <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                              <div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", marginBottom: 2 }}>Live class requested — pending admin approval</div>
+                                {b.liveClassId.scheduledAt && (
+                                  <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                                    Scheduled: {new Date(b.liveClassId.scheduledAt).toLocaleString("en-IN")}
+                                  </div>
+                                )}
+                              </div>
+                              {b.liveClassId.status === "approved" && (
+                                <button
+                                  onClick={() => navigate("/live")}
+                                  style={{ padding: "8px 18px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                                >
+                                  🔴 Go to Live Page
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {b.status === "completed" && (
+                            <div style={{ fontSize: 12, color: "#22c55e", background: "rgba(34,197,94,0.08)", padding: "8px 12px", borderRadius: 8 }}>
+                              ✅ Session completed
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 1:1 Applications tab */}
             {activeTab === "applications" && (

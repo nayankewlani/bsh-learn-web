@@ -24,10 +24,17 @@ client.interceptors.response.use(
         localStorage.setItem("refreshToken", data.refreshToken);
         original.headers.Authorization = `Bearer ${data.accessToken}`;
         return client(original);
-      } catch {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+      } catch (refreshErr: unknown) {
+        // Only force logout when the server explicitly rejects the refresh token
+        // (HTTP 401/403). A network error means the API is temporarily down (e.g.
+        // a deployment restart) — silently propagating lets polling loops retry on
+        // the next tick without evicting the educator from a live session.
+        const httpStatus = (refreshErr as { response?: { status?: number } }).response?.status;
+        if (httpStatus === 401 || httpStatus === 403) {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          window.location.href = "/login";
+        }
       }
     }
     return Promise.reject(error);

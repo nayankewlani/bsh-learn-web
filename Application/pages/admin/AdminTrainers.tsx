@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState, useMemo, useRef } from 'react';
+import client from '../../api/client';
 import type { AdminTrainer } from '../../api/admin';
 import {
   adminGetTrainers, adminCreateTrainer, adminUpdateTrainerProfile,
@@ -60,33 +61,10 @@ function useExtraSpecialties() {
   return _extraSpecialties;
 }
 
-// ── Image compression helper ───────────────────────────────────────────────────
-
-const compressImage = (file: File, maxPx = 320, quality = 0.88): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = ev => {
-      const img = new Image();
-      img.onerror = reject;
-      img.onload = () => {
-        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = ev.target!.result as string;
-    };
-    reader.readAsDataURL(file);
-  });
-
 // ── Drag-and-drop image upload zone ───────────────────────────────────────────
 
 const ImageDropZone: React.FC<{
-  value: string;
+  value: string;          // GCS key, https:// URL, or base64 — what gets stored in DB
   onChange: (v: string) => void;
   size?: number;
   label?: string;
@@ -94,13 +72,28 @@ const ImageDropZone: React.FC<{
   const [drag, setDrag]       = useState(false);
   const [busy, setBusy]       = useState(false);
   const [urlMode, setUrlMode] = useState(false);
+  // Fresh signed URL kept in local state after a new upload (so preview renders immediately)
+  const [localPreview, setLocalPreview] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Derive the src to show: prefer localPreview (just uploaded), then value if it's a URL
+  const displaySrc = localPreview || (value && !value.startsWith('avatars/') ? value : '');
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
     setBusy(true);
-    try { onChange(await compressImage(file)); }
-    finally { setBusy(false); }
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const { data } = await client.post('/admin/upload-avatar', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      // Store the GCS key in DB (never expires), use signed URL only for local preview
+      setLocalPreview(data.url);
+      onChange(data.key);
+    } catch {
+      alert('Image upload failed. Please try again.');
+    } finally { setBusy(false); }
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -116,8 +109,8 @@ const ImageDropZone: React.FC<{
       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
         {/* Preview circle */}
         <div style={{ width: size, height: size, borderRadius: '50%', border: '2px solid #FF1E56', overflow: 'hidden', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.28, fontWeight: 800, color: '#FF1E56', flexShrink: 0 }}>
-          {value
-            ? <img src={value} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          {displaySrc
+            ? <img src={displaySrc} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             : initials || '?'}
         </div>
 
@@ -161,8 +154,8 @@ const ImageDropZone: React.FC<{
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <input
                 autoFocus
-                value={value.startsWith('data:') ? '' : value}
-                onChange={e => onChange(e.target.value)}
+                value={value.startsWith('data:') || value.startsWith('avatars/') ? '' : value}
+                onChange={e => { setLocalPreview(''); onChange(e.target.value); }}
                 placeholder="https://..."
                 style={{ flex: 1, background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '7px 10px', color: '#e2e8f0', fontSize: 12, outline: 'none' }}
               />

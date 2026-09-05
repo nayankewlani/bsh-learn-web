@@ -1,7 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import client from "../../api/client";
 import Avatar from "../../components/ui/Avatar";
-import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 
 interface Payout {
@@ -37,23 +36,34 @@ const AdminPayouts: React.FC = () => {
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [search, setSearch] = useState("");
   const [payingId, setPayingId] = useState<string | null>(null);
   const [noteModal, setNoteModal] = useState<{ id: string; trainerName: string; amount: number } | null>(null);
   const [note, setNote] = useState("");
 
-  const load = async (status: "pending" | "paid") => {
-    setLoading(true);
+  const load = async (status: "pending" | "paid", pg = 1) => {
+    pg === 1 ? setLoading(true) : setLoadingMore(true);
     try {
-      const { data } = await client.get(`/admin/payouts?status=${status}`);
-      setPayouts(data.payouts);
-      setSummary(data.summary);
+      const { data } = await client.get(`/admin/payouts?status=${status}&page=${pg}`);
+      const rows: Payout[] = (data.payouts || []).filter((p: any) =>
+        p && p.trainer && p.course && p.student
+      );
+      setPayouts(prev => pg === 1 ? rows : [...prev, ...rows]);
+      if (data.summary) setSummary(data.summary);
+      setPage(pg);
+      setHasMore(pg < (data.pages || 1));
+    } catch (err: any) {
+      console.error("[AdminPayouts] load error:", err?.response?.data || err?.message || err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  useEffect(() => { load(tab); }, [tab]);
+  useEffect(() => { setPayouts([]); setPage(1); setHasMore(false); load(tab, 1); }, [tab]);
 
   const openPayModal = (p: Payout) => {
     setNote("");
@@ -66,7 +76,7 @@ const AdminPayouts: React.FC = () => {
     try {
       await client.post(`/admin/payouts/${noteModal.id}/pay`, { paymentNote: note });
       setNoteModal(null);
-      load(tab);
+      load(tab, 1);
     } catch {
       alert("Failed to mark as paid");
     } finally {
@@ -75,7 +85,7 @@ const AdminPayouts: React.FC = () => {
   };
 
   const statBox = (label: string, value: string, color: string) => (
-    <div style={{ background: "#1A1A1A", border: "1px solid #1A1A1A", borderRadius: 14, padding: "18px 20px", minWidth: 160 }}>
+    <div style={{ background: "#1A1A1A", border: "1px solid #2a2a2a", borderRadius: 14, padding: "18px 20px", minWidth: 160 }}>
       <div style={{ fontSize: 22, fontWeight: 900, color }}>{value}</div>
       <div style={{ color: "#9ca3af", fontSize: 13, marginTop: 4 }}>{label}</div>
     </div>
@@ -132,7 +142,7 @@ const AdminPayouts: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div style={{ background: "#1A1A1A", border: "1px solid #1A1A1A", borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ background: "#1A1A1A", border: "1px solid #2a2a2a", borderRadius: 16, overflow: "hidden" }}>
         {loading ? (
           <div style={{ padding: 40, textAlign: "center", color: "#FF1E56" }}>Loading...</div>
         ) : payouts.length === 0 ? (
@@ -144,7 +154,7 @@ const AdminPayouts: React.FC = () => {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 820 }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid #1A1A1A" }}>
+                <tr style={{ borderBottom: "1px solid #262626" }}>
                   {["Trainer", "Course", "Student", "Sale Amount", "GST (18%)", "Net Amount", "Trainer Share (50%)", "Admin Share (50%)", "Date", tab === "pending" ? "Action" : "Paid On"].map((h) => (
                     <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: "#9ca3af", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
                   ))}
@@ -152,7 +162,7 @@ const AdminPayouts: React.FC = () => {
               </thead>
               <tbody>
                 {payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || p.course.title.toLowerCase().includes(search.toLowerCase()) || p.student.name.toLowerCase().includes(search.toLowerCase())).map((p) => (
-                  <tr key={p._id} style={{ borderBottom: "1px solid #1A1A1A" }}>
+                  <tr key={p._id} style={{ borderBottom: "1px solid #262626" }}>
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <Avatar src={p.trainer.avatar} name={p.trainer.name} size={28} />
@@ -204,10 +214,19 @@ const AdminPayouts: React.FC = () => {
         )}
       </div>
 
+      {/* Load more */}
+      {hasMore && (
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <Button variant="secondary" onClick={() => load(tab, page + 1)} loading={loadingMore}>
+            Load more
+          </Button>
+        </div>
+      )}
+
       {/* Pay confirmation modal */}
       {noteModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-          <div style={{ background: "#1A1A1A", border: "1px solid #1A1A1A", borderRadius: 18, padding: 28, width: "100%", maxWidth: 420 }}>
+          <div style={{ background: "#1A1A1A", border: "1px solid #2a2a2a", borderRadius: 18, padding: 28, width: "100%", maxWidth: 420 }}>
             <h3 style={{ margin: "0 0 6px", color: "#f3f4f6", fontSize: 18, fontWeight: 800 }}>Confirm Payment</h3>
             <p style={{ color: "#9ca3af", fontSize: 14, margin: "0 0 18px" }}>
               Mark {fmt(noteModal.amount)} as paid to <strong style={{ color: "#FF6B8A" }}>{noteModal.trainerName}</strong>?
@@ -219,7 +238,7 @@ const AdminPayouts: React.FC = () => {
               onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. UPI transfer ref #123456"
               style={{
-                width: "100%", padding: "10px 12px", background: "#111111", border: "1px solid #1A1A1A",
+                width: "100%", padding: "10px 12px", background: "#111111", border: "1px solid #2a2a2a",
                 borderRadius: 10, color: "#f3f4f6", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 20,
               }}
             />
