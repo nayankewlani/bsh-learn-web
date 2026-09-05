@@ -710,7 +710,7 @@ const EMPTY_FORM: AddForm = {
   avatar: '', bio: '', experience: '',
   specialties: [], trainerLanguages: [],
   sessionPricePaise: 0,
-  canPublish: true, canGoLive: false, canOfferSessions: false, isVerifiedBadge: false,
+  canPublish: true, canGoLive: false, canOfferSessions: true, isVerifiedBadge: false,
   trainerRole: '', trainerColor: '#FF1E56',
   rating: 0, followers: 0, sessionsDisplay: '',
   hasPayBooking: true, hasApplyBooking: false,
@@ -1183,11 +1183,13 @@ const AdminTrainers: React.FC = () => {
   const [tab, setTab] = useState<'trainers' | 'applications' | 'add'>('trainers');
   const [trainers, setTrainers] = useState<AdminTrainer[]>([]);
   const [loading, setLoading]   = useState(true);
+  const [loadErr, setLoadErr]   = useState('');
   const [search, setSearch]     = useState('');
   const [selected, setSelected] = useState<AdminTrainer | null>(null);
 
   const load = () => {
     setLoading(true);
+    setLoadErr('');
     adminGetTrainers()
       .then(r => {
         const d = r.data as any;
@@ -1196,7 +1198,10 @@ const AdminTrainers: React.FC = () => {
         // Pre-seed any custom specialties from existing trainer profiles
         ts.forEach(t => t.specialties?.forEach(addGlobalSpecialty));
       })
-      .catch(() => {})
+      .catch((err: any) => {
+        const msg = err?.response?.data?.message || err?.message || 'Failed to load trainers';
+        setLoadErr(msg);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -1280,6 +1285,11 @@ const AdminTrainers: React.FC = () => {
 
           {loading ? (
             <div className="adm-loading"><div className="adm-spinner" /><span>Loading trainers…</span></div>
+          ) : loadErr ? (
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', borderRadius: 10, padding: '14px 18px', fontSize: 13 }}>
+              ⚠️ Failed to load trainers: {loadErr}
+              <button onClick={load} style={{ marginLeft: 14, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Retry</button>
+            </div>
           ) : filtered.length === 0 ? (
             <div className="adm-empty">{search ? 'No trainers match your search' : 'No trainers yet — use "Add Trainer" to add one'}</div>
           ) : (
