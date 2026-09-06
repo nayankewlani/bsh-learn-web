@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   adminBroadcast, adminGetBroadcasts, adminCancelBroadcast, adminCheckReceipts,
   adminBroadcastAudience, adminBroadcastOptions,
-  BroadcastCampaign, BroadcastPayload, DeepLinkType,
 } from '../../api/admin';
+import type { BroadcastCampaign, BroadcastPayload, DeepLinkType } from '../../api/admin';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
