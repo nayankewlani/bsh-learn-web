@@ -185,7 +185,48 @@ export const adminUpdatePermissions = (userId: string, data: object) => client.p
 export const adminSuspendUser                = (id: string)                           => client.delete(`/admin/users/${id}/suspend`);
 export const adminGetSessionApplications     = ()                                      => client.get('/admin/session-applications');
 export const adminUpdateSessionApplication   = (id: string, data: object)              => client.patch(`/admin/session-applications/${id}`, data);
-export const adminBroadcast        = (data: { title: string; body: string; link?: string; audienceType?: string; audienceId?: string }) => client.post('/admin/broadcast', data);
-export const adminGetBroadcasts    = ()                                              => client.get('/admin/broadcasts');
-export const adminBroadcastAudience= (type: string, id?: string)                     => client.get('/admin/broadcast-audience', { params: { type, id } });
-export const adminBroadcastOptions = ()                                              => client.get('/admin/broadcast-options');
+export type DeepLinkType =
+  | "none" | "home" | "explore" | "live_tab" | "dashboard"
+  | "consultation" | "store" | "course" | "program" | "live_room"
+  | "educator" | "custom_url";
+
+export type BroadcastStatus = "scheduled" | "sent" | "cancelled";
+
+export interface BroadcastCampaign {
+  _id: string;
+  title: string;
+  body: string;
+  imageUrl?: string;
+  link?: string;
+  deepLinkType: DeepLinkType;
+  deepLinkId?: string;
+  audienceType: string;
+  audienceLabel: string;
+  scheduledAt?: string;
+  status: BroadcastStatus;
+  sentBy: { _id: string; name: string } | null;
+  recipientCount: number;
+  pushCount: number;
+  deliveredCount: number;
+  openedCount: number;
+  createdAt: string;
+}
+
+export interface BroadcastPayload {
+  title: string;
+  body: string;
+  imageUrl?: string;
+  link?: string;
+  deepLinkType?: DeepLinkType;
+  deepLinkId?: string;
+  audienceType?: string;
+  audienceId?: string;
+  scheduledAt?: string | null;
+}
+
+export const adminBroadcast          = (data: BroadcastPayload)                         => client.post('/admin/broadcast', data);
+export const adminGetBroadcasts      = ()                                                => client.get('/admin/broadcasts');
+export const adminCancelBroadcast    = (id: string)                                     => client.delete(`/admin/broadcasts/${id}`);
+export const adminCheckReceipts      = (id: string)                                     => client.post(`/admin/broadcasts/${id}/check-receipts`);
+export const adminBroadcastAudience  = (type: string, id?: string)                      => client.get('/admin/broadcast-audience', { params: { type, id } });
+export const adminBroadcastOptions   = ()                                                => client.get('/admin/broadcast-options');
