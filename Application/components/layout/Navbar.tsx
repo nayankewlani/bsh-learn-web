@@ -1,16 +1,224 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { useThemeStore } from "../../stores/themeStore";
 import Avatar from "../ui/Avatar";
+import client from "../../api/client";
 import bshIcon from "../../assets/BSH-logo-02.png";
 import {
   HiOutlineSearch, HiOutlineBookOpen, HiOutlineAcademicCap,
   HiOutlineUser, HiOutlinePlusCircle, HiOutlineLogout,
   HiOutlineChevronDown, HiOutlineCog, HiOutlineChatAlt2,
-  HiMenu, HiX,
+  HiOutlineBell, HiMenu, HiX,
 } from "react-icons/hi";
 import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
+
+// ── Notification types ──────────────────────────────────────────────────────
+interface AppNotification {
+  _id: string;
+  title: string;
+  body: string;
+  type: string;
+  isRead: boolean;
+  link?: string;
+  createdAt: string;
+}
+
+// ── Notification Bell + Dropdown ────────────────────────────────────────────
+const NotificationBell: React.FC = () => {
+  const { user } = useAuthStore();
+  const { isDark, t } = useThemeStore();
+  const [open, setOpen]           = useState(false);
+  const [notifs, setNotifs]       = useState<AppNotification[]>([]);
+  const [unread, setUnread]       = useState(0);
+  const [loading, setLoading]     = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const fetchNotifs = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await client.get("/notifications");
+      setNotifs(res.data.notifications ?? []);
+      setUnread(res.data.unreadCount ?? 0);
+    } catch {}
+  }, [user]);
+
+  // Poll every 60 s when logged in
+  useEffect(() => {
+    if (!user) return;
+    fetchNotifs();
+    const id = setInterval(fetchNotifs, 60_000);
+    return () => clearInterval(id);
+  }, [user, fetchNotifs]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const openPanel = async () => {
+    if (open) { setOpen(false); return; }
+    setOpen(true);
+    setLoading(true);
+    try {
+      const res = await client.get("/notifications");
+      setNotifs(res.data.notifications ?? []);
+      setUnread(res.data.unreadCount ?? 0);
+    } catch {}
+    finally { setLoading(false); }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await client.put("/notifications/read-all");
+      setNotifs(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnread(0);
+    } catch {}
+  };
+
+  const markRead = async (id: string, link?: string) => {
+    try { await client.put(`/notifications/${id}/read`); } catch {}
+    setNotifs(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+    setUnread(prev => Math.max(0, prev - 1));
+    if (link) {
+      if (link.startsWith("http")) window.open(link, "_blank");
+      else window.location.href = link;
+    }
+    setOpen(false);
+  };
+
+  const fmtTime = (d: string) => {
+    const diff = Date.now() - new Date(d).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return "just now";
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  };
+
+  const typeIcon: Record<string, string> = {
+    system: '📣', live_class: '🔴', payment: '💳', lesson: '📚', quiz: '✏️',
+  };
+
+  if (!user) return null;
+
+  return (
+    <div ref={panelRef} style={{ position: "relative", flexShrink: 0 }}>
+      <button
+        onClick={openPanel}
+        title="Notifications"
+        style={{
+          position: "relative",
+          background: open ? (isDark ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.08)") : "none",
+          border: `1.5px solid ${open ? t.accent : t.border}`,
+          borderRadius: 10, width: 36, height: 36,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: open ? t.accent : t.textMuted, transition: "all 0.18s",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = t.accent; e.currentTarget.style.color = t.accent; }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.color = t.textMuted; } }}
+      >
+        <HiOutlineBell size={17} />
+        {unread > 0 && (
+          <span style={{
+            position: "absolute", top: -4, right: -4,
+            background: "#ef4444", color: "#fff",
+            borderRadius: "50%", minWidth: 16, height: 16,
+            fontSize: 9, fontWeight: 800,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "0 3px", border: `2px solid ${isDark ? "#0a0914" : "#f8fafc"}`,
+            animation: "bellBadgePop 0.25s ease",
+          }}>
+            {unread > 99 ? "99+" : unread}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", right: 0, top: 46,
+          width: 360, maxWidth: "calc(100vw - 32px)",
+          background: t.bgCard, border: `1px solid ${t.borderLight}`,
+          borderRadius: 16, boxShadow: `0 20px 60px ${t.shadow}, 0 0 0 1px ${t.border}`,
+          zIndex: 400, overflow: "hidden", animation: "ddFadeIn 0.15s ease",
+        }}>
+          {/* Header */}
+          <div style={{
+            padding: "14px 16px 12px",
+            background: isDark ? "rgba(124,58,237,0.1)" : "rgba(124,58,237,0.05)",
+            borderBottom: `1px solid ${t.border}`,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <HiOutlineBell size={15} style={{ color: t.accent }} />
+              <span style={{ fontWeight: 700, fontSize: 14, color: t.textPrimary }}>Notifications</span>
+              {unread > 0 && (
+                <span style={{ background: "#ef4444", color: "#fff", borderRadius: 50, padding: "1px 7px", fontSize: 10, fontWeight: 800 }}>{unread} new</span>
+              )}
+            </div>
+            {unread > 0 && (
+              <button onClick={markAllRead} style={{ background: "none", border: "none", color: t.textMuted, fontSize: 11, cursor: "pointer", padding: 0 }}>Mark all read</button>
+            )}
+          </div>
+
+          {/* List */}
+          <div style={{ maxHeight: 420, overflowY: "auto" }}>
+            {loading ? (
+              <div style={{ padding: "28px 0", textAlign: "center", color: t.textMuted, fontSize: 13 }}>Loading…</div>
+            ) : notifs.length === 0 ? (
+              <div style={{ padding: "36px 0", textAlign: "center" }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
+                <div style={{ color: t.textMuted, fontSize: 13 }}>No notifications yet</div>
+              </div>
+            ) : (
+              notifs.map(n => (
+                <div
+                  key={n._id}
+                  onClick={() => markRead(n._id, n.link)}
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom: `1px solid ${t.border}`,
+                    background: n.isRead
+                      ? "transparent"
+                      : (isDark ? "rgba(124,58,237,0.07)" : "rgba(124,58,237,0.04)"),
+                    cursor: n.link ? "pointer" : "default",
+                    display: "flex", gap: 10, alignItems: "flex-start",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = n.isRead ? "transparent" : (isDark ? "rgba(124,58,237,0.07)" : "rgba(124,58,237,0.04)"); }}
+                >
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: isDark ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>
+                    {typeIcon[n.type] || "📣"}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ fontWeight: n.isRead ? 500 : 700, fontSize: 13, color: t.textPrimary, lineHeight: 1.3 }}>{n.title}</div>
+                      {!n.isRead && <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#7c3aed", flexShrink: 0, marginTop: 3 }} />}
+                    </div>
+                    <div style={{ fontSize: 12, color: t.textSecond, marginTop: 2, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{n.body}</div>
+                    <div style={{ fontSize: 10, color: t.textMuted, marginTop: 4 }}>{fmtTime(n.createdAt)}</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {notifs.length > 0 && (
+            <div style={{ padding: "8px 16px", borderTop: `1px solid ${t.border}`, textAlign: "center" }}>
+              <span style={{ fontSize: 11, color: t.textMuted }}>Showing last {notifs.length} notifications</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface NavItem {
   to: string;
@@ -249,6 +457,9 @@ const Navbar: React.FC = () => {
             {isDark ? <MdOutlineLightMode size={17} /> : <MdOutlineDarkMode size={17} />}
           </button>
 
+          {/* ── Notification Bell (desktop, logged-in only) ── */}
+          {user && <div className="nav-desktop"><NotificationBell /></div>}
+
           {/* ── Auth / Profile (desktop) ── */}
           <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {user ? (
@@ -367,6 +578,10 @@ const Navbar: React.FC = () => {
             from { opacity: 0; transform: translateY(-6px); }
             to   { opacity: 1; transform: translateY(0); }
           }
+          @keyframes bellBadgePop {
+            from { transform: scale(0.5); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+          }
           @keyframes mobileMenuIn {
             from { opacity: 0; transform: translateY(-12px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -477,6 +692,11 @@ const Navbar: React.FC = () => {
                     <span style={{ color: t.textMuted }}>{item.icon}</span> {item.label}
                   </Link>
                 ))}
+
+                {/* Notification bell for mobile */}
+                <div style={{ paddingTop: 16 }} onClick={() => setMobileMenuOpen(false)}>
+                  <NotificationBell />
+                </div>
 
                 <button onClick={handleLogout}
                   style={{ width: "100%", marginTop: 16, padding: "13px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 12, color: "#f87171", cursor: "pointer", fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
