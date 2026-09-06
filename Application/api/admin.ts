@@ -185,5 +185,7 @@ export const adminUpdatePermissions = (userId: string, data: object) => client.p
 export const adminSuspendUser                = (id: string)                           => client.delete(`/admin/users/${id}/suspend`);
 export const adminGetSessionApplications     = ()                                      => client.get('/admin/session-applications');
 export const adminUpdateSessionApplication   = (id: string, data: object)              => client.patch(`/admin/session-applications/${id}`, data);
-export const adminBroadcast                  = (data: { title: string; body: string; link?: string }) => client.post('/admin/broadcast', data);
-export const adminGetBroadcasts              = ()                                      => client.get('/admin/broadcasts');
+export const adminBroadcast        = (data: { title: string; body: string; link?: string; audienceType?: string; audienceId?: string }) => client.post('/admin/broadcast', data);
+export const adminGetBroadcasts    = ()                                              => client.get('/admin/broadcasts');
+export const adminBroadcastAudience= (type: string, id?: string)                     => client.get('/admin/broadcast-audience', { params: { type, id } });
+export const adminBroadcastOptions = ()                                              => client.get('/admin/broadcast-options');
