@@ -84,12 +84,12 @@ interface KundliResult {
 const SIGN_NAMES = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
 const SIGN_SYMBOLS = ["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
 
-// North Indian grid: [row, col, house]
+// North Indian grid: [row, col, house]  — H1 at top-center (col 2), corners = H11/H2/H5/H8
 const NI_GRID: Array<[number, number, number]> = [
-  [0,0,12],[0,1,1],[0,2,2],[0,3,3],
-  [1,0,11],                [1,3,4],
-  [2,0,10],                [2,3,5],
-  [3,0,9],[3,1,8],[3,2,7],[3,3,6],
+  [0,0,11],[0,1,12],[0,2,1],[0,3,2],
+  [1,0,10],                 [1,3,3],
+  [2,0,9],                  [2,3,4],
+  [3,0,8],[3,1,7],[3,2,6],[3,3,5],
 ];
 
 const PLANET_COLOR: Record<string, string> = {
