@@ -234,6 +234,7 @@ const NAV_LINKS: NavItem[] = [
   { to: "/live",              label: "Live",             emoji: "📡",  live: true },
   { to: "/consultation",      label: "Consultation",     emoji: "💬",  consultation: true },
   { to: "/explore",           label: "Courses",          emoji: "🎓" },
+  { to: "/kundli",            label: "Kundli",           emoji: "🪐" },
   { to: "/#healing-tools",    label: "Healing Tools",    emoji: "🌿",  isHash: true },
 ];
 
@@ -648,6 +649,7 @@ const Navbar: React.FC = () => {
                       {link.label === "Live" && "Watch live spiritual classes"}
                       {link.label === "Consultation" && "Talk to expert healers"}
                       {link.label === "Courses" && "Explore all courses"}
+                      {link.label === "Kundli" && "Free Vedic birth chart"}
                       {link.label === "Healing Tools" && "Free meditation & breathing tools"}
                     </div>
                   </div>

@@ -26,6 +26,7 @@ import EducatorApplicationPage from "./pages/auth/EducatorApplicationPage";
 import BookSessionPage from "./pages/BookSessionPage";
 import ConsultBookingPage from "./pages/ConsultBookingPage";
 import PaymentReturnPage from "./pages/PaymentReturnPage";
+import KundliPage from "./pages/KundliPage";
 
 import AdminLayout       from "./pages/admin/AdminLayout";
 import AdminOverview     from "./pages/admin/AdminOverview";
@@ -86,6 +87,7 @@ const AppRouter: React.FC = () => (
         <Route path="/consultation" element={<ConsultationPage />} />
         <Route path="/courses/advance-hypnosis" element={<AdvanceHypnosisPage />} />
         <Route path="/courses/hypnosis-2" element={<Hypnosis2Page />} />
+        <Route path="/kundli" element={<KundliPage />} />
         <Route path="/payment/return" element={<PaymentReturnPage />} />
 
         <Route element={<AuthGuard />}>
