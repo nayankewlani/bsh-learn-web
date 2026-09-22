@@ -1,85 +1,203 @@
 import React from "react";
 
-const wrap: React.CSSProperties = {
-  maxWidth: 760, margin: "0 auto", padding: "48px 20px 80px",
-  color: "#d1d5db", lineHeight: 1.7, fontSize: 15,
+const s = {
+  page:    { background: "#07090f", minHeight: "100vh" } as React.CSSProperties,
+  wrap:    { maxWidth: 780, margin: "0 auto", padding: "56px 24px 96px", color: "#c9d1e0", lineHeight: 1.8, fontSize: 15 } as React.CSSProperties,
+  h1:      { color: "#f1f5f9", fontSize: 34, fontWeight: 800, marginBottom: 6, letterSpacing: "-0.5px" } as React.CSSProperties,
+  updated: { color: "#64748b", fontSize: 13, marginBottom: 10 } as React.CSSProperties,
+  lead:    { color: "#94a3b8", fontSize: 15, marginBottom: 36, lineHeight: 1.7, borderBottom: "1px solid #1e2d45", paddingBottom: 32 } as React.CSSProperties,
+  h2:      { color: "#f1f5f9", fontSize: 19, fontWeight: 700, marginTop: 40, marginBottom: 12, paddingLeft: 14, borderLeft: "3px solid #6366f1" } as React.CSSProperties,
+  p:       { margin: "0 0 14px" } as React.CSSProperties,
+  ul:      { paddingLeft: 22, margin: "10px 0 14px" } as React.CSSProperties,
+  li:      { marginBottom: 8 } as React.CSSProperties,
+  table:   { width: "100%", borderCollapse: "collapse" as const, margin: "14px 0 24px", fontSize: 14 },
+  th:      { background: "#111827", color: "#94a3b8", fontWeight: 600, padding: "10px 14px", textAlign: "left" as const, borderBottom: "1px solid #1e2d45", fontSize: 12, letterSpacing: "0.5px", textTransform: "uppercase" as const },
+  td:      { padding: "10px 14px", borderBottom: "1px solid #151f30", color: "#c9d1e0", verticalAlign: "top" as const },
+  a:       { color: "#818cf8", textDecoration: "none" as const },
+  chip:    { display: "inline-block", background: "#1e2d45", color: "#94a3b8", fontSize: 11, padding: "2px 8px", borderRadius: 4, marginRight: 4, marginBottom: 3 } as React.CSSProperties,
 };
-const h1: React.CSSProperties = { color: "#f3f4f6", fontSize: 32, fontWeight: 800, marginBottom: 8 };
-const updated: React.CSSProperties = { color: "#9ca3af", fontSize: 13, marginBottom: 32 };
-const h2: React.CSSProperties = { color: "#f3f4f6", fontSize: 20, fontWeight: 700, marginTop: 36, marginBottom: 12 };
-const ul: React.CSSProperties = { paddingLeft: 22, margin: "8px 0" };
 
 const PrivacyPolicyPage: React.FC = () => (
-  <div style={{ background: "#0a0914", minHeight: "100vh" }}>
-    <div style={wrap}>
-      <h1 style={h1}>Privacy Policy</h1>
-      <p style={updated}>Last updated: September 2026</p>
-
-      <p>
-        Blessings School of Hypnosis Private Limited ("BSH Healers," "we," "us," or "our") operates the
-        BSH Healers website and mobile application (together, the "App"). This Privacy Policy explains
-        what information we collect, why we collect it, and how it is used.
+  <div style={s.page}>
+    <div style={s.wrap}>
+      <h1 style={s.h1}>Privacy Policy</h1>
+      <p style={s.updated}>Last updated: September 2026</p>
+      <p style={s.lead}>
+        Blessings School of Hypnosis ("BSH Healers", "we", "us", or "our") operates the BSH Healers
+        website at <a href="https://bshhealers.com" style={s.a}>bshhealers.com</a> and the BSH Healers
+        mobile application for iOS and Android (together, the "Platform"). This Privacy Policy describes
+        what personal data we collect, how we use and protect it, and the choices you have regarding
+        your information.
       </p>
 
-      <h2 style={h2}>Information We Collect</h2>
-      <ul style={ul}>
-        <li><strong>Account information:</strong> name, email address, and phone number when you register or log in.</li>
-        <li><strong>Payment information:</strong> when you purchase a course or book a session, payments are processed by Razorpay. We do not store your card, UPI, or bank details — Razorpay handles this directly and shares only transaction status and identifiers with us.</li>
-        <li><strong>Camera and microphone:</strong> used only while you are actively in a live class or 1:1 session, to transmit your audio/video to other participants and, if the host enables recording, to record the session.</li>
-        <li><strong>Push notification tokens:</strong> used to send you class reminders, booking updates, and announcements.</li>
-        <li><strong>Usage information:</strong> pages visited, courses viewed, and general app activity, used to improve the product and provide support.</li>
-      </ul>
-
-      <h2 style={h2}>How We Use Your Information</h2>
-      <ul style={ul}>
-        <li>To create and manage your account and enrollments.</li>
-        <li>To process payments and bookings for courses and live sessions.</li>
-        <li>To operate live video classes, including optional recording for playback afterward.</li>
-        <li>To send notifications about your classes, bookings, and platform updates.</li>
-        <li>To respond to support requests and improve the App.</li>
-      </ul>
-
-      <h2 style={h2}>Third-Party Services</h2>
-      <p>We use the following third-party services to operate the App, each of which processes limited data as needed to provide their service:</p>
-      <ul style={ul}>
-        <li><strong>Razorpay</strong> — payment processing.</li>
-        <li><strong>Agora</strong> — real-time audio/video for live classes and 1:1 sessions.</li>
-        <li><strong>Mux</strong> — hosting and playback of course videos and class recordings.</li>
-        <li><strong>Google Cloud Storage</strong> — temporary storage of live class recordings before they are processed.</li>
-        <li><strong>MongoDB Atlas</strong> — our application database.</li>
-      </ul>
-
-      <h2 style={h2}>Data Sharing</h2>
-      <p>
-        We do not sell your personal information. We share information with the third-party services listed
-        above only as needed to provide the App's functionality, and with law enforcement or regulators when
-        required by law.
+      {/* 1 */}
+      <h2 style={s.h2}>1. Information We Collect</h2>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Account information</strong><br />
+        When you register, we collect your full name, email address, and phone number. This information
+        is used to create and secure your account and to communicate with you about your courses and bookings.
+      </p>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Profile information</strong><br />
+        You may optionally upload a profile picture and add other details to your profile.
+      </p>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Payment information</strong><br />
+        Payments for courses and consultations are processed by <strong>Razorpay</strong> on our website.
+        We do not store your card number, UPI ID, or bank details. Razorpay shares only a transaction
+        status and reference ID with us. <em>No payment processing occurs inside the mobile app.</em>
+      </p>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Camera and microphone</strong><br />
+        Your camera and microphone are accessed only when you actively join a live class or a 1-on-1
+        consultation session. Audio and video are transmitted in real time via Agora and are not stored
+        by us unless the session host enables recording.
+      </p>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Location (Kundli / Astrology feature)</strong><br />
+        If you use the Vedic Kundli feature, we request your birth location for the purpose of
+        calculating your birth chart. We use Google Places to look up coordinates. We do not track
+        your current or real-time GPS location at any time.
+      </p>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Device identifiers and push tokens</strong><br />
+        We store your device's push notification token to send you class reminders, booking
+        confirmations, and announcements. Tokens are automatically removed when you log out or
+        uninstall the app.
+      </p>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Usage and activity data</strong><br />
+        We collect data about how you use the Platform — including courses you view, lessons you
+        complete, live classes you attend, and searches you perform. This data is used to personalise
+        your experience and improve the Platform.
+      </p>
+      <p style={s.p}><strong style={{ color: "#f1f5f9" }}>Crash and diagnostic data</strong><br />
+        The mobile app may automatically report crash events to help us identify and fix technical
+        issues. This data does not include personally identifiable information.
       </p>
 
-      <h2 style={h2}>Data Retention</h2>
-      <p>
-        We retain your account information for as long as your account is active. Live class recordings are
-        retained to allow enrolled students to review past sessions, and can be deleted on request.
-      </p>
-
-      <h2 style={h2}>Your Choices</h2>
-      <ul style={ul}>
-        <li>You can update your profile information at any time from within the App.</li>
-        <li>You can disable push notifications from your device's system settings.</li>
-        <li>You can request deletion of your account and associated data by contacting us at the email below.</li>
+      {/* 2 */}
+      <h2 style={s.h2}>2. How We Use Your Information</h2>
+      <ul style={s.ul}>
+        <li style={s.li}>To create, manage, and secure your account.</li>
+        <li style={s.li}>To enroll you in courses and track your learning progress.</li>
+        <li style={s.li}>To process and confirm payments and bookings made on our website.</li>
+        <li style={s.li}>To operate live video classes and 1-on-1 consultation sessions.</li>
+        <li style={s.li}>To send notifications about your scheduled classes, bookings, and platform updates.</li>
+        <li style={s.li}>To generate your Vedic birth chart (Kundli) using your birth date, time, and location.</li>
+        <li style={s.li}>To respond to customer support requests.</li>
+        <li style={s.li}>To improve the Platform by analysing aggregate usage patterns.</li>
+        <li style={s.li}>To comply with applicable laws and regulations.</li>
       </ul>
 
-      <h2 style={h2}>Children's Privacy</h2>
-      <p>The App is not directed at children under 13, and we do not knowingly collect personal information from children under 13.</p>
+      {/* 3 */}
+      <h2 style={s.h2}>3. Data We Do Not Collect</h2>
+      <ul style={s.ul}>
+        <li style={s.li}>We do not collect or store payment card, UPI, or banking details.</li>
+        <li style={s.li}>We do not track your real-time GPS or current location.</li>
+        <li style={s.li}>We do not display third-party advertising and do not share data with ad networks.</li>
+        <li style={s.li}>We do not sell your personal information to any third party.</li>
+        <li style={s.li}>We do not collect data from children under 13 knowingly.</li>
+      </ul>
 
-      <h2 style={h2}>Changes to This Policy</h2>
-      <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated revision date.</p>
+      {/* 4 */}
+      <h2 style={s.h2}>4. Third-Party Services</h2>
+      <p style={s.p}>We use the following trusted third-party services. Each processes only the minimum data
+      necessary to provide their function:</p>
+      <div style={{ overflowX: "auto" }}>
+        <table style={s.table}>
+          <thead>
+            <tr>
+              <th style={s.th}>Service</th>
+              <th style={s.th}>Purpose</th>
+              <th style={s.th}>Data Shared</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["Razorpay", "Payment processing (website only)", "Name, email, order amount"],
+              ["Agora", "Real-time audio/video for live classes & consultations", "Audio/video stream during session"],
+              ["Mux", "Video hosting & playback for course lessons and recordings", "Video files, playback metadata"],
+              ["Google Cloud / Places", "Birth chart location lookup (Kundli)", "City/place name for geocoding"],
+              ["MongoDB Atlas", "Application database", "All account and usage data"],
+              ["Expo (EAS)", "App distribution & over-the-air updates", "Device platform, update channel"],
+            ].map(([svc, purpose, data]) => (
+              <tr key={svc}>
+                <td style={{ ...s.td, fontWeight: 600, color: "#e2e8f0" }}>{svc}</td>
+                <td style={s.td}>{purpose}</td>
+                <td style={{ ...s.td, color: "#64748b", fontSize: 13 }}>{data}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <h2 style={h2}>Contact Us</h2>
-      <p>
-        If you have any questions about this Privacy Policy or your data, contact us at{" "}
-        <a href="mailto:support@bshhealers.com" style={{ color: "#a78bfa" }}>support@bshhealers.com</a>.
+      {/* 5 */}
+      <h2 style={s.h2}>5. Data Sharing</h2>
+      <p style={s.p}>We do not sell, rent, or trade your personal information. We share data only:</p>
+      <ul style={s.ul}>
+        <li style={s.li}>With the third-party service providers listed above, strictly to operate the Platform.</li>
+        <li style={s.li}>With law enforcement, regulators, or courts when required by applicable law.</li>
+        <li style={s.li}>In connection with a merger or acquisition, in which case the acquiring entity will be
+        bound by this Privacy Policy.</li>
+      </ul>
+
+      {/* 6 */}
+      <h2 style={s.h2}>6. Data Retention</h2>
+      <p style={s.p}>
+        We retain your account and usage data for as long as your account is active. Live class recordings
+        are retained to allow enrolled students to revisit sessions. You may request deletion of your
+        account and all associated data at any time — see Section 8 below.
       </p>
+
+      {/* 7 */}
+      <h2 style={s.h2}>7. Data Security</h2>
+      <p style={s.p}>
+        We use HTTPS/TLS for all data in transit and store passwords using bcrypt hashing. Access tokens
+        are stored in your device's secure keychain. We implement role-based access controls to limit
+        internal access to personal data.
+      </p>
+
+      {/* 8 */}
+      <h2 style={s.h2}>8. Your Rights and Choices</h2>
+      <ul style={s.ul}>
+        <li style={s.li}><strong style={{ color: "#f1f5f9" }}>Access & correction:</strong> Update your name, email, or phone number from your Profile page at any time.</li>
+        <li style={s.li}><strong style={{ color: "#f1f5f9" }}>Push notifications:</strong> Disable at any time from your device's system settings. Core app features remain fully functional.</li>
+        <li style={s.li}><strong style={{ color: "#f1f5f9" }}>Camera & microphone:</strong> Revoke permissions in system settings. You will not be able to join live video sessions without them.</li>
+        <li style={s.li}><strong style={{ color: "#f1f5f9" }}>Account deletion:</strong> Email us at <a href="mailto:support@bshhealers.com" style={s.a}>support@bshhealers.com</a> to request permanent deletion of your account and all associated data. We will process the request within 30 days.</li>
+      </ul>
+
+      {/* 9 */}
+      <h2 style={s.h2}>9. Children's Privacy</h2>
+      <p style={s.p}>
+        The Platform is not directed at children under the age of 13. We do not knowingly collect
+        personal information from children under 13. If you believe we have inadvertently collected
+        such information, please contact us immediately at{" "}
+        <a href="mailto:support@bshhealers.com" style={s.a}>support@bshhealers.com</a> and we will
+        delete it promptly.
+      </p>
+
+      {/* 10 */}
+      <h2 style={s.h2}>10. International Users</h2>
+      <p style={s.p}>
+        BSH Healers is operated from India. If you access the Platform from outside India, your
+        information may be transferred to and processed in India. By using the Platform, you consent
+        to this transfer.
+      </p>
+
+      {/* 11 */}
+      <h2 style={s.h2}>11. Changes to This Policy</h2>
+      <p style={s.p}>
+        We may update this Privacy Policy from time to time. When we do, we will revise the
+        "Last updated" date at the top of this page. Continued use of the Platform after changes
+        are posted constitutes your acceptance of the revised policy.
+      </p>
+
+      {/* 12 */}
+      <h2 style={s.h2}>12. Contact Us</h2>
+      <p style={s.p}>
+        For any privacy-related questions, data requests, or complaints, contact us at:
+      </p>
+      <div style={{ background: "#0f1420", border: "1px solid #1e2d45", borderRadius: 10, padding: "18px 20px", marginTop: 8 }}>
+        <p style={{ margin: 0, color: "#f1f5f9", fontWeight: 700 }}>Blessings School of Hypnosis</p>
+        <p style={{ margin: "4px 0 0", color: "#94a3b8" }}>
+          Email: <a href="mailto:support@bshhealers.com" style={s.a}>support@bshhealers.com</a><br />
+          Website: <a href="https://bshhealers.com" style={s.a}>bshhealers.com</a>
+        </p>
+      </div>
     </div>
   </div>
 );
