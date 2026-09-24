@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
+AgoraRTC.setLogLevel(4);
 import type {
   IAgoraRTCClient,
   ILocalAudioTrack,
@@ -268,6 +269,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   const [recordingActive, setRecordingActive] = useState(false);
   const [recordingBusy,  setRecordingBusy]  = useState(false);
   const coHostRef        = useRef(false); // track current co-host mode to detect changes
+  const leftIntentionallyRef = useRef(false); // set true only when user clicks End/Leave
 
   // Reactions
   const [floatingReactions, setFloatingReactions] = useState<{ id: string; emoji: string; left: number }[]>([]);
@@ -489,16 +491,37 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
 
       // Show a banner while Agora is auto-reconnecting (e.g. after a brief network blip)
       // but do NOT kick the educator — Agora handles reconnection automatically.
-      client.on("connection-state-change", (cur) => {
+      // If Agora ultimately gives up (RECONNECTING → DISCONNECTED), attempt a manual
+      // rejoin with a fresh token so the session never drops unless the host ends it.
+      client.on("connection-state-change", (cur, prev) => {
         setReconnecting(cur === "RECONNECTING");
         if (cur === "CONNECTED") setReconnecting(false);
+        if (cur === "DISCONNECTED" && prev === "RECONNECTING" && !leftIntentionallyRef.current) {
+          (async () => {
+            try {
+              const { data } = await apiClient.post(`/live-classes/${classId}/renew-token`);
+              if (data.token) await client.join(appId, ch, data.token, joinUid);
+            } catch {}
+          })();
+        }
       });
 
-      // Proactively renew the Agora token before it expires (token TTL = 2 h).
+      // Renew the Agora token ~30 s before expiry (token TTL = 2 h by default).
       client.on("token-privilege-will-expire", async () => {
         try {
           const { data } = await apiClient.post(`/live-classes/${classId}/renew-token`);
           if (data.token) await client.renewToken(data.token);
+        } catch {}
+      });
+
+      // If the token expired before we could renew it, fetch a brand-new one and rejoin.
+      client.on("token-privilege-did-expire", async () => {
+        if (leftIntentionallyRef.current) return;
+        try {
+          const { data } = await apiClient.post(`/live-classes/${classId}/renew-token`);
+          if (data.token) {
+            await client.renewToken(data.token);
+          }
         } catch {}
       });
 
@@ -697,6 +720,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   const togglePanel = (p: Panel) => { if (p === "chat") setUnreadChat(0); setActivePanel(prev => prev === p ? null : p); };
 
   const handleLeave = () => {
+    leftIntentionallyRef.current = true;
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
     if (reactPollRef.current) { clearInterval(reactPollRef.current); reactPollRef.current = null; }
     disconnectAgora(true);
@@ -704,8 +728,27 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
     onLeave?.();
   };
 
+  /* ── visibilitychange: rejoin if tab was backgrounded and connection dropped ── */
+  useEffect(() => {
+    const onVisible = async () => {
+      if (document.hidden || leftIntentionallyRef.current) return;
+      const cl = clientRef.current;
+      if (!cl) return;
+      const state = cl.connectionState;
+      if (state === "DISCONNECTED" || state === "DISCONNECTING") {
+        try {
+          const { data } = await apiClient.post(`/live-classes/${classId}/renew-token`);
+          if (data.token) await cl.join(appId, channel, data.token, uid);
+        } catch {}
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [classId, appId, channel, uid]);
+
   /* ── lifecycle ───────────────────────────────────────────────────────── */
   useEffect(() => {
+    leftIntentionallyRef.current = false;
     const agoraRole = role === "host" || oneToOne ? "host" : "audience";
     joinChannel(channel, token, agoraRole, role === "host" || oneToOne).then(() => {
       pollState();
