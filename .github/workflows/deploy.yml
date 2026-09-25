@@ -17,22 +17,31 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           envs: GH_TOKEN
-          command_timeout: 10m
+          command_timeout: 15m
           script: |
             WEB_DIR="/home/${{ secrets.SSH_USER }}/bsh-learn-web"
 
             echo "=== Disk before ===" && df -h / || true
 
-            echo "=== Freeing disk space ==="
+            echo "=== Aggressive disk cleanup ==="
             rm -rf "$WEB_DIR/node_modules" || true
             rm -rf "$WEB_DIR/dist" || true
+            rm -rf /home/${{ secrets.SSH_USER }}/.npm || true
+            pm2 flush || true
             rm -rf /tmp/* 2>/dev/null || true
+            sudo journalctl --vacuum-size=20M || true
+            sudo find /var/log -name "*.gz" -delete 2>/dev/null || true
+            sudo find /var/log -name "*.1" -delete 2>/dev/null || true
 
             echo "=== Disk after cleanup ===" && df -h / || true
 
             # Inject token so git pull works even when stored credentials are stale
             git -C "$WEB_DIR" remote set-url origin \
               "https://x-access-token:${GH_TOKEN}@github.com/nayankewlani/bsh-learn-web.git"
+
+            # Discard any local modifications so git pull never gets blocked
+            git -C "$WEB_DIR" checkout -- .
+            git -C "$WEB_DIR" clean -fd
 
             cd "$WEB_DIR"
             git pull origin master
