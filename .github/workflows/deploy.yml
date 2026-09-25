@@ -8,10 +8,33 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger web deploy via API webhook
-        run: |
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            https://bshhealers.com/api/deploy/web
-          echo "Deploy triggered successfully"
+      - name: SSH into EC2 and deploy web app
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: GH_TOKEN
+          command_timeout: 10m
+          script: |
+            WEB_DIR="/home/${{ secrets.SSH_USER }}/bsh-learn-web"
+
+            echo "=== Disk before ===" && df -h / || true
+
+            # Inject token so git pull works even when stored credentials are stale
+            git -C "$WEB_DIR" remote set-url origin \
+              "https://x-access-token:${GH_TOKEN}@github.com/nayankewlani/bsh-learn-web.git"
+
+            cd "$WEB_DIR"
+            git pull origin master
+            npm ci --include=dev
+            npm run build
+            npm prune --omit=dev
+            rsync -a --delete dist/ /var/www/bsh-web/
+
+            # Remove token from remote URL so it doesn't persist on disk
+            git remote set-url origin "https://github.com/nayankewlani/bsh-learn-web.git"
+
+            echo "=== Deploy complete ===" && df -h / || true
