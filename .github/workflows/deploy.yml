@@ -5,54 +5,31 @@ on:
     branches: [ master ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: SSH into EC2 and deploy web app
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          envs: GH_TOKEN
-          command_timeout: 15m
-          script: |
-            WEB_DIR="/home/${{ secrets.SSH_USER }}/bsh-learn-web"
+          node-version: '20'
+          cache: 'npm'
 
-            echo "=== Disk before ===" && df -h / || true
+      - name: Install dependencies
+        run: npm ci --include=dev
 
-            echo "=== Aggressive disk cleanup ==="
-            rm -rf "$WEB_DIR/node_modules" || true
-            rm -rf "$WEB_DIR/dist" || true
-            rm -f "$WEB_DIR"/*.tar.gz || true
-            rm -f "$WEB_DIR"/*.zip || true
-            rm -rf /home/${{ secrets.SSH_USER }}/.npm || true
-            pm2 flush || true
-            rm -rf /tmp/* 2>/dev/null || true
-            sudo journalctl --vacuum-size=20M || true
-            sudo find /var/log -name "*.gz" -delete 2>/dev/null || true
-            sudo find /var/log -name "*.1" -delete 2>/dev/null || true
+      - name: Build
+        run: npm run build
 
-            echo "=== Disk after cleanup ===" && df -h / || true
-
-            # Inject token so git pull works even when stored credentials are stale
-            git -C "$WEB_DIR" remote set-url origin \
-              "https://x-access-token:${GH_TOKEN}@github.com/nayankewlani/bsh-learn-web.git"
-
-            # Discard any local modifications so git pull never gets blocked
-            git -C "$WEB_DIR" checkout -- .
-            git -C "$WEB_DIR" clean -fd
-
-            cd "$WEB_DIR"
-            git pull origin master
-            npm ci --include=dev
-            npm run build
-            npm prune --omit=dev
-            rsync -a --delete dist/ /var/www/bsh-web/
-
-            # Remove token from remote URL so it doesn't persist on disk
-            git remote set-url origin "https://github.com/nayankewlani/bsh-learn-web.git"
-
-            echo "=== Deploy complete ===" && df -h / || true
+      - name: Copy dist to server
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          echo "$SSH_KEY" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          rsync -avz --delete \
+            -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no" \
+            dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/bsh-web/
+          rm -f /tmp/deploy_key
