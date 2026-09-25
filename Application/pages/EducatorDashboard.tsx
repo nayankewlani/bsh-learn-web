@@ -41,7 +41,8 @@ interface ConsultationBooking {
 
 interface Payout {
   _id: string;
-  course: { _id: string; title: string };
+  course?: { _id: string; title: string };
+  programId?: string;
   student: { name: string; email: string };
   totalPaise: number;
   gstPaise: number;
@@ -115,21 +116,23 @@ const EducatorDashboard: React.FC = () => {
       .finally(() => setLoading(false));
   };
 
-  const loadEarnings = async () => {
-    setEarningsLoading(true);
+  const loadEarnings = async (silent = false) => {
+    if (!silent) setEarningsLoading(true);
     try {
       const { data } = await client.get("/educator/earnings");
       setPayouts(data.payouts ?? []);
       setPendingTotal(data.pendingTotal ?? 0);
       setPaidTotal(data.paidTotal ?? 0);
     } finally {
-      setEarningsLoading(false);
+      if (!silent) setEarningsLoading(false);
     }
   };
 
   useEffect(() => {
     loadDashboard();
     loadConsultBookings();
+    // Always load earnings on mount so the summary card shows real data immediately
+    loadEarnings();
     // Load initial online status from user object
     if ((user as any)?.isOnline) setIsOnline(true);
     // Load unread count
@@ -137,7 +140,9 @@ const EducatorDashboard: React.FC = () => {
     const countPoll = setInterval(() => {
       client.get("/chat/unread-count").then(r => setUnreadCount(r.data.count || 0)).catch(() => {});
     }, 10000);
-    return () => clearInterval(countPoll);
+    // Poll earnings every 30 s for real-time payout updates
+    const earningsPoll = setInterval(() => loadEarnings(true), 30_000);
+    return () => { clearInterval(countPoll); clearInterval(earningsPoll); };
   }, []);
 
   const toggleOnline = async () => {
@@ -257,7 +262,6 @@ const EducatorDashboard: React.FC = () => {
 
   const stats = analytics ? [
     { label: "Total Students", value: analytics.totalStudents.toLocaleString(), icon: "👥", color: "#FF6B8A" },
-    { label: "My Income (Pending)", value: fmt(pendingTotal), icon: "💰", color: "#4ade80" },
     { label: "Live Classes", value: analytics.totalLiveClasses, icon: "🎥", color: "#f59e0b" },
   ] : [];
 
@@ -299,7 +303,7 @@ const EducatorDashboard: React.FC = () => {
         ) : (
           <>
             {/* Stats */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 36 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 20 }}>
               {stats.map((s) => (
                 <div key={s.label} style={{ background: "#13122a", border: "1px solid #1e1b4b", borderRadius: 16, padding: 20 }}>
                   <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
@@ -307,6 +311,37 @@ const EducatorDashboard: React.FC = () => {
                   <div style={{ color: "#9ca3af", fontSize: 13 }}>{s.label}</div>
                 </div>
               ))}
+            </div>
+
+            {/* ── Real-time Earnings Summary (always visible) ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16, marginBottom: 32 }}>
+              {/* Pending payout */}
+              <div style={{ background: "linear-gradient(135deg,#0d2a1a,#0a1f14)", border: "1.5px solid #16a34a55", borderRadius: 18, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ fontSize: 36 }}>⏳</div>
+                <div>
+                  <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: 0.4 }}>PENDING PAYOUT</div>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: "#4ade80", letterSpacing: -0.5 }}>{fmt(pendingTotal)}</div>
+                  <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>{payouts.filter(p => p.status === "pending").length} transaction{payouts.filter(p => p.status === "pending").length !== 1 ? "s" : ""} awaiting payment</div>
+                </div>
+              </div>
+              {/* Total earned */}
+              <div style={{ background: "linear-gradient(135deg,#1a1228,#0f0b1a)", border: "1.5px solid #7c3aed55", borderRadius: 18, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ fontSize: 36 }}>✅</div>
+                <div>
+                  <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: 0.4 }}>TOTAL RECEIVED</div>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: "#a78bfa", letterSpacing: -0.5 }}>{fmt(paidTotal)}</div>
+                  <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>{payouts.filter(p => p.status === "paid").length} payment{payouts.filter(p => p.status === "paid").length !== 1 ? "s" : ""} received</div>
+                </div>
+              </div>
+              {/* Lifetime total */}
+              <div style={{ background: "linear-gradient(135deg,#1a0d0d,#140a0a)", border: "1.5px solid #FF1E5655", borderRadius: 18, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ fontSize: 36 }}>💎</div>
+                <div>
+                  <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: 0.4 }}>LIFETIME EARNINGS</div>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: "#FF6B8A", letterSpacing: -0.5 }}>{fmt(pendingTotal + paidTotal)}</div>
+                  <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>courses + consultation sessions · updates every 30s</div>
+                </div>
+              </div>
             </div>
 
             {/* Tab switcher */}
@@ -760,7 +795,7 @@ const EducatorDashboard: React.FC = () => {
                           {filteredPayouts.map((p) => (
                             <tr key={p._id} style={{ borderBottom: "1px solid #1e1b4b" }}>
                               <td style={{ padding: "12px 14px", color: "#FF6B8A", fontSize: 13, maxWidth: 200 }}>
-                                <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.course.title}</div>
+                                <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.course?.title ?? p.programId ?? "Program"}</div>
                               </td>
                               <td style={{ padding: "12px 14px" }}>
                                 <div style={{ color: "#f3f4f6", fontSize: 13 }}>{p.student.name}</div>

@@ -405,6 +405,7 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
     programType: item.programType || 'certification',
     duration: item.duration || '',
     isActive: item.isActive ?? true,
+    educatorEmail: (item.educator as any)?.email || '',
   });
   const [tags, setTags] = useState(item.tags || []);
   const [features, setFeatures] = useState(item.features || []);
@@ -434,6 +435,7 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
         payload.isActive = form.isActive;
         payload.tags = tags; payload.features = features;
         payload.requirements = requirements; payload.objectives = objectives;
+        if (form.educatorEmail !== undefined) payload.educatorEmail = form.educatorEmail || '';
       }
       const { data } = await client.patch(api(item), payload);
       onUpdate({ ...item, ...(data.program ?? data.course) });
@@ -523,6 +525,10 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
                 {['beginner','intermediate','advanced','all-levels'].map(l => <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1).replace(/-/g, ' ')}</option>)}
               </select>
             </div>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={S.label}>Trainer Email (for revenue tracking)</label>
+            <input value={form.educatorEmail} onChange={e => set('educatorEmail', e.target.value)} style={S.input} placeholder="trainer@bshapp.in — leave blank if no single trainer" type="email" />
           </div>
           <ChipInput label="Tags" values={tags} onChange={setTags} />
           <ChipInput label="✅ What's Included / Features" values={features} onChange={setFeatures} />
@@ -634,6 +640,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
   const [form, setForm] = useState({
     programId: '', title: '', description: '',
     programType: 'certification', duration: '', language: 'Hindi', level: 'beginner', isActive: true,
+    educatorEmail: '',
     thumbnail: '', previewVideoUrl: '',
     price: '0', discountPrice: '',
     showcaseWork: false, showcaseVideoUrl: '', showcaseTitle: '', showcaseImageUrl: '',
@@ -676,6 +683,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
         initialBatchName:       form.initialBatchName || undefined,
         initialBatchStartDate:  form.initialBatchStartDate || undefined,
         initialBatchMaxStudents: form.initialBatchMaxStudents ? parseInt(form.initialBatchMaxStudents) : undefined,
+        educatorEmail: form.educatorEmail || undefined,
       });
       onCreated(data.program);
     } catch (err: any) { flash(err.response?.data?.message || 'Failed to create program', true); }
@@ -768,6 +776,11 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
                   <option value="all-levels">All Levels</option>
                 </select>
               </div>
+            </div>
+
+            <div style={{ marginBottom: 14, marginTop: 14 }}>
+              <label style={S.label}>Trainer Email (for revenue tracking — leave blank if no single trainer)</label>
+              <input value={form.educatorEmail} onChange={e => set('educatorEmail', e.target.value)} style={S.input} placeholder="trainer@bshapp.in" type="email" />
             </div>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginTop: 4 }}>
