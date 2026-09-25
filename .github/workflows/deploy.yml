@@ -26,6 +26,8 @@ jobs:
             echo "=== Aggressive disk cleanup ==="
             rm -rf "$WEB_DIR/node_modules" || true
             rm -rf "$WEB_DIR/dist" || true
+            rm -f "$WEB_DIR"/*.tar.gz || true
+            rm -f "$WEB_DIR"/*.zip || true
             rm -rf /home/${{ secrets.SSH_USER }}/.npm || true
             pm2 flush || true
             rm -rf /tmp/* 2>/dev/null || true

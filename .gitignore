@@ -21,6 +21,10 @@ dist
 dist-ssr
 *.local
 
+# Build archives — never commit these, they bloat the repo and fill the server disk
+*.tar.gz
+*.zip
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
