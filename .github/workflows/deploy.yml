@@ -23,6 +23,13 @@ jobs:
 
             echo "=== Disk before ===" && df -h / || true
 
+            echo "=== Freeing disk space ==="
+            rm -rf "$WEB_DIR/node_modules" || true
+            rm -rf "$WEB_DIR/dist" || true
+            rm -rf /tmp/* 2>/dev/null || true
+
+            echo "=== Disk after cleanup ===" && df -h / || true
+
             # Inject token so git pull works even when stored credentials are stale
             git -C "$WEB_DIR" remote set-url origin \
               "https://x-access-token:${GH_TOKEN}@github.com/nayankewlani/bsh-learn-web.git"
