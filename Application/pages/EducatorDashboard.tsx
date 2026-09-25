@@ -71,6 +71,7 @@ const EducatorDashboard: React.FC = () => {
   const [pendingTotal, setPendingTotal] = useState(0);
   const [paidTotal, setPaidTotal] = useState(0);
   const [earningsLoading, setEarningsLoading] = useState(false);
+  const [earningsError, setEarningsError] = useState("");
 
   // Sessions state
   const [sessionBookings, setSessionBookings] = useState<SessionBooking[]>([]);
@@ -118,11 +119,16 @@ const EducatorDashboard: React.FC = () => {
 
   const loadEarnings = async (silent = false) => {
     if (!silent) setEarningsLoading(true);
+    if (!silent) setEarningsError("");
     try {
       const { data } = await client.get("/educator/earnings");
       setPayouts(data.payouts ?? []);
       setPendingTotal(data.pendingTotal ?? 0);
       setPaidTotal(data.paidTotal ?? 0);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Failed to load earnings";
+      if (!silent) setEarningsError(msg);
+      console.error("[loadEarnings]", err?.response?.status, msg);
     } finally {
       if (!silent) setEarningsLoading(false);
     }
@@ -343,6 +349,18 @@ const EducatorDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Earnings load error (shown only if the API call failed) */}
+            {earningsError && (
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 18 }}>⚠️</span>
+                <div>
+                  <div style={{ color: "#f87171", fontSize: 13, fontWeight: 700 }}>Could not load earnings data</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12, marginTop: 2 }}>{earningsError} — try logging out and back in, then refresh.</div>
+                </div>
+                <button onClick={() => loadEarnings()} style={{ marginLeft: "auto", padding: "6px 14px", background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)", borderRadius: 8, color: "#f87171", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Retry</button>
+              </div>
+            )}
 
             {/* Tab switcher */}
             <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
