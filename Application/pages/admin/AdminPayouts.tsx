@@ -43,6 +43,8 @@ const AdminPayouts: React.FC = () => {
   const [payingId, setPayingId] = useState<string | null>(null);
   const [noteModal, setNoteModal] = useState<{ id: string; trainerName: string; amount: number } | null>(null);
   const [note, setNote] = useState("");
+  const [backfilling, setBackfilling] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<string | null>(null);
 
   const load = async (status: "pending" | "paid", pg = 1) => {
     pg === 1 ? setLoading(true) : setLoadingMore(true);
@@ -84,6 +86,21 @@ const AdminPayouts: React.FC = () => {
     }
   };
 
+  const runBackfill = async () => {
+    if (!window.confirm("Scan all historical payments and create missing trainer payout records?\n\nThis is safe to run multiple times — duplicates are skipped.")) return;
+    setBackfilling(true);
+    setBackfillResult(null);
+    try {
+      const { data } = await client.post("/admin/payouts/backfill");
+      setBackfillResult(`Created ${data.created} new payout records. Skipped ${data.skipped} (already exist). ${data.noEducator} payments had no educator assigned to their course.`);
+      load(tab, 1);
+    } catch (err: any) {
+      setBackfillResult("Backfill failed: " + (err?.response?.data?.message || err?.message));
+    } finally {
+      setBackfilling(false);
+    }
+  };
+
   const statBox = (label: string, value: string, color: string) => (
     <div style={{ background: "#1A1A1A", border: "1px solid #2a2a2a", borderRadius: 14, padding: "18px 20px", minWidth: 160 }}>
       <div style={{ fontSize: 22, fontWeight: 900, color }}>{value}</div>
@@ -105,7 +122,7 @@ const AdminPayouts: React.FC = () => {
       )}
 
       {/* Tabs + search + download */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap", alignItems: "center" }}>
         {(["pending", "paid"] as const).map((t) => (
           <button
             key={t}
@@ -119,7 +136,19 @@ const AdminPayouts: React.FC = () => {
             {t === "pending" ? "⏳ Pending" : "✅ Paid History"}
           </button>
         ))}
+        <button
+          onClick={runBackfill}
+          disabled={backfilling}
+          style={{ marginLeft: "auto", padding: "8px 18px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: backfilling ? "not-allowed" : "pointer", border: "1px solid #4b5563", background: backfilling ? "#1a1a1a" : "#111827", color: backfilling ? "#6b7280" : "#60a5fa" }}
+        >
+          {backfilling ? "Backfilling…" : "🔄 Backfill Missing Payouts"}
+        </button>
       </div>
+      {backfillResult && (
+        <div style={{ background: backfillResult.startsWith("Backfill failed") ? "rgba(239,68,68,0.1)" : "rgba(96,165,250,0.1)", border: `1px solid ${backfillResult.startsWith("Backfill failed") ? "#ef4444" : "#60a5fa"}`, borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: backfillResult.startsWith("Backfill failed") ? "#f87171" : "#93c5fd" }}>
+          {backfillResult}
+        </div>
+      )}
 
       {/* Search + download toolbar */}
       <div className="adm-toolbar" style={{ marginBottom: 16 }}>
