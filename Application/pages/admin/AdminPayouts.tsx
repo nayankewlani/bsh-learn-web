@@ -163,7 +163,7 @@ const AdminPayouts: React.FC = () => {
         <button className="adm-btn adm-btn-ghost" onClick={() => {
           const BOM = '﻿';
           const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-          const displayed = payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || p.course.title.toLowerCase().includes(search.toLowerCase()));
+          const displayed = payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || (p.course?.title ?? "").toLowerCase().includes(search.toLowerCase()));
           const payoutLabel = (p: Payout) => p.course?.title ?? (p.consultationBookingId ? "Consultation Session" : p.programId ?? "—");
           const rows = displayed.map(p => [p.trainer.name, p.trainer.email, payoutLabel(p), p.student.name, fmt(p.totalPaise), fmt(p.gstPaise), fmt(p.netPaise), fmt(p.trainerSharePaise), fmt(p.adminSharePaise), p.status, p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN') : '', p.paymentNote || '', new Date(p.createdAt).toLocaleDateString('en-IN')].map(esc).join(','));
           const csv = BOM + ['Trainer,Email,Course,Student,Sale Amount,GST,Net Amount,Trainer Share,Admin Share,Status,Paid On,Note,Date', ...rows].join('\r\n');
@@ -193,7 +193,7 @@ const AdminPayouts: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || p.course.title.toLowerCase().includes(search.toLowerCase()) || p.student.name.toLowerCase().includes(search.toLowerCase())).map((p) => (
+                {payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || (p.course?.title ?? "").toLowerCase().includes(search.toLowerCase()) || p.student.name.toLowerCase().includes(search.toLowerCase())).map((p) => (
                   <tr key={p._id} style={{ borderBottom: "1px solid #262626" }}>
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
