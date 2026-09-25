@@ -94,7 +94,12 @@ const AdminPayouts: React.FC = () => {
     setBackfillResult(null);
     try {
       const { data } = await client.post("/admin/payouts/backfill");
-      setBackfillResult(`Created ${data.created} new payout records. Skipped ${data.skipped} (already exist). ${data.noEducator} payments had no educator assigned to their course.`);
+      const c = data.courses || {};
+      const s = data.sessions || {};
+      setBackfillResult(
+        `Courses — Created: ${c.created ?? 0}, Skipped: ${c.skipped ?? 0}, No educator: ${c.noEducator ?? 0}. ` +
+        `Sessions — Created: ${s.created ?? 0}, Skipped: ${s.skipped ?? 0}, No trainer: ${s.noTrainer ?? 0}.`
+      );
       load(tab, 1);
     } catch (err: any) {
       setBackfillResult("Backfill failed: " + (err?.response?.data?.message || err?.message));
