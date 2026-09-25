@@ -6,7 +6,9 @@ import Button from "../../components/ui/Button";
 interface Payout {
   _id: string;
   trainer: { _id: string; name: string; email: string; avatar?: string };
-  course: { _id: string; title: string; thumbnail?: string };
+  course?: { _id: string; title: string; thumbnail?: string };
+  consultationBookingId?: string;
+  programId?: string;
   student: { name: string; email: string };
   totalPaise: number;
   gstPaise: number;
@@ -51,7 +53,7 @@ const AdminPayouts: React.FC = () => {
     try {
       const { data } = await client.get(`/admin/payouts?status=${status}&page=${pg}`);
       const rows: Payout[] = (data.payouts || []).filter((p: any) =>
-        p && p.trainer && p.course && p.student
+        p && p.trainer && p.student
       );
       setPayouts(prev => pg === 1 ? rows : [...prev, ...rows]);
       if (data.summary) setSummary(data.summary);
@@ -162,7 +164,8 @@ const AdminPayouts: React.FC = () => {
           const BOM = '﻿';
           const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
           const displayed = payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || p.course.title.toLowerCase().includes(search.toLowerCase()));
-          const rows = displayed.map(p => [p.trainer.name, p.trainer.email, p.course.title, p.student.name, fmt(p.totalPaise), fmt(p.gstPaise), fmt(p.netPaise), fmt(p.trainerSharePaise), fmt(p.adminSharePaise), p.status, p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN') : '', p.paymentNote || '', new Date(p.createdAt).toLocaleDateString('en-IN')].map(esc).join(','));
+          const payoutLabel = (p: Payout) => p.course?.title ?? (p.consultationBookingId ? "Consultation Session" : p.programId ?? "—");
+          const rows = displayed.map(p => [p.trainer.name, p.trainer.email, payoutLabel(p), p.student.name, fmt(p.totalPaise), fmt(p.gstPaise), fmt(p.netPaise), fmt(p.trainerSharePaise), fmt(p.adminSharePaise), p.status, p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN') : '', p.paymentNote || '', new Date(p.createdAt).toLocaleDateString('en-IN')].map(esc).join(','));
           const csv = BOM + ['Trainer,Email,Course,Student,Sale Amount,GST,Net Amount,Trainer Share,Admin Share,Status,Paid On,Note,Date', ...rows].join('\r\n');
           const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
           Object.assign(document.createElement('a'), { href: url, download: `payouts_${tab}_${new Date().toISOString().slice(0,10)}.csv` }).click();
@@ -202,7 +205,9 @@ const AdminPayouts: React.FC = () => {
                       </div>
                     </td>
                     <td style={{ padding: "12px 14px", color: "#FF6B8A", fontSize: 13, maxWidth: 200 }}>
-                      <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.course.title}</div>
+                      <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {p.course?.title ?? (p.consultationBookingId ? "💳 Consultation Session" : p.programId ?? "—")}
+                      </div>
                     </td>
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ color: "#f3f4f6", fontSize: 13 }}>{p.student.name}</div>
