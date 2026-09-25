@@ -41,6 +41,7 @@ interface ConsultationBooking {
 
 interface Payout {
   _id: string;
+  type?: "course" | "consultation";
   course?: { _id: string; title: string };
   programId?: string;
   student: { name: string; email: string };
@@ -266,6 +267,30 @@ const EducatorDashboard: React.FC = () => {
     }
   };
 
+  // Compute consultation earnings from the already-loaded consultBookings data.
+  // This is used as a fallback when the earnings API hasn't yet included
+  // consultation sessions (e.g. during a server deploy or on an older API version).
+  const localConsultPendingPaise = consultBookings
+    .filter(b => b.status === "paid" || b.status === "scheduled")
+    .reduce((sum, b) => {
+      const gst = Math.round(b.totalPaise * 0.18);
+      const net = b.totalPaise - gst;
+      return sum + Math.round(net / 2);
+    }, 0);
+  const localConsultPaidPaise = consultBookings
+    .filter(b => b.status === "completed")
+    .reduce((sum, b) => {
+      const gst = Math.round(b.totalPaise * 0.18);
+      const net = b.totalPaise - gst;
+      return sum + Math.round(net / 2);
+    }, 0);
+
+  // If the API already returned consultation payouts (type:"consultation") use API totals.
+  // Otherwise add the locally-computed consultation share to whatever the API returned.
+  const apiIncludesConsultation = payouts.some(p => p.type === "consultation");
+  const displayPendingTotal = apiIncludesConsultation ? pendingTotal : pendingTotal + localConsultPendingPaise;
+  const displayPaidTotal    = apiIncludesConsultation ? paidTotal   : paidTotal   + localConsultPaidPaise;
+
   const stats = analytics ? [
     { label: "Total Students", value: analytics.totalStudents.toLocaleString(), icon: "👥", color: "#FF6B8A" },
     { label: "Live Classes", value: analytics.totalLiveClasses, icon: "🎥", color: "#f59e0b" },
@@ -326,8 +351,8 @@ const EducatorDashboard: React.FC = () => {
                 <div style={{ fontSize: 36 }}>⏳</div>
                 <div>
                   <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: 0.4 }}>PENDING PAYOUT</div>
-                  <div style={{ fontSize: 26, fontWeight: 900, color: "#4ade80", letterSpacing: -0.5 }}>{fmt(pendingTotal)}</div>
-                  <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>{payouts.filter(p => p.status === "pending").length} transaction{payouts.filter(p => p.status === "pending").length !== 1 ? "s" : ""} awaiting payment</div>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: "#4ade80", letterSpacing: -0.5 }}>{fmt(displayPendingTotal)}</div>
+                  <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>{payouts.filter(p => p.status === "pending").length + consultBookings.filter(b => b.status === "paid" || b.status === "scheduled").length} transaction{(payouts.filter(p => p.status === "pending").length + consultBookings.filter(b => b.status === "paid" || b.status === "scheduled").length) !== 1 ? "s" : ""} awaiting payment</div>
                 </div>
               </div>
               {/* Total earned */}
@@ -335,8 +360,8 @@ const EducatorDashboard: React.FC = () => {
                 <div style={{ fontSize: 36 }}>✅</div>
                 <div>
                   <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: 0.4 }}>TOTAL RECEIVED</div>
-                  <div style={{ fontSize: 26, fontWeight: 900, color: "#a78bfa", letterSpacing: -0.5 }}>{fmt(paidTotal)}</div>
-                  <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>{payouts.filter(p => p.status === "paid").length} payment{payouts.filter(p => p.status === "paid").length !== 1 ? "s" : ""} received</div>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: "#a78bfa", letterSpacing: -0.5 }}>{fmt(displayPaidTotal)}</div>
+                  <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>{payouts.filter(p => p.status === "paid").length + consultBookings.filter(b => b.status === "completed").length} payment{(payouts.filter(p => p.status === "paid").length + consultBookings.filter(b => b.status === "completed").length) !== 1 ? "s" : ""} received</div>
                 </div>
               </div>
               {/* Lifetime total */}
@@ -344,7 +369,7 @@ const EducatorDashboard: React.FC = () => {
                 <div style={{ fontSize: 36 }}>💎</div>
                 <div>
                   <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: 0.4 }}>LIFETIME EARNINGS</div>
-                  <div style={{ fontSize: 26, fontWeight: 900, color: "#FF6B8A", letterSpacing: -0.5 }}>{fmt(pendingTotal + paidTotal)}</div>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: "#FF6B8A", letterSpacing: -0.5 }}>{fmt(displayPendingTotal + displayPaidTotal)}</div>
                   <div style={{ color: "#6b7280", fontSize: 11, marginTop: 3 }}>courses + consultation sessions · updates every 30s</div>
                 </div>
               </div>
@@ -765,11 +790,11 @@ const EducatorDashboard: React.FC = () => {
                   </div>
                   <div style={{ borderLeft: "1px solid #1e1b4b", paddingLeft: 32 }}>
                     <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Pending Income</div>
-                    <div style={{ color: "#4ade80", fontSize: 20, fontWeight: 800 }}>{fmt(pendingTotal)}</div>
+                    <div style={{ color: "#4ade80", fontSize: 20, fontWeight: 800 }}>{fmt(displayPendingTotal)}</div>
                   </div>
                   <div style={{ borderLeft: "1px solid #1e1b4b", paddingLeft: 32 }}>
                     <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Total Received</div>
-                    <div style={{ color: "#60a5fa", fontSize: 20, fontWeight: 800 }}>{fmt(paidTotal)}</div>
+                    <div style={{ color: "#60a5fa", fontSize: 20, fontWeight: 800 }}>{fmt(displayPaidTotal)}</div>
                   </div>
                 </div>
 
