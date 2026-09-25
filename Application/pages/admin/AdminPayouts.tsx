@@ -52,9 +52,7 @@ const AdminPayouts: React.FC = () => {
     pg === 1 ? setLoading(true) : setLoadingMore(true);
     try {
       const { data } = await client.get(`/admin/payouts?status=${status}&page=${pg}`);
-      const rows: Payout[] = (data.payouts || []).filter((p: any) =>
-        p && p.trainer && p.student
-      );
+      const rows: Payout[] = (data.payouts || []).filter((p: any) => p && p.trainer);
       setPayouts(prev => pg === 1 ? rows : [...prev, ...rows]);
       if (data.summary) setSummary(data.summary);
       setPage(pg);
@@ -168,9 +166,9 @@ const AdminPayouts: React.FC = () => {
         <button className="adm-btn adm-btn-ghost" onClick={() => {
           const BOM = '﻿';
           const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-          const displayed = payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || (p.course?.title ?? "").toLowerCase().includes(search.toLowerCase()));
+          const displayed = payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || (p.course?.title ?? "").toLowerCase().includes(search.toLowerCase()) || (p.student?.name ?? "").toLowerCase().includes(search.toLowerCase()));
           const payoutLabel = (p: Payout) => p.course?.title ?? (p.consultationBookingId ? "Consultation Session" : p.programId ?? "—");
-          const rows = displayed.map(p => [p.trainer.name, p.trainer.email, payoutLabel(p), p.student.name, fmt(p.totalPaise), fmt(p.gstPaise), fmt(p.netPaise), fmt(p.trainerSharePaise), fmt(p.adminSharePaise), p.status, p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN') : '', p.paymentNote || '', new Date(p.createdAt).toLocaleDateString('en-IN')].map(esc).join(','));
+          const rows = displayed.map(p => [p.trainer.name, p.trainer.email, payoutLabel(p), p.student?.name ?? "—", fmt(p.totalPaise), fmt(p.gstPaise), fmt(p.netPaise), fmt(p.trainerSharePaise), fmt(p.adminSharePaise), p.status, p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN') : '', p.paymentNote || '', new Date(p.createdAt).toLocaleDateString('en-IN')].map(esc).join(','));
           const csv = BOM + ['Trainer,Email,Course,Student,Sale Amount,GST,Net Amount,Trainer Share,Admin Share,Status,Paid On,Note,Date', ...rows].join('\r\n');
           const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
           Object.assign(document.createElement('a'), { href: url, download: `payouts_${tab}_${new Date().toISOString().slice(0,10)}.csv` }).click();
@@ -198,7 +196,7 @@ const AdminPayouts: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || (p.course?.title ?? "").toLowerCase().includes(search.toLowerCase()) || p.student.name.toLowerCase().includes(search.toLowerCase())).map((p) => (
+                {payouts.filter(p => !search || p.trainer.name.toLowerCase().includes(search.toLowerCase()) || (p.course?.title ?? "").toLowerCase().includes(search.toLowerCase()) || (p.student?.name ?? "").toLowerCase().includes(search.toLowerCase())).map((p) => (
                   <tr key={p._id} style={{ borderBottom: "1px solid #262626" }}>
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -215,8 +213,8 @@ const AdminPayouts: React.FC = () => {
                       </div>
                     </td>
                     <td style={{ padding: "12px 14px" }}>
-                      <div style={{ color: "#f3f4f6", fontSize: 13 }}>{p.student.name}</div>
-                      <div style={{ color: "#6b7280", fontSize: 11 }}>{p.student.email}</div>
+                      <div style={{ color: "#f3f4f6", fontSize: 13 }}>{p.student?.name ?? "—"}</div>
+                      <div style={{ color: "#6b7280", fontSize: 11 }}>{p.student?.email ?? ""}</div>
                     </td>
                     <td style={{ padding: "12px 14px", color: "#f3f4f6", fontSize: 13, fontWeight: 600 }}>{fmt(p.totalPaise)}</td>
                     <td style={{ padding: "12px 14px", color: "#f87171", fontSize: 13 }}>{fmt(p.gstPaise)}</td>
