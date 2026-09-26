@@ -63,6 +63,7 @@ const LivePage: React.FC = () => {
 
       if (user?.role === "educator" || user?.role === "admin") {
         const mine = all.filter((c) => {
+          if (!c.educator) return false;
           const eduId = typeof c.educator === "object" ? c.educator._id : c.educator;
           return eduId === user._id;
         });
@@ -165,6 +166,7 @@ const LivePage: React.FC = () => {
 
   const isEducator = user?.role === "educator" || user?.role === "admin";
   const isOwner = (cls: LiveClass) => {
+    if (!cls.educator) return false;
     const eduId = typeof cls.educator === "object" ? cls.educator._id : cls.educator;
     return eduId === user?._id;
   };
