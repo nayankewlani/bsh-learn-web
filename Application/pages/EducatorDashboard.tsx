@@ -267,29 +267,10 @@ const EducatorDashboard: React.FC = () => {
     }
   };
 
-  // Compute consultation earnings from the already-loaded consultBookings data.
-  // This is used as a fallback when the earnings API hasn't yet included
-  // consultation sessions (e.g. during a server deploy or on an older API version).
-  const localConsultPendingPaise = consultBookings
-    .filter(b => b.status === "paid" || b.status === "scheduled")
-    .reduce((sum, b) => {
-      const gst = Math.round(b.totalPaise * 0.18);
-      const net = b.totalPaise - gst;
-      return sum + Math.round(net / 2);
-    }, 0);
-  const localConsultPaidPaise = consultBookings
-    .filter(b => b.status === "completed")
-    .reduce((sum, b) => {
-      const gst = Math.round(b.totalPaise * 0.18);
-      const net = b.totalPaise - gst;
-      return sum + Math.round(net / 2);
-    }, 0);
-
-  // If the API already returned consultation payouts (type:"consultation") use API totals.
-  // Otherwise add the locally-computed consultation share to whatever the API returned.
-  const apiIncludesConsultation = payouts.some(p => p.type === "consultation");
-  const displayPendingTotal = apiIncludesConsultation ? pendingTotal : pendingTotal + localConsultPendingPaise;
-  const displayPaidTotal    = apiIncludesConsultation ? paidTotal   : paidTotal   + localConsultPaidPaise;
+  // The /educator/earnings API already includes consultation sessions in its
+  // totals (see educator.ts), so no client-side re-computation is needed here.
+  const displayPendingTotal = pendingTotal;
+  const displayPaidTotal    = paidTotal;
 
   const stats = analytics ? [
     { label: "Total Students", value: analytics.totalStudents.toLocaleString(), icon: "👥", color: "#FF6B8A" },
