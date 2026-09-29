@@ -88,9 +88,7 @@ export default function AdminBulkEnroll() {
       fd.append("itemId",   selectedId);
       fd.append("itemType", selectedType);
       fd.append("file",     file);
-      const r = await client.post("/admin/bulk-enroll", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const r = await client.post("/admin/bulk-enroll", fd);
       setResult(r.data as BulkResult);
       setFilter("all");
     } catch (e: any) {
