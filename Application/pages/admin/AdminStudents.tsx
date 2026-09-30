@@ -4,6 +4,7 @@ import type { AdminStudent } from '../../api/admin';
 import { adminGetStudents, adminGetStudentDetail, adminSuspendUser, adminUpdatePermissions } from '../../api/admin';
 
 const fmtDate  = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtDob   = (d?: string) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 const fmtMoney = (p: number) => '₹' + (p / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
 interface StudentDetail {
@@ -94,8 +95,8 @@ const AdminStudents: React.FC = () => {
         <button className="adm-btn adm-btn-ghost" onClick={() => {
           const BOM = '﻿';
           const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-          const rows = students.map(s => [s.name, s.email, s.phone || '', String(s.enrollmentCount ?? 0), new Date(s.createdAt).toLocaleDateString('en-IN'), s.isActive ? 'Active' : 'Suspended'].map(esc).join(','));
-          const csv = BOM + ['Name,Email,Phone,Enrollments,Joined,Status', ...rows].join('\r\n');
+          const rows = students.map(s => [s.name, s.email, s.phone || '', fmtDob((s as any).dob), String(s.enrollmentCount ?? 0), new Date(s.createdAt).toLocaleDateString('en-IN'), s.isActive ? 'Active' : 'Suspended'].map(esc).join(','));
+          const csv = BOM + ['Name,Email,Phone,Date of Birth,Enrollments,Joined,Status', ...rows].join('\r\n');
           const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
           Object.assign(document.createElement('a'), { href: url, download: `students_${new Date().toISOString().slice(0,10)}.csv` }).click();
           URL.revokeObjectURL(url);
@@ -110,13 +111,14 @@ const AdminStudents: React.FC = () => {
             : (
               <div className="adm-table-wrap">
                 <table className="adm-table">
-                  <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Enrollments</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+                  <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Date of Birth</th><th>Enrollments</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody>
                     {students.map(s => (
                       <tr key={s._id} style={{ cursor: 'pointer' }}>
                         <td style={{ fontWeight: 600, color: '#e2e8f0' }}>{s.name}</td>
                         <td style={{ color: '#94a3b8' }}>{s.email}</td>
                         <td style={{ color: '#64748b' }}>{s.phone || '—'}</td>
+                        <td style={{ color: '#64748b' }}>{fmtDob((s as any).dob)}</td>
                         <td style={{ textAlign: 'center', color: '#FF6B8A', fontWeight: 600 }}>{s.enrollmentCount ?? 0}</td>
                         <td style={{ color: '#64748b' }}>{fmtDate(s.createdAt)}</td>
                         <td><span className={`pill ${s.isActive ? 'pill-green' : 'pill-red'}`}>{s.isActive ? 'Active' : 'Suspended'}</span></td>
@@ -164,10 +166,11 @@ const AdminStudents: React.FC = () => {
                 <div style={{ background: '#13102b', borderRadius: 10, padding: 14, marginBottom: 16 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 13 }}>
                     {[
-                      { l: 'Email',   v: detail.student.email },
-                      { l: 'Phone',   v: detail.student.phone || '—' },
-                      { l: 'Joined',  v: fmtDate(detail.student.createdAt) },
-                      { l: 'Status',  v: detail.student.isActive ? 'Active' : 'Suspended' },
+                      { l: 'Email',        v: detail.student.email },
+                      { l: 'Phone',        v: detail.student.phone || '—' },
+                      { l: 'Date of Birth',v: fmtDob(detail.student.dob) },
+                      { l: 'Joined',       v: fmtDate(detail.student.createdAt) },
+                      { l: 'Status',       v: detail.student.isActive ? 'Active' : 'Suspended' },
                     ].map(r => (
                       <div key={r.l}>
                         <div style={{ fontSize: 11, color: '#64748b', marginBottom: 2 }}>{r.l}</div>
@@ -176,6 +179,28 @@ const AdminStudents: React.FC = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Programs */}
+                {(detail as any).programs?.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', marginBottom: 8 }}>
+                      🎓 Programs ({(detail as any).programs.length})
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {(detail as any).programs.map((p: any) => (
+                        <div key={p.programId} style={{ background: '#13102b', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{p.title}</div>
+                            <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>Enrolled: {fmtDate(p.enrolledAt)}</div>
+                          </div>
+                          <div style={{ textAlign: 'right', fontSize: 11, color: p.expiresAt ? '#f59e0b' : '#22c55e', fontWeight: 700 }}>
+                            {p.expiresAt ? `Till ${fmtDate(p.expiresAt)}` : 'Lifetime'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Enrollments */}
                 <div style={{ marginBottom: 16 }}>
