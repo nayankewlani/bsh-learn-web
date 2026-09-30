@@ -27,7 +27,7 @@ export default function AdminProgramPosts() {
   const [posts, setPosts]         = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  // Form state
+  // Compose form state
   const [type, setType]             = useState<"announcement" | "live_class">("announcement");
   const [title, setTitle]           = useState("");
   const [content, setContent]       = useState("");
@@ -36,6 +36,53 @@ export default function AdminProgramPosts() {
   const [posting, setPosting]       = useState(false);
   const [postError, setPostError]   = useState("");
   const [postOk, setPostOk]         = useState(false);
+
+  // Edit state
+  const [editId, setEditId]               = useState<string | null>(null);
+  const [editType, setEditType]           = useState<"announcement" | "live_class">("announcement");
+  const [editTitle, setEditTitle]         = useState("");
+  const [editContent, setEditContent]     = useState("");
+  const [editScheduledAt, setEditScheduledAt] = useState("");
+  const [editLinks, setEditLinks]         = useState<Link[]>([{ label: "", url: "" }]);
+  const [editSaving, setEditSaving]       = useState(false);
+  const [editError, setEditError]         = useState("");
+
+  const openEdit = (post: Post) => {
+    setEditId(post._id);
+    setEditType(post.type);
+    setEditTitle(post.title || "");
+    setEditContent(post.content);
+    setEditScheduledAt(post.scheduledAt ? new Date(post.scheduledAt).toISOString().slice(0, 16) : "");
+    setEditLinks(post.links?.length ? post.links : [{ label: "", url: "" }]);
+    setEditError("");
+  };
+
+  const closeEdit = () => { setEditId(null); setEditError(""); };
+
+  const handleSaveEdit = async () => {
+    if (!editContent.trim()) { setEditError("Content is required"); return; }
+    setEditSaving(true); setEditError("");
+    try {
+      const validLinks = editLinks.filter(l => l.url.trim());
+      await client.patch(`/admin/programs/${programId}/posts/${editId}`, {
+        type: editType,
+        title: editTitle.trim() || undefined,
+        content: editContent.trim(),
+        scheduledAt: editScheduledAt || undefined,
+        links: validLinks,
+      });
+      await load(programId);
+      closeEdit();
+    } catch (e: any) {
+      setEditError(e?.response?.data?.message || "Failed to save");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleEditLinkChange = (i: number, field: "label" | "url", val: string) => {
+    setEditLinks(l => l.map((lk, idx) => idx === i ? { ...lk, [field]: val } : lk));
+  };
 
   const load = async (pid: string) => {
     setLoadingPosts(true);
@@ -200,6 +247,7 @@ export default function AdminProgramPosts() {
 
         {posts.map(post => (
           <div key={post._id} style={{ background: t.bgCard, border: `1px solid ${post.type === "live_class" ? "rgba(124,58,237,0.4)" : t.border}`, borderRadius: 12, padding: "16px 18px", marginBottom: 10 }}>
+            {/* Post view row */}
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
@@ -211,7 +259,7 @@ export default function AdminProgramPosts() {
                 </div>
                 {post.scheduledAt && <div style={{ color: "#a78bfa", fontSize: 12, fontWeight: 600, marginBottom: 6 }}>📅 {fmtDate(post.scheduledAt)}</div>}
                 {post.title && <div style={{ color: t.textPrimary, fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{post.title}</div>}
-                <div style={{ color: t.textSecond, fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", maxHeight: 100, overflow: "hidden", textOverflow: "ellipsis" }}>{post.content}</div>
+                <div style={{ color: t.textSecond, fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", maxHeight: 100, overflow: "hidden" }}>{post.content}</div>
                 {post.links?.length > 0 && (
                   <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {post.links.map((lk, i) => (
@@ -220,10 +268,75 @@ export default function AdminProgramPosts() {
                   </div>
                 )}
               </div>
-              <button onClick={() => handleDelete(post._id)} style={{ padding: "6px 12px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, color: "#ef4444", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
-                Delete
-              </button>
+              <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                <button onClick={() => editId === post._id ? closeEdit() : openEdit(post)}
+                  style={{ padding: "6px 12px", background: editId === post._id ? "rgba(124,58,237,0.15)" : "rgba(96,165,250,0.1)", border: `1px solid ${editId === post._id ? "rgba(124,58,237,0.4)" : "rgba(96,165,250,0.3)"}`, borderRadius: 8, color: editId === post._id ? "#a78bfa" : "#60a5fa", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+                  {editId === post._id ? "Cancel" : "✏ Edit"}
+                </button>
+                <button onClick={() => handleDelete(post._id)}
+                  style={{ padding: "6px 12px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, color: "#ef4444", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+                  Delete
+                </button>
+              </div>
             </div>
+
+            {/* Inline edit panel */}
+            {editId === post._id && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${t.border}` }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>Edit Post</div>
+
+                {/* Type toggle */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                  {([["announcement","📢 Announcement"],["live_class","🔴 Live Class"]] as const).map(([val, lbl]) => (
+                    <button key={val} onClick={() => setEditType(val)}
+                      style={{ padding: "7px 16px", borderRadius: 50, fontSize: 12, fontWeight: 700, cursor: "pointer", border: `1.5px solid ${editType === val ? "#7c3aed" : t.border}`, background: editType === val ? "rgba(124,58,237,0.15)" : "transparent", color: editType === val ? "#a78bfa" : t.textMuted }}>
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+
+                {editType === "live_class" && (
+                  <div style={{ marginBottom: 10 }}>
+                    <label style={S.label}>Scheduled Date & Time</label>
+                    <input type="datetime-local" value={editScheduledAt} onChange={e => setEditScheduledAt(e.target.value)} style={S.input} />
+                  </div>
+                )}
+
+                <div style={{ marginBottom: 10 }}>
+                  <label style={S.label}>Title</label>
+                  <input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Optional title" style={S.input} />
+                </div>
+
+                <div style={{ marginBottom: 10 }}>
+                  <label style={S.label}>Message <span style={{ color: "#ef4444" }}>*</span></label>
+                  <textarea value={editContent} onChange={e => setEditContent(e.target.value)} style={S.textarea} />
+                </div>
+
+                {/* Edit links */}
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <label style={{ ...S.label, marginBottom: 0 }}>Links</label>
+                    <button onClick={() => setEditLinks(l => [...l, { label: "", url: "" }])} style={{ fontSize: 12, color: "#7c3aed", background: "transparent", border: "none", cursor: "pointer", fontWeight: 700 }}>+ Add</button>
+                  </div>
+                  {editLinks.map((lk, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr auto", gap: 8, marginBottom: 8, alignItems: "center" }}>
+                      <input placeholder="Label (e.g. Join Zoom)" value={lk.label} onChange={e => handleEditLinkChange(i, "label", e.target.value)} style={{ ...S.input, margin: 0 }} />
+                      <input placeholder="URL (https://…)" value={lk.url} onChange={e => handleEditLinkChange(i, "url", e.target.value)} style={{ ...S.input, margin: 0 }} />
+                      {editLinks.length > 1 && (
+                        <button onClick={() => setEditLinks(l => l.filter((_, idx) => idx !== i))} style={{ background: "rgba(239,68,68,0.1)", border: "none", color: "#ef4444", borderRadius: 8, padding: "8px 10px", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>✕</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {editError && <div style={{ padding: "8px 12px", background: "rgba(239,68,68,0.1)", borderRadius: 8, color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{editError}</div>}
+
+                <button onClick={handleSaveEdit} disabled={editSaving}
+                  style={{ padding: "10px 24px", background: editSaving ? "#4c1d95" : "linear-gradient(135deg,#7c3aed,#6d28d9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 13, fontWeight: 700, cursor: editSaving ? "not-allowed" : "pointer", opacity: editSaving ? 0.7 : 1 }}>
+                  {editSaving ? "Saving…" : "✓ Save Changes"}
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
