@@ -188,7 +188,7 @@ export const adminUpdateSessionApplication   = (id: string, data: object)       
 export type DeepLinkType =
   | "none" | "home" | "explore" | "live_tab" | "dashboard"
   | "consultation" | "store" | "course" | "program" | "live_room"
-  | "educator" | "custom_url";
+  | "member_area" | "educator" | "custom_url";
 
 export type BroadcastStatus = "scheduled" | "sent" | "cancelled";
 

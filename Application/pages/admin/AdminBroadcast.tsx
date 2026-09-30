@@ -4,10 +4,15 @@ import {
   adminBroadcastAudience, adminBroadcastOptions,
 } from '../../api/admin';
 import type { BroadcastCampaign, BroadcastPayload, DeepLinkType } from '../../api/admin';
+import client from '../../api/client';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type AudienceType = 'all' | 'students' | 'educators' | 'program' | 'course' | 'live_class';
+type AudienceType = 'all' | 'students' | 'educators' | 'program' | 'course' | 'live_class' | 'specific_user';
+
+interface UserSearchResult {
+  _id: string; name: string; email: string; phone: string; avatar: string; hasPush: boolean;
+}
 
 interface AudienceOption { id: string; label: string }
 interface BroadcastOptions {
@@ -18,13 +23,14 @@ interface BroadcastOptions {
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const AUDIENCE_GROUPS: { type: AudienceType; icon: string; label: string; desc: string; needsId?: boolean }[] = [
-  { type: 'all',        icon: '🌍', label: 'All Users',           desc: 'Every student & educator on the platform' },
-  { type: 'students',   icon: '👨‍🎓', label: 'Students Only',       desc: 'Enrolled students across all courses' },
-  { type: 'educators',  icon: '👩‍🏫', label: 'Trainers Only',       desc: 'All educators and healers' },
-  { type: 'program',    icon: '🔮', label: 'Program Participants', desc: 'Users enrolled in a specific program (e.g. Hypnosis 2.0)', needsId: true },
-  { type: 'course',     icon: '📚', label: 'Course Enrollees',    desc: 'Users enrolled in a specific course', needsId: true },
-  { type: 'live_class', icon: '🔴', label: 'Live Class Attendees', desc: 'Users registered for a specific live class', needsId: true },
+const AUDIENCE_GROUPS: { type: AudienceType; icon: string; label: string; desc: string; needsId?: boolean; needsUserSearch?: boolean }[] = [
+  { type: 'all',           icon: '🌍', label: 'All Users',           desc: 'Every student & educator on the platform' },
+  { type: 'students',      icon: '👨‍🎓', label: 'Students Only',       desc: 'Enrolled students across all courses' },
+  { type: 'educators',     icon: '👩‍🏫', label: 'Trainers Only',       desc: 'All educators and healers' },
+  { type: 'specific_user', icon: '🎯', label: 'Specific User',        desc: 'Send to one individual user by name, email or phone', needsUserSearch: true },
+  { type: 'program',       icon: '🔮', label: 'Program Participants', desc: 'Users enrolled in a specific program (e.g. Hypnosis 2.0)', needsId: true },
+  { type: 'course',        icon: '📚', label: 'Course Enrollees',     desc: 'Users enrolled in a specific course', needsId: true },
+  { type: 'live_class',    icon: '🔴', label: 'Live Class Attendees', desc: 'Users registered for a specific live class', needsId: true },
 ];
 
 const DEEP_LINK_OPTIONS: { type: DeepLinkType; icon: string; label: string; needsId?: boolean; idLabel?: string; idPlaceholder?: string }[] = [
@@ -38,17 +44,19 @@ const DEEP_LINK_OPTIONS: { type: DeepLinkType; icon: string; label: string; need
   { type: 'course',       icon: '📚', label: 'Specific Course',    needsId: true, idLabel: 'Course ID', idPlaceholder: 'e.g. 64b7f2…' },
   { type: 'program',      icon: '🔮', label: 'Specific Program',   needsId: true, idLabel: 'Program slug', idPlaceholder: 'e.g. hypnosis-2' },
   { type: 'live_room',    icon: '🎥', label: 'Live Room',          needsId: true, idLabel: 'Class ID', idPlaceholder: 'e.g. 65a3c1…' },
+  { type: 'member_area',  icon: '🏫', label: 'Program Class Hub',  needsId: true, idLabel: 'Program ID / slug', idPlaceholder: 'e.g. hypnosis-2' },
   { type: 'educator',     icon: '👤', label: 'Educator Profile',   needsId: true, idLabel: 'Educator slug', idPlaceholder: 'e.g. dr-sharma' },
   { type: 'custom_url',   icon: '🔗', label: 'Custom URL',         needsId: true, idLabel: 'Full URL', idPlaceholder: 'https://…' },
 ];
 
 const AUDIENCE_COLORS: Record<AudienceType, string> = {
-  all:        '#7c3aed',
-  students:   '#0891b2',
-  educators:  '#0d9488',
-  program:    '#9333ea',
-  course:     '#2563eb',
-  live_class: '#dc2626',
+  all:           '#7c3aed',
+  students:      '#0891b2',
+  educators:     '#0d9488',
+  specific_user: '#f59e0b',
+  program:       '#9333ea',
+  course:        '#2563eb',
+  live_class:    '#dc2626',
 };
 
 const STATUS_BADGE: Record<string, { bg: string; color: string; label: string }> = {
@@ -102,6 +110,13 @@ const AdminBroadcast: React.FC = () => {
   const [histLoading, setHistLoading] = useState(true);
   const [receiptsChecking, setReceiptsChecking] = useState<Record<string, boolean>>({});
 
+  // ── User search (for specific_user targeting) ────────────────────────────
+  const [userQuery,       setUserQuery]       = useState('');
+  const [userResults,     setUserResults]     = useState<UserSearchResult[]>([]);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
+  const [selectedUser,    setSelectedUser]    = useState<UserSearchResult | null>(null);
+  const userSearchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // ── Tab ───────────────────────────────────────────────────────────────────
   const [tab, setTab] = useState<'compose' | 'history'>('compose');
 
@@ -148,7 +163,13 @@ const AdminBroadcast: React.FC = () => {
     return () => { if (previewDebounce.current) clearTimeout(previewDebounce.current); };
   }, [audienceType, audienceId, fetchPreview]);
 
-  const handleTypeChange = (t: AudienceType) => { setAudienceType(t); setAudienceId(''); };
+  const handleTypeChange = (t: AudienceType) => {
+    setAudienceType(t);
+    setAudienceId('');
+    setSelectedUser(null);
+    setUserQuery('');
+    setUserResults([]);
+  };
 
   // ── Send / Schedule ────────────────────────────────────────────────────────
 
@@ -160,6 +181,10 @@ const AdminBroadcast: React.FC = () => {
     const audienceGroup = AUDIENCE_GROUPS.find(g => g.type === audienceType)!;
     if (audienceGroup.needsId && !audienceId) {
       setResult({ ok: false, msg: 'Please select a specific audience target.' });
+      return;
+    }
+    if (audienceGroup.needsUserSearch && !selectedUser) {
+      setResult({ ok: false, msg: 'Please search and select a user to target.' });
       return;
     }
     const dlOption = DEEP_LINK_OPTIONS.find(d => d.type === deepLinkType)!;
@@ -303,6 +328,73 @@ const AdminBroadcast: React.FC = () => {
                       <option value="">— Choose one —</option>
                       {idOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                     </select>
+                  )}
+                </div>
+              )}
+
+              {selectedGroup.needsUserSearch && (
+                <div style={{ marginTop: 12 }}>
+                  <label style={lbl}>Search User (name, email or phone)</label>
+                  {selectedUser ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#0f172a', borderRadius: 10, padding: '10px 14px', border: '1.5px solid #f59e0b' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#f59e0b22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>👤</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: '#e2e8f0', fontSize: 13 }}>{selectedUser.name}</div>
+                        <div style={{ color: '#64748b', fontSize: 11 }}>{selectedUser.email}{selectedUser.phone ? ` · ${selectedUser.phone}` : ''}</div>
+                        <div style={{ fontSize: 10, marginTop: 2 }}>
+                          <span style={{ color: selectedUser.hasPush ? '#22c55e' : '#64748b', fontWeight: 600 }}>
+                            {selectedUser.hasPush ? '📲 Has push token' : '🔕 No push token'}
+                          </span>
+                        </div>
+                      </div>
+                      <button onClick={() => { setSelectedUser(null); setAudienceId(''); setUserQuery(''); setUserResults([]); }}
+                        style={{ background: 'rgba(239,68,68,0.15)', border: 'none', color: '#ef4444', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontSize: 12 }}>
+                        ✕ Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        value={userQuery}
+                        onChange={e => {
+                          const q = e.target.value;
+                          setUserQuery(q);
+                          if (userSearchDebounce.current) clearTimeout(userSearchDebounce.current);
+                          if (q.length < 2) { setUserResults([]); return; }
+                          userSearchDebounce.current = setTimeout(async () => {
+                            setUserSearchLoading(true);
+                            try {
+                              const r = await client.get(`/api/admin/user-search?q=${encodeURIComponent(q)}`);
+                              setUserResults(r.data.users ?? []);
+                            } catch { setUserResults([]); }
+                            finally { setUserSearchLoading(false); }
+                          }, 350);
+                        }}
+                        placeholder="Type at least 2 characters…"
+                        style={{ ...inputStyle }}
+                      />
+                      {userSearchLoading && (
+                        <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: 12 }}>Searching…</div>
+                      )}
+                      {userResults.length > 0 && (
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.4)', marginTop: 4 }}>
+                          {userResults.map(u => (
+                            <button key={u._id} onClick={() => { setSelectedUser(u); setAudienceId(u._id); setUserResults([]); setUserQuery(''); }}
+                              style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 14px', background: 'none', border: 'none', borderBottom: '1px solid #1e293b', cursor: 'pointer', textAlign: 'left', alignItems: 'center' }}>
+                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#7c3aed22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>👤</div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: 13 }}>{u.name}</div>
+                                <div style={{ color: '#64748b', fontSize: 11 }}>{u.email}{u.phone ? ` · ${u.phone}` : ''}</div>
+                              </div>
+                              <span style={{ fontSize: 10, color: u.hasPush ? '#22c55e' : '#475569', fontWeight: 600 }}>{u.hasPush ? '📲' : '🔕'}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {!userSearchLoading && userQuery.length >= 2 && userResults.length === 0 && (
+                        <div style={{ marginTop: 6, fontSize: 11, color: '#64748b' }}>No users found for "{userQuery}"</div>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
