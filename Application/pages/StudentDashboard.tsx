@@ -39,7 +39,7 @@ const StudentDashboard: React.FC = () => {
     setLoading(true);
     Promise.all([
       fetchMyCourses(),
-      client.get("/enrollment/my-programs").then(r => setPrograms(r.data.programs || [])).catch(() => {}),
+      client.get("/my-programs").then(r => setPrograms(r.data.programs || [])).catch(() => {}),
     ])
       .catch(() => setError("Failed to load your courses. Please refresh."))
       .finally(() => setLoading(false));
