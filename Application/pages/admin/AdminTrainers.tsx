@@ -18,6 +18,17 @@ const SPECIALTIES_OPTIONS = [
 
 const LANGUAGE_OPTIONS = ["English","Hindi","Telugu","Tamil","Marathi","Bengali","Gujarati","Kannada","Malayalam","Punjabi"];
 
+const CONSULTATION_CATEGORY_OPTIONS = [
+  "Stress & Anxiety","Depression & Low Mood","Relationship Healing","Self-Love & Confidence",
+  "Career & Career Growth","Money & Abundance","Emotional Healing","Anger Management",
+  "Fear & Phobias","Sleep & Relaxation","Focus & Productivity","Procrastination",
+  "Grief & Loss","Trauma Healing","Child & Teen Support","Family & Parenting",
+  "Health & Wellness","Habit Change & Addiction Support","NLP Coaching","Spiritual Healing",
+  "Past Life Regression","Energy Healing & Chakras","Tarot & Intuitive Guidance",
+  "Home & Space Healing (Vastu)","Women's Wellness & Womb Healing",
+  "Men's Wellness & Performance","Life Purpose & Inner Growth",
+];
+
 const SPECIALTY_COLORS: Record<string, string> = {
   "Hypnotherapy":              "#FF1E56",
   "Shadow Work":               "#0d9488",
@@ -206,8 +217,8 @@ const ChipSelect: React.FC<{
   allowCustom?: boolean;
 }> = ({ options, selected, onChange, label, allowCustom }) => {
   const extras = useExtraSpecialties();
-  // All base options + custom extras + anything already selected
-  const allOpts = Array.from(new Set([...options, ...extras, ...selected]));
+  // Custom extras only apply to the ChipSelect that allows adding them
+  const allOpts = Array.from(new Set([...options, ...(allowCustom ? extras : []), ...selected]));
 
   const [adding, setAdding] = useState(false);
   const [inputVal, setInputVal] = useState('');
@@ -429,8 +440,9 @@ const TrainerDrawer: React.FC<{
         sessionsDisplay:   edit.sessionsDisplay,
         trainerRole:       edit.trainerRole,
         trainerColor:      edit.trainerColor,
-        hasPayBooking:     edit.hasPayBooking ?? true,
-        hasApplyBooking:   edit.hasApplyBooking ?? false,
+        hasPayBooking:            edit.hasPayBooking ?? true,
+        hasApplyBooking:          edit.hasApplyBooking ?? false,
+        consultationCategories:   edit.consultationCategories ?? [],
       });
       setMsg('Saved!');
       onSaved({ ...trainer, ...data.trainer });
@@ -512,6 +524,9 @@ const TrainerDrawer: React.FC<{
             </div>
             <div style={{ marginBottom: 14 }}>
               <ChipSelect options={SPECIALTIES_OPTIONS} selected={edit.specialties || []} onChange={v => setEdit(e => ({ ...e, specialties: v }))} label="Specialties" allowCustom />
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <ChipSelect options={CONSULTATION_CATEGORY_OPTIONS} selected={edit.consultationCategories || []} onChange={v => setEdit(e => ({ ...e, consultationCategories: v }))} label="Consultation Categories (shown on app category grid)" />
             </div>
             <div>
               <ChipSelect options={LANGUAGE_OPTIONS} selected={edit.trainerLanguages || []} onChange={v => setEdit(e => ({ ...e, trainerLanguages: v }))} label="Languages" />
@@ -703,6 +718,7 @@ interface AddForm {
   trainerRole: string; trainerColor: string;
   rating: number; followers: number; sessionsDisplay: string;
   hasPayBooking: boolean; hasApplyBooking: boolean;
+  consultationCategories: string[];
 }
 
 const EMPTY_FORM: AddForm = {
@@ -714,6 +730,7 @@ const EMPTY_FORM: AddForm = {
   trainerRole: '', trainerColor: '#FF1E56',
   rating: 0, followers: 0, sessionsDisplay: '',
   hasPayBooking: true, hasApplyBooking: false,
+  consultationCategories: [],
 };
 
 const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ onCreated }) => {
@@ -822,6 +839,12 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontWeight: 700, color: '#e2e8f0', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>Specialties</div>
             <ChipSelect options={SPECIALTIES_OPTIONS} selected={form.specialties} onChange={v => setForm(e => ({ ...e, specialties: v }))} allowCustom />
+          </div>
+
+          {/* Consultation Categories */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontWeight: 700, color: '#e2e8f0', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>Consultation Categories</div>
+            <ChipSelect options={CONSULTATION_CATEGORY_OPTIONS} selected={form.consultationCategories} onChange={v => setForm(e => ({ ...e, consultationCategories: v }))} />
           </div>
 
           {/* Languages */}
