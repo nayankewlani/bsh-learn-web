@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "$SSH_KEY" > /tmp/deploy_key
           chmod 600 /tmp/deploy_key
-          rsync -avz --delete \
+          rsync -avz \
             -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no" \
             dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/bsh-web/
           rm -f /tmp/deploy_key
