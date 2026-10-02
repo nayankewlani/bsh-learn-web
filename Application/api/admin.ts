@@ -41,6 +41,7 @@ export interface AdminTrainer {
   followers?: number;
   hasPayBooking?: boolean;
   hasApplyBooking?: boolean;
+  consultationCategories?: string[];
   createdAt: string;
   courseCount: number;
   studentCount: number;
