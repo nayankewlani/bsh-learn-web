@@ -411,8 +411,28 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
   const [features, setFeatures] = useState(item.features || []);
   const [requirements, setRequirements] = useState(item.requirements || []);
   const [objectives, setObjectives] = useState(item.objectives || []);
+  const [uploadingThumb, setUploadingThumb] = useState(false);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingThumb(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+      set('thumbnail', data.url);
+    } catch (err: any) {
+      flash(err.message || 'Image upload failed', true);
+    } finally {
+      setUploadingThumb(false);
+      e.target.value = '';
+    }
+  };
 
   const save = async () => {
     setSaving(true);
@@ -559,11 +579,15 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
       </div>
 
       <div style={{ marginBottom: 14 }}>
-        <label style={S.label}>Thumbnail URL</label>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-          {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
+        <label style={S.label}>Thumbnail</label>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+          <label style={{ ...S.btn(uploadingThumb ? '#374151' : '#D4003F'), cursor: uploadingThumb ? 'not-allowed' : 'pointer', fontSize: 12, padding: '7px 14px', flexShrink: 0 }}>
+            {uploadingThumb ? '⏳ Uploading…' : '📁 Upload Image'}
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleThumbUpload} disabled={uploadingThumb} style={{ display: 'none' }} />
+          </label>
+          {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 72, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
         </div>
+        <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input }} placeholder="Or paste URL directly…" />
       </div>
 
       <div style={{ marginBottom: 14 }}>
@@ -652,6 +676,26 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
   const [objectives, setObjectives] = useState<string[]>([]);
   const [requirements, setRequirements] = useState<string[]>([]);
   const [ghlHeaders, setGhlHeaders] = useState<{ key: string; value: string }[]>([]);
+  const [uploadingThumb, setUploadingThumb] = useState(false);
+
+  const handleThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingThumb(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+      set('thumbnail', data.url);
+    } catch (err: any) {
+      flash(err.message || 'Image upload failed', true);
+    } finally {
+      setUploadingThumb(false);
+      e.target.value = '';
+    }
+  };
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
@@ -800,11 +844,15 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
         {step === 1 && (
           <div>
             <div style={{ marginBottom: 14 }}>
-              <label style={S.label}>Thumbnail / Cover Image URL</label>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 70, height: 46, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
+              <label style={S.label}>Thumbnail</label>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                <label style={{ ...S.btn(uploadingThumb ? '#374151' : '#D4003F'), cursor: uploadingThumb ? 'not-allowed' : 'pointer', fontSize: 12, padding: '7px 14px', flexShrink: 0 }}>
+                  {uploadingThumb ? '⏳ Uploading…' : '📁 Upload Image'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleThumbUpload} disabled={uploadingThumb} style={{ display: 'none' }} />
+                </label>
+                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 72, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
               </div>
+              <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input }} placeholder="Or paste URL directly…" />
             </div>
 
             <div style={{ marginBottom: 20 }}>
@@ -1064,8 +1112,28 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
   const [requirements, setRequirements] = useState<string[]>([]);
   const [objectives, setObjectives] = useState<string[]>([]);
   const [tagDraft, setTagDraft] = useState('');
+  const [uploadingThumb, setUploadingThumb] = useState(false);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingThumb(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+      set('thumbnail', data.url);
+    } catch (err: any) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setUploadingThumb(false);
+      e.target.value = '';
+    }
+  };
 
   const STEPS = ['Basic Info', 'Content Details', 'Pricing & Settings', 'Review & Create'];
 
@@ -1166,11 +1234,15 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
         {step === 1 && (
           <div>
             <div style={{ marginBottom: 14 }}>
-              <label style={S.label}>Thumbnail URL</label>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input, flex: 1 }} placeholder="https://..." />
-                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
+              <label style={S.label}>Thumbnail</label>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                <label style={{ ...S.btn(uploadingThumb ? '#374151' : '#D4003F'), cursor: uploadingThumb ? 'not-allowed' : 'pointer', fontSize: 12, padding: '7px 14px', flexShrink: 0 }}>
+                  {uploadingThumb ? '⏳ Uploading…' : '📁 Upload Image'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleThumbUpload} disabled={uploadingThumb} style={{ display: 'none' }} />
+                </label>
+                {form.thumbnail && <img src={form.thumbnail} alt="" style={{ width: 72, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #D4003F', flexShrink: 0 }} onError={e => (e.currentTarget.style.display = 'none')} />}
               </div>
+              <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} style={{ ...S.input }} placeholder="Or paste URL directly…" />
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={S.label}>Preview Video URL (optional)</label>
