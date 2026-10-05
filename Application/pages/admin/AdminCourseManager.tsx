@@ -422,7 +422,8 @@ const DetailsTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m:
     try {
       const fd = new FormData();
       fd.append('image', file);
-      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, credentials: 'include' });
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, headers: token ? { Authorization: `Bearer ${token}` } : {} });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Upload failed');
       set('thumbnail', data.url);
@@ -685,7 +686,8 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
     try {
       const fd = new FormData();
       fd.append('image', file);
-      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, credentials: 'include' });
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, headers: token ? { Authorization: `Bearer ${token}` } : {} });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Upload failed');
       set('thumbnail', data.url);
@@ -1123,7 +1125,8 @@ const CreateCoursePanel: React.FC<{ onClose: () => void; onCreated: (c: Item) =>
     try {
       const fd = new FormData();
       fd.append('image', file);
-      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, credentials: 'include' });
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch('/api/admin/upload-image', { method: 'POST', body: fd, headers: token ? { Authorization: `Bearer ${token}` } : {} });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Upload failed');
       set('thumbnail', data.url);
