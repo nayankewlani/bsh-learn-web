@@ -825,7 +825,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
               <span style={{ width: 6, height: 6, background: "#ef4444", borderRadius: "50%", animation: "navLivePulse 1.5s ease-in-out infinite", display: "inline-block" }} />
               <span style={{ color: "#ef4444", fontSize: 10, fontWeight: 700 }}>{inBreakout ? "BREAKOUT" : "LIVE"}</span>
             </span>
-            <span style={{ color: "#9ca3af", fontSize: 12 }}>👥 {participantCount}</span>
+            <span style={{ color: "#9ca3af", fontSize: 12 }}>👥 {activeParticipants.length > 0 ? activeParticipants.length : participantCount}</span>
             {recordingActive && (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.4)", borderRadius: 20, padding: "2px 9px" }}>
                 <span style={{ width: 6, height: 6, background: "#dc2626", borderRadius: "50%", display: "inline-block" }} />
