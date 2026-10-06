@@ -10,6 +10,7 @@ const fmtDate = (d: string) => new Date(d).toLocaleString('en-IN', { day: '2-dig
 function classType(c: AdminLiveClass): { label: string; color: string; bg: string } {
   if ((c.maxParticipants ?? 500) <= 2) return { label: '👤 1:1 Session', color: '#0891b2', bg: 'rgba(8,145,178,0.12)' };
   if (c.course)                        return { label: '📚 Course Live',  color: '#7c3aed', bg: 'rgba(124,58,237,0.12)' };
+  if (c.programId)                     return { label: '🎓 Program Live', color: '#d97706', bg: 'rgba(217,119,6,0.12)'  };
   return                                      { label: '🌍 Free Live',    color: '#16a34a', bg: 'rgba(22,163,74,0.12)' };
 }
 

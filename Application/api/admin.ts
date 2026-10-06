@@ -93,6 +93,7 @@ export interface AdminLiveClass {
   title: string;
   educator: { _id: string; name: string } | null;
   course?: { _id: string; title: string } | null;
+  programId?: string | null;
   scheduledAt: string;
   duration: number;
   status: 'pending_approval' | 'rejected' | 'scheduled' | 'live' | 'ended';
