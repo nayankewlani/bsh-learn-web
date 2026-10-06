@@ -14,6 +14,7 @@ interface LiveClass {
   description?: string;
   educator: { _id: string; name: string; avatar?: string };
   course?: { _id: string; title: string } | string;
+  programId?: string;
   scheduledAt: string;
   duration: number;
   status: string;
@@ -43,8 +44,8 @@ const LivePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [endingId, setEndingId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "free" | "course">("all");
-  const [liveMode, setLiveMode] = useState<"sessions" | "course" | "free">("sessions");
+  const [filter, setFilter] = useState<"all" | "free" | "course" | "program">("all");
+  const [liveMode, setLiveMode] = useState<"sessions" | "course" | "program" | "free">("sessions");
   const [myBookings, setMyBookings] = useState<any[]>([]);
   const [myStudentBookings, setMyStudentBookings] = useState<any[]>([]);
   const [livePermission, setLivePermission] = useState<any>(null);
@@ -176,8 +177,9 @@ const LivePage: React.FC = () => {
     if (isOwner(c)) return false;
     // Drop scheduled classes whose time has already passed (stale/test data)
     if (c.status === "scheduled" && new Date(c.scheduledAt) <= now) return false;
-    if (filter === "free") return !c.course;
-    if (filter === "course") return !!c.course;
+    if (filter === "free") return !c.course && !c.programId;
+    if (filter === "course") return !!c.course && !c.programId;
+    if (filter === "program") return !!c.programId;
     return true;
   });
 
@@ -284,7 +286,8 @@ const LivePage: React.FC = () => {
             <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
               {([
                 { key: "sessions", label: "🤝 1:1 Sessions", badge: myBookings.filter(b => b.status === "admin_approved").length },
-                { key: "course",   label: "🎓 Course Live",  badge: 0 },
+                { key: "course",   label: "🔒 Course Live",  badge: 0 },
+                { key: "program",  label: "🎓 Program Live", badge: 0 },
                 { key: "free",     label: "🌍 Free Live",    badge: 0 },
               ] as const).map((m) => (
                 <button key={m.key} onClick={() => setLiveMode(m.key)}
@@ -347,16 +350,51 @@ const LivePage: React.FC = () => {
                 <Button onClick={() => navigate("/live/schedule?type=course")}>
                   Schedule Course Live Class
                 </Button>
-                {myClasses.length > 0 && (
+                {myClasses.filter(c => c.course && !c.programId).length > 0 && (
                   <div style={{ marginTop: 16 }}>
-                    <div style={{ fontWeight: 700, color: t.textPrimary, fontSize: 13, marginBottom: 8 }}>My Scheduled Classes</div>
-                    {myClasses.filter(c => c.status !== "live").map(cls => (
+                    <div style={{ fontWeight: 700, color: t.textPrimary, fontSize: 13, marginBottom: 8 }}>My Course Classes</div>
+                    {myClasses.filter(c => c.course && !c.programId && c.status !== "live").map(cls => (
                       <div key={cls._id} style={{ background: t.bgPrimary, borderRadius: 10, padding: "10px 14px", border: `1px solid ${t.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                         <div>
                           <div style={{ fontWeight: 600, color: t.textPrimary, fontSize: 13 }}>{cls.title}</div>
                           <div style={{ color: t.textSecond, fontSize: 11 }}>{fmtDate(cls.scheduledAt)} · {cls.status}</div>
                         </div>
                         {cls.status === "scheduled" && <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Go Live</Button>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Program Live mode */}
+            {liveMode === "program" && (
+              <div>
+                <p style={{ margin: "0 0 14px", color: t.textSecond, fontSize: 13 }}>Start a live session for your program members. Only active program enrollees will be notified and can join.</p>
+                <Button onClick={() => navigate("/live/schedule?type=program")}>
+                  Schedule Program Live Class
+                </Button>
+                {myClasses.filter(c => c.programId).length > 0 && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ fontWeight: 700, color: t.textPrimary, fontSize: 13, marginBottom: 8 }}>My Program Classes</div>
+                    {myClasses.filter(c => c.programId).map(cls => (
+                      <div key={cls._id} style={{ background: t.bgPrimary, borderRadius: 10, padding: "10px 14px", border: `1px solid ${t.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: t.textPrimary, fontSize: 13 }}>{cls.title}</div>
+                          <div style={{ color: t.textSecond, fontSize: 11 }}>
+                            {fmtDate(cls.scheduledAt)} · {cls.status}
+                            {cls.programId && <span style={{ marginLeft: 6, color: "#d97706" }}>· {cls.programId}</span>}
+                          </div>
+                        </div>
+                        {cls.status === "pending_approval" ? (
+                          <div style={{ fontSize: 12, color: "#f59e0b", padding: "5px 10px", background: "rgba(245,158,11,.1)", borderRadius: 8 }}>Awaiting Approval</div>
+                        ) : cls.status === "rejected" ? (
+                          <div style={{ fontSize: 12, color: "#ef4444", padding: "5px 10px", background: "rgba(239,68,68,.1)", borderRadius: 8 }}>Rejected</div>
+                        ) : cls.status === "scheduled" ? (
+                          <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Go Live</Button>
+                        ) : cls.status === "live" ? (
+                          <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Re-enter Room</Button>
+                        ) : null}
                       </div>
                     ))}
                   </div>
@@ -415,7 +453,7 @@ const LivePage: React.FC = () => {
 
         {/* Filter tabs */}
         <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
-          {([ ["all", "All Sessions"], ["free", "🌍 Free"], ["course", "🔒 Course Only"] ] as const).map(([key, label]) => (
+          {([ ["all", "All Sessions"], ["free", "🌍 Free"], ["course", "🔒 Course Only"], ["program", "🎓 Program"] ] as const).map(([key, label]) => (
             <button key={key} onClick={() => setFilter(key)}
               style={{ padding: "7px 16px", borderRadius: 20, border: `1.5px solid ${filter === key ? t.accent : t.border}`, background: filter === key ? `rgba(124,58,237,0.12)` : "none", color: filter === key ? t.accent : t.textSecond, fontSize: 13, fontWeight: filter === key ? 700 : 500, cursor: "pointer", transition: "all .15s" }}>
               {label}
@@ -471,7 +509,9 @@ const LivePage: React.FC = () => {
                       <Badge color={cls.status === "live" ? "red" : cls.status === "pending_approval" ? "orange" : cls.status === "rejected" ? "red" : "orange"}>
                         {cls.status === "live" ? "🔴 LIVE NOW" : cls.status === "pending_approval" ? "⏳ Awaiting Approval" : cls.status === "rejected" ? "❌ Rejected" : "⏰ Scheduled"}
                       </Badge>
-                      {cls.course ? (
+                      {cls.programId ? (
+                        <Badge color="orange">🎓 Program</Badge>
+                      ) : cls.course ? (
                         <Badge color="purple">🔒 Course Only</Badge>
                       ) : (
                         <Badge color="green">🌍 Free for All</Badge>
