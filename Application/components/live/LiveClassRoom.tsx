@@ -773,6 +773,8 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
     else containerRef.current?.requestFullscreen();
   };
 
+  const canPublish = role === "host" || isCoHost || oneToOne;
+
   /* ── auto-recover: prevent audience from getting stuck on "Waiting for host…" ── */
   useEffect(() => {
     if (mainId === "local" && !canPublish && remoteUsers.length > 0) setMainId(null);
@@ -797,7 +799,6 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   };
 
   /* ─── render ─────────────────────────────────────────────────────────── */
-  const canPublish = role === "host" || isCoHost || oneToOne;
   const handBadge = role === "host" ? (raisedHands.length + coHosts.length) : 0;
   // Same deterministic-uid trick as mobile: every client derives uids from Mongo ids
   // the same way server-side, so any remote uid can be resolved back to a real name.
