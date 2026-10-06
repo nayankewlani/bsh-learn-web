@@ -773,6 +773,11 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
     else containerRef.current?.requestFullscreen();
   };
 
+  /* ── auto-recover: prevent audience from getting stuck on "Waiting for host…" ── */
+  useEffect(() => {
+    if (mainId === "local" && !canPublish && remoteUsers.length > 0) setMainId(null);
+  }, [remoteUsers, mainId, canPublish]);
+
   /* ── cloud recording (host only) ─────────────────────────────────────── */
   const toggleRecording = async () => {
     setRecordingBusy(true);
@@ -948,7 +953,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                     const mainUser = remoteUsers.find(u => u.uid === effectiveMainId);
                     if (!mainUser) return null;
                     return (
-                      <div style={{ position: "absolute", inset: 0, cursor: "pointer" }} onClick={() => setMainId("local")}>
+                      <div style={{ position: "absolute", inset: 0, cursor: canPublish ? "pointer" : "default" }} onClick={() => canPublish && setMainId("local")}>
                         {mainUser.videoTrack
                           ? <RemoteVideo track={mainUser.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(mainUser.uid)}${mutedRemoteUids.includes(Number(mainUser.uid)) ? " 🔇" : ""}`} />
                           : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14122a", flexDirection: "column", gap: 8 }}>
