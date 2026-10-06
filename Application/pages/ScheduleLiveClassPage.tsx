@@ -5,6 +5,7 @@ import client from "../api/client";
 import Button from "../components/ui/Button";
 
 interface Course { _id: string; title: string; }
+interface Program { _id: string; programId: string; title: string; }
 
 interface LiveClassInfo { status: string; agoraChannel?: string; scheduledAt?: string; }
 
@@ -33,13 +34,15 @@ const ScheduleLiveClassPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { t } = useThemeStore();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [accessType, setAccessType] = useState<"free" | "course" | "session">(
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [accessType, setAccessType] = useState<"free" | "course" | "program" | "session">(
     searchParams.get("type") === "course" ? "course" :
+    searchParams.get("type") === "program" ? "program" :
     searchParams.get("type") === "session" ? "session" : "free"
   );
   const [startNow, setStartNow] = useState(false);
   const [form, setForm] = useState({
-    title: "", description: "", scheduledAt: "", duration: "60", courseId: "",
+    title: "", description: "", scheduledAt: "", duration: "60", courseId: "", programId: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -72,6 +75,7 @@ const ScheduleLiveClassPage: React.FC = () => {
 
   useEffect(() => {
     client.get("/educator/courses").then(({ data }) => setCourses(data.courses || [])).catch(() => {});
+    client.get("/educator/programs").then(({ data }) => setPrograms(data.programs || [])).catch(() => {});
     const now = new Date();
     now.setSeconds(0, 0);
     const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -117,6 +121,7 @@ const ScheduleLiveClassPage: React.FC = () => {
     setError("");
     if (!form.title.trim()) { setError("Title is required"); return; }
     if (accessType === "course" && !form.courseId) { setError("Please select a course"); return; }
+    if (accessType === "program" && !form.programId) { setError("Please select a program"); return; }
     setLoading(true);
     try {
       const payload: Record<string, unknown> = {
@@ -125,7 +130,8 @@ const ScheduleLiveClassPage: React.FC = () => {
         duration: Number(form.duration) || 60,
         scheduledAt: startNow ? new Date().toISOString() : new Date(form.scheduledAt).toISOString(),
       };
-      if (accessType === "course" && form.courseId) payload.course = form.courseId;
+      if (accessType === "course"  && form.courseId)  payload.course    = form.courseId;
+      if (accessType === "program" && form.programId) payload.programId = form.programId;
       await client.post("/live-classes", payload);
       setSubmitted(true);
     } catch (err: unknown) {
@@ -201,11 +207,12 @@ const ScheduleLiveClassPage: React.FC = () => {
         {/* Access type selector */}
         <div style={{ marginBottom: 28 }}>
           <label style={labelStyle}>Who can join?</label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {([
-              { key: "free", icon: "🌍", title: "Free for Everyone", desc: "Open to all — great for demos" },
-              { key: "course", icon: "🔒", title: "Course Students", desc: "Enrolled students only" },
-              { key: "session", icon: "👤", title: "1:1 Sessions", desc: `${consultBookings.length || ""} booked` },
+              { key: "free",    icon: "🌍", title: "Free for Everyone", desc: "Open to all — great for demos" },
+              { key: "course",  icon: "🔒", title: "Course Students",   desc: "Enrolled students only" },
+              { key: "program", icon: "🎓", title: "Program Members",   desc: "Program enrollees only" },
+              { key: "session", icon: "👤", title: "1:1 Sessions",      desc: `${consultBookings.length || ""} booked` },
             ] as const).map((opt) => (
               <button key={opt.key} type="button" onClick={() => setAccessType(opt.key)}
                 style={{
@@ -380,6 +387,21 @@ const ScheduleLiveClassPage: React.FC = () => {
                   <select value={form.courseId} onChange={(e) => set("courseId", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                     <option value="">— Choose a course —</option>
                     {courses.map((c) => <option key={c._id} value={c._id}>{c.title}</option>)}
+                  </select>
+                )}
+              </div>
+            )}
+
+            {/* Program picker */}
+            {accessType === "program" && (
+              <div>
+                <label style={labelStyle}>Select Program *</label>
+                {programs.length === 0 ? (
+                  <p style={{ color: "#f87171", fontSize: 13 }}>No active programs found.</p>
+                ) : (
+                  <select value={form.programId} onChange={(e) => set("programId", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                    <option value="">— Choose a program —</option>
+                    {programs.map((p) => <option key={p._id} value={p.programId}>{p.title}</option>)}
                   </select>
                 )}
               </div>
