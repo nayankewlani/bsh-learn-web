@@ -5,31 +5,18 @@ on:
     branches: [ master ]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --include=dev
-
-      - name: Build
-        run: npm run build
-
-      - name: Copy dist to server
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+      - name: Trigger production deploy
         run: |
-          echo "$SSH_KEY" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          rsync -avzO \
-            -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no" \
-            dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/bsh-web/
-          rm -f /tmp/deploy_key
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            https://bshhealers.com/api/deploy/web \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" \
+            -H "Content-Type: application/json")
+          echo "Deploy webhook response: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Deploy webhook failed with status $STATUS"
+            exit 1
+          fi
+          echo "Deploy triggered successfully — server is building in background"
