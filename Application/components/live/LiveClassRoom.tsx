@@ -1453,11 +1453,11 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                           <input
                             value={qaAnswerInputs[q.id] ?? ""}
                             onChange={e => setQaAnswerInputs(prev => ({ ...prev, [q.id]: e.target.value }))}
-                            onKeyDown={e => { if (e.key === "Enter") answerQuestion(q.id, qaAnswerInputs[q.id] ?? ""); }}
+                            onKeyDown={e => { if (e.key === "Enter") answerQuestion(q.id); }}
                             placeholder="Type answer…"
                             style={{ flex: 1, background: "#0a0910", border: "1px solid #1e1b4b", borderRadius: 6, color: "#f3f4f6", padding: "5px 8px", fontSize: 11, outline: "none", fontFamily: "inherit" }}
                           />
-                          <button onClick={() => answerQuestion(q.id, qaAnswerInputs[q.id] ?? "")}
+                          <button onClick={() => answerQuestion(q.id)}
                             style={{ background: "#7c3aed", border: "none", color: "#fff", borderRadius: 6, padding: "5px 10px", fontSize: 11, cursor: "pointer" }}>
                             Send
                           </button>
