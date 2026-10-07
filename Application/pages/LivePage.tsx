@@ -564,7 +564,6 @@ const LivePage: React.FC = () => {
                 </h2>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 20 }}>
                   {filteredClasses.map((cls) => {
-                    const courseLinked = !!cls.course;
                     return (
                       <div key={cls._id} style={{ background: t.bgCard, border: `1px solid ${cls.status === "live" ? "#7f1d1d" : t.border}`, borderRadius: 16, padding: 20 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
@@ -572,7 +571,9 @@ const LivePage: React.FC = () => {
                             <Badge color={cls.status === "live" ? "red" : "purple"}>
                               {cls.status === "live" ? "🔴 LIVE" : "Scheduled"}
                             </Badge>
-                            {courseLinked ? (
+                            {cls.programId ? (
+                              <Badge color="orange">🎓 Program</Badge>
+                            ) : cls.course ? (
                               <Badge color="orange">🔒 Enrolled Only</Badge>
                             ) : (
                               <Badge color="green">🌍 Free</Badge>
