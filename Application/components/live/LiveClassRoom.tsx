@@ -553,10 +553,17 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
       });
       client.on("user-unpublished", (u, mt) => { if (mt === "video") setRemoteUsers(prev => prev.map(r => r.uid === u.uid ? { ...r, videoTrack: undefined } : r)); });
       client.on("user-left", u => { setRemoteUsers(prev => prev.filter(r => r.uid !== u.uid)); setParticipantCount(n => Math.max(1, n - 1)); });
-      client.on("user-joined", () => setParticipantCount(n => n + 1));
+      client.on("user-joined", u => {
+        setParticipantCount(n => n + 1);
+        setRemoteUsers(prev => prev.find(r => r.uid === u.uid) ? prev : [...prev, { uid: u.uid }]);
+      });
 
       await client.join(appId, ch, tok, joinUid);
       setParticipantCount(client.remoteUsers.length + 1);
+      // Seed with users already in the channel — they may not have published yet
+      if (client.remoteUsers.length > 0) {
+        setRemoteUsers(client.remoteUsers.map(u => ({ uid: u.uid, videoTrack: u.videoTrack ?? undefined, audioTrack: u.audioTrack ?? undefined })));
+      }
 
       if (publishTracks) {
         const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
