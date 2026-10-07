@@ -43,13 +43,13 @@ interface Poll { id: string; question: string; options: PollOption[]; createdAt:
 const REACTION_EMOJIS = ["❤️", "👍", "😂", "👏", "😮", "🎉"];
 
 /* ─── Video players (safe: play inside own useEffect) ───────────────────── */
-const LocalVideo: React.FC<{ track: ILocalVideoTrack; label: string }> = ({ track, label }) => {
+const LocalVideo: React.FC<{ track: ILocalVideoTrack; label: string; fit?: "cover" | "contain" }> = ({ track, label, fit = "cover" }) => {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!ref.current) return;
-    track.play(ref.current);
+    track.play(ref.current, { fit });
     return () => { try { track.stop(); } catch {} };
-  }, [track]);
+  }, [track, fit]);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 240, background: "#111" }}>
       <div ref={ref} style={{ width: "100%", height: "100%" }} />
@@ -58,9 +58,9 @@ const LocalVideo: React.FC<{ track: ILocalVideoTrack; label: string }> = ({ trac
   );
 };
 
-const RemoteVideo: React.FC<{ track: IRemoteVideoTrack; label: string }> = ({ track, label }) => {
+const RemoteVideo: React.FC<{ track: IRemoteVideoTrack; label: string; fit?: "cover" | "contain" }> = ({ track, label, fit = "cover" }) => {
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (ref.current) track.play(ref.current); }, [track]);
+  useEffect(() => { if (ref.current) track.play(ref.current, { fit }); }, [track, fit]);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 200, background: "#111" }}>
       <div ref={ref} style={{ width: "100%", height: "100%" }} />
@@ -879,8 +879,8 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
       {/* ── Body ── */}
       <div style={{ display: "flex", flex: 1, minHeight: 340 }}>
 
-        {/* Video area */}
-        <div style={{ flex: 1, background: "#000", position: "relative", minHeight: 340 }}>
+        {/* Video area — aspect-ratio anchor keeps screen-share from distorting on tall viewports */}
+        <div style={{ flex: 1, background: "#000", position: "relative", minHeight: 340, aspectRatio: "16/9", maxHeight: "calc(100vh - 120px)" }}>
           {connecting && <div style={{ height: "100%", minHeight: 340, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, color: "#6b7280" }}><div style={{ fontSize: 40 }}>📡</div><p>{breakoutNotice || "Joining live class…"}</p></div>}
           {!connecting && joinError && (
             <div style={{ height: "100%", minHeight: 340, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, padding: 24, textAlign: "center" }}>
@@ -901,16 +901,16 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                 const tiles: React.ReactNode[] = [];
                 if (canPublish && localTracks) {
                   tiles.push(
-                    <div key="local" style={{ background: "#14122a", borderRadius: 10, overflow: "hidden", aspectRatio: "4/3", cursor: "pointer" }} onClick={() => { setViewMode("speaker"); setMainId("local"); }}>
+                    <div key="local" style={{ background: "#14122a", borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", cursor: "pointer" }} onClick={() => { setViewMode("speaker"); setMainId("local"); }}>
                       {isScreenSharing && screenRef.current
-                        ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" />
+                        ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" fit="contain" />
                         : <LocalVideo track={localTracks[1]} label={`You${role === "host" ? " (Host)" : isCoHost ? " (Co-host)" : ""}${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
                     </div>
                   );
                 }
                 remoteUsers.forEach(u => {
                   tiles.push(
-                    <div key={u.uid} style={{ background: "#14122a", borderRadius: 10, overflow: "hidden", aspectRatio: "4/3", cursor: "pointer" }} onClick={() => { setViewMode("speaker"); setMainId(u.uid); }}>
+                    <div key={u.uid} style={{ background: "#14122a", borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", cursor: "pointer" }} onClick={() => { setViewMode("speaker"); setMainId(u.uid); }}>
                       {u.videoTrack
                         ? <RemoteVideo track={u.videoTrack} label={`${nameForUid(u.uid)}${mutedRemoteUids.includes(Number(u.uid)) ? " 🔇" : ""}`} />
                         : <div style={{ height: "100%", minHeight: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
@@ -940,7 +940,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                     <div style={{ position: "absolute", inset: 0, cursor: remoteUsers.length > 0 ? "pointer" : "default" }}
                       onClick={() => remoteUsers.length > 0 && setMainId(remoteUsers[0].uid)}>
                       {isScreenSharing && screenRef.current
-                        ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" />
+                        ? <LocalVideo track={screenRef.current} label="🖥️ You · Screen" fit="contain" />
                         : <LocalVideo track={localTracks[1]} label={`You${role === "host" ? " (Host)" : oneToOne ? "" : " (Co-host)"}${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
                     </div>
                   ) : (
@@ -971,15 +971,15 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                 {/* Small strip */}
                 <div style={{ position: "absolute", bottom: 14, right: 14, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, zIndex: 5 }}>
                   {effectiveMainId !== "local" && canPublish && localTracks && (
-                    <div style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
+                    <div style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "16/9", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
                       onClick={() => setMainId("local")}>
                       {isScreenSharing && screenRef.current
-                        ? <LocalVideo track={screenRef.current} label="🖥️ You" />
+                        ? <LocalVideo track={screenRef.current} label="🖥️ You" fit="contain" />
                         : <LocalVideo track={localTracks[1]} label={`You${isMuted ? " 🔇" : ""}${isVideoOff ? " 📷✕" : ""}`} />}
                     </div>
                   )}
                   {remoteUsers.filter(u => u.uid !== effectiveMainId).map(u => (
-                    <div key={u.uid} style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
+                    <div key={u.uid} style={{ width: "22%", maxWidth: 180, minWidth: 110, aspectRatio: "16/9", borderRadius: 10, overflow: "hidden", border: "2px solid #3730a3", boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer" }}
                       onClick={() => setMainId(u.uid)}>
                       {u.videoTrack
                         ? <RemoteVideo track={u.videoTrack} label={`${inBreakout ? "Participant" : nameForUid(u.uid)}${mutedRemoteUids.includes(Number(u.uid)) ? " 🔇" : ""}`} />
