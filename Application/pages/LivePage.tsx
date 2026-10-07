@@ -30,6 +30,7 @@ interface ActiveRoom {
   classId: string;
   title: string;
   oneToOne?: boolean;
+  hlsUrl?: string;
 }
 
 const LivePage: React.FC = () => {
@@ -116,7 +117,11 @@ const LivePage: React.FC = () => {
         setJoiningId(null);
         return;
       }
-      setActiveRoom({ appId: data.appId, channel: data.channel, token: data.token, uid: data.uid, role: "audience", classId, title, oneToOne: !!data.canPublish });
+      if (data.isHls && data.hlsUrl) {
+        setActiveRoom({ appId: "", channel: data.channel || "", token: "", uid: data.uid || 0, role: "audience", classId, title, hlsUrl: data.hlsUrl });
+      } else {
+        setActiveRoom({ appId: data.appId, channel: data.channel, token: data.token, uid: data.uid, role: "audience", classId, title, oneToOne: !!data.canPublish });
+      }
       setJoiningId(null);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to join";
@@ -134,7 +139,11 @@ const LivePage: React.FC = () => {
         if (data.amIAdmitted) {
           clearInterval(poll);
           const { data: conn } = await client.post(`/live-classes/${waitingRoom.classId}/join`);
-          setActiveRoom({ appId: conn.appId, channel: conn.channel, token: conn.token, uid: conn.uid, role: "audience", classId: waitingRoom.classId, title: waitingRoom.title, oneToOne: !!conn.canPublish });
+          if (conn.isHls && conn.hlsUrl) {
+            setActiveRoom({ appId: "", channel: conn.channel || "", token: "", uid: conn.uid || 0, role: "audience", classId: waitingRoom.classId, title: waitingRoom.title, hlsUrl: conn.hlsUrl });
+          } else {
+            setActiveRoom({ appId: conn.appId, channel: conn.channel, token: conn.token, uid: conn.uid, role: "audience", classId: waitingRoom.classId, title: waitingRoom.title, oneToOne: !!conn.canPublish });
+          }
           setWaitingRoom(null);
         }
       } catch { /* keep polling */ }
@@ -480,6 +489,7 @@ const LivePage: React.FC = () => {
               role={activeRoom.role}
               classId={activeRoom.classId}
               oneToOne={activeRoom.oneToOne}
+              hlsUrl={activeRoom.hlsUrl}
               onLeave={() => setActiveRoom(null)}
             />
           </div>

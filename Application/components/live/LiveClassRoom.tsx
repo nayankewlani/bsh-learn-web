@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import Hls from "hls.js";
 import AgoraRTC from "agora-rtc-sdk-ng";
 AgoraRTC.setLogLevel(4);
 import type {
@@ -24,6 +25,9 @@ interface Props {
   // call are equal, not a host-broadcasts-to-audience webinar. Drives this client
   // straight into publishing camera/mic instead of waiting on the raise-hand flow.
   oneToOne?: boolean;
+  // HLS URL returned by /join when CDN streaming is active — audience watches this
+  // instead of joining the Agora RTC channel directly.
+  hlsUrl?: string;
   onLeave?: () => void;
 }
 interface RemoteUser { uid: string | number; videoTrack?: IRemoteVideoTrack; audioTrack?: IRemoteAudioTrack; }
@@ -34,8 +38,9 @@ interface WbStroke   { id: string; tool: string; color: string; size: number; po
 interface BreakoutRoom { id: string; name: string; participantCount: number; }
 interface MyBreakout   { id: string; name: string; channel: string; }
 interface Reaction    { user: string; name: string; emoji: string; ts: number; }
+interface QaItem     { id: string; question: string; asker: string; askerName: string; askedAt: string; upvotes: number; myUpvote: boolean; answer: string | null; answeredAt: string | null; }
 
-type Panel = "participants" | "chat" | "whiteboard" | "breakout" | "polls";
+type Panel = "participants" | "chat" | "whiteboard" | "breakout" | "polls" | "qa";
 type ViewMode = "speaker" | "gallery";
 type WbTool = "pen" | "eraser";
 interface PollOption { index: number; text: string; count: number; myVote: boolean; }
@@ -70,6 +75,62 @@ const RemoteVideo: React.FC<{ track: IRemoteVideoTrack; label: string; fit?: "co
 };
 const pill: React.CSSProperties = { position: "absolute", bottom: 8, left: 8, background: "rgba(0,0,0,0.72)", padding: "2px 9px", borderRadius: 5, fontSize: 12, color: "#fff" };
 
+/* ─── HLS player for CDN-streamed audience ─────────────────────────────── */
+const HlsPlayer: React.FC<{ hlsUrl: string }> = ({ hlsUrl }) => {
+  const videoRef  = useRef<HTMLVideoElement>(null);
+  const hlsRef    = useRef<Hls | null>(null);
+  const [buffering, setBuffering] = useState(true);
+  const [errored,   setErrored]   = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    setBuffering(true);
+    setErrored(false);
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({ lowLatencyMode: true, maxBufferLength: 10 });
+      hlsRef.current = hls;
+      hls.loadSource(hlsUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setBuffering(false);
+        video.play().catch(() => {});
+      });
+      hls.on(Hls.Events.ERROR, (_evt, data) => {
+        if (data.fatal) setErrored(true);
+      });
+      return () => { hls.destroy(); hlsRef.current = null; };
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = hlsUrl;
+      video.addEventListener("loadedmetadata", () => { setBuffering(false); video.play().catch(() => {}); });
+    }
+  }, [hlsUrl]);
+
+  if (errored) return (
+    <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10, color: "#6b7280" }}>
+      <div style={{ fontSize: 36 }}>📡</div>
+      <p style={{ margin: 0 }}>Stream unavailable — please try refreshing</p>
+    </div>
+  );
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100%", background: "#000" }}>
+      {buffering && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10, color: "#6b7280", zIndex: 2 }}>
+          <div style={{ fontSize: 36 }}>📡</div>
+          <p style={{ margin: 0, fontSize: 14 }}>Live stream loading…</p>
+          <p style={{ margin: 0, fontSize: 11, color: "#4b5563" }}>May take 10–15 s to start</p>
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        style={{ width: "100%", height: "100%", objectFit: "contain", display: buffering ? "none" : "block" }}
+        playsInline
+      />
+    </div>
+  );
+};
+
 /* ─── Professional SVG icon set ─────────────────────────────────────────── */
 const Ic = ({ d, extra }: { d: string | React.ReactNode; extra?: React.ReactNode }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -101,6 +162,7 @@ const ICONS: Record<string, React.ReactNode> = {
   "poll": <Ic d={<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>} />,
   "kick": <Ic d={<><path d="M13 15l3-3-3-3"/><path d="M8 12h8"/><circle cx="12" cy="12" r="10"/></>} />,
   "mute-all": <Ic d={<><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><path d="M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>} />,
+  "qa": <Ic d={<><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>} />,
 };
 
 const FloatingReaction: React.FC<{ emoji: string; left: number; onDone: () => void }> = ({ emoji, left, onDone }) => (
@@ -218,7 +280,7 @@ const WhiteboardCanvas: React.FC<{
 };
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
-const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, classId, oneToOne = false, onLeave }) => {
+const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, classId, oneToOne = false, hlsUrl, onLeave }) => {
   const { user } = useAuthStore();
 
   // Agora refs
@@ -306,6 +368,13 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   const [pollOptions,     setPollOptions]     = useState(["", ""]);
   const [isRemoved,       setIsRemoved]       = useState(false);
   const votedPollIds      = useRef<Set<string>>(new Set()); // track locally so we don't re-show
+
+  // Q&A
+  const [qaItems,         setQaItems]         = useState<QaItem[]>([]);
+  const [qaInput,         setQaInput]         = useState("");
+  const [qaAnswerInputs,  setQaAnswerInputs]  = useState<Record<string, string>>({});
+  const [unreadQa,        setUnreadQa]        = useState(0);
+  const qaCountRef        = useRef(0);
 
   /* ── panel ref sync ──────────────────────────────────────────────────── */
   useEffect(() => { panelRef.current = activePanel; }, [activePanel]);
@@ -413,6 +482,14 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
         setIsRemoved(true);
         setTimeout(() => handleLeave(), 1500);
       }
+
+      // Q&A
+      const incomingQa: QaItem[] = data.qaItems || [];
+      if (incomingQa.length > qaCountRef.current && panelRef.current !== "qa") {
+        setUnreadQa(u => u + (incomingQa.length - qaCountRef.current));
+      }
+      qaCountRef.current = incomingQa.length;
+      setQaItems(incomingQa.sort((a, b) => b.upvotes - a.upvotes));
 
       // Reactions — handled by the dedicated fast poll; skip here to avoid duplicates
     } catch {}
@@ -710,6 +787,23 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
     if (mutedByHost && !isMuted) { localTracks[0].setEnabled(false); setIsMuted(true); }
   }, [mutedByHost]);
 
+  /* ── Q&A ─────────────────────────────────────────────────────────────── */
+  const askQuestion = async () => {
+    const q = qaInput.trim();
+    if (!q) return;
+    setQaInput("");
+    try { await apiClient.post(`/live-classes/${classId}/qa`, { question: q }); await pollState(); } catch {}
+  };
+  const answerQuestion = async (qid: string) => {
+    const ans = (qaAnswerInputs[qid] || "").trim();
+    if (!ans) return;
+    setQaAnswerInputs(prev => ({ ...prev, [qid]: "" }));
+    try { await apiClient.post(`/live-classes/${classId}/qa/${qid}/answer`, { answer: ans }); await pollState(); } catch {}
+  };
+  const upvoteQuestion = async (qid: string) => {
+    try { await apiClient.post(`/live-classes/${classId}/qa/${qid}/upvote`); await pollState(); } catch {}
+  };
+
   const toggleMute = () => {
     if (mutedByHost) return; // host has muted you — wait for them to unmute first
     if (!localTracks) return;
@@ -717,7 +811,11 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   };
   const toggleVideo = () => { if (!localTracks) return; localTracks[1].setEnabled(isVideoOff); setIsVideoOff(!isVideoOff); };
 
-  const togglePanel = (p: Panel) => { if (p === "chat") setUnreadChat(0); setActivePanel(prev => prev === p ? null : p); };
+  const togglePanel = (p: Panel) => {
+    if (p === "chat") setUnreadChat(0);
+    if (p === "qa") setUnreadQa(0);
+    setActivePanel(prev => prev === p ? null : p);
+  };;
 
   const handleLeave = () => {
     leftIntentionallyRef.current = true;
@@ -749,6 +847,20 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   /* ── lifecycle ───────────────────────────────────────────────────────── */
   useEffect(() => {
     leftIntentionallyRef.current = false;
+
+    if (hlsUrl && role === "audience") {
+      // CDN / HLS mode: skip Agora, just poll shared state
+      setJoined(true);
+      setConnecting(false);
+      pollState();
+      pollRef.current = setInterval(pollState, 3000);
+      reactPollRef.current = setInterval(pollReactions, 1000);
+      return () => {
+        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+        if (reactPollRef.current) { clearInterval(reactPollRef.current); reactPollRef.current = null; }
+      };
+    }
+
     const agoraRole = role === "host" || oneToOne ? "host" : "audience";
     joinChannel(channel, token, agoraRole, role === "host" || oneToOne).then(() => {
       pollState();
@@ -895,6 +1007,13 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
           )}
           {joined && (
             <div style={{ position: "relative", height: "100%", minHeight: 340 }}>
+
+              {/* HLS audience player — CDN streaming mode */}
+              {hlsUrl && role === "audience" && !isCoHost && (
+                <div style={{ position: "absolute", inset: 0, zIndex: 2, background: "#000" }}>
+                  <HlsPlayer hlsUrl={hlsUrl} />
+                </div>
+              )}
 
               {/* ── Gallery view: CSS grid of all participants ── */}
               {viewMode === "gallery" && (() => {
@@ -1047,12 +1166,13 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
 
             {/* Tab bar */}
             <div style={{ display: "flex", borderBottom: "1px solid #1e1b4b", flexShrink: 0, overflowX: "auto" }}>
-              {(["participants", "chat", "whiteboard", ...(role === "host" ? ["breakout", "polls"] : [])] as Panel[]).map(p => (
-                <button key={p} onClick={() => { setActivePanel(p); if (p === "chat") setUnreadChat(0); }}
+              {(["participants", "chat", "whiteboard", ...(role === "host" ? ["breakout", "polls"] : []), "qa"] as Panel[]).map(p => (
+                <button key={p} onClick={() => { setActivePanel(p); if (p === "chat") setUnreadChat(0); if (p === "qa") setUnreadQa(0); }}
                   style={{ flex: "0 0 auto", padding: "9px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, color: activePanel === p ? "#a78bfa" : "#6b7280", borderBottom: `2px solid ${activePanel === p ? "#7c3aed" : "transparent"}`, textTransform: "uppercase", whiteSpace: "nowrap", position: "relative" }}>
-                  {{ participants: "👥 People", chat: "💬 Chat", whiteboard: "🖊 Board", breakout: "🏠 Rooms", polls: "📊 Polls" }[p]}
+                  {{ participants: "👥 People", chat: "💬 Chat", whiteboard: "🖊 Board", breakout: "🏠 Rooms", polls: "📊 Polls", qa: "❓ Q&A" }[p]}
                   {p === "chat" && unreadChat > 0 && <span style={{ marginLeft: 3, background: "#ef4444", borderRadius: 10, fontSize: 8, padding: "1px 4px", color: "#fff" }}>{unreadChat}</span>}
                   {p === "polls" && polls.length > 0 && <span style={{ marginLeft: 3, background: "#7c3aed", borderRadius: 10, fontSize: 8, padding: "1px 4px", color: "#fff" }}>{polls.length}</span>}
+                  {p === "qa" && unreadQa > 0 && <span style={{ marginLeft: 3, background: "#f59e0b", borderRadius: 10, fontSize: 8, padding: "1px 4px", color: "#000" }}>{unreadQa}</span>}
                 </button>
               ))}
             </div>
@@ -1304,6 +1424,65 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
                 )}
               </div>
             )}
+
+            {/* ── Q&A Panel (all users) ── */}
+            {activePanel === "qa" && (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                <div style={{ flex: 1, overflowY: "auto", padding: "10px 10px 0" }}>
+                  {qaItems.length === 0 && (
+                    <p style={{ color: "#6b7280", fontSize: 12, textAlign: "center", marginTop: 24 }}>No questions yet. Be the first to ask!</p>
+                  )}
+                  {qaItems.map(q => (
+                    <div key={q.id} style={{ background: "#1e1b4b", borderRadius: 10, padding: "10px 12px", marginBottom: 8 }}>
+                      <div style={{ color: "#f3f4f6", fontSize: 13, marginBottom: 4 }}>{q.question}</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
+                        <span style={{ color: "#6b7280", fontSize: 10 }}>{q.askerName} · {new Date(q.askedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                        <button onClick={() => upvoteQuestion(q.id)}
+                          style={{ background: q.myUpvote ? "rgba(124,58,237,0.3)" : "rgba(255,255,255,0.05)", border: `1px solid ${q.myUpvote ? "#7c3aed" : "#1e1b4b"}`, color: q.myUpvote ? "#a78bfa" : "#9ca3af", borderRadius: 20, padding: "2px 8px", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}>
+                          ▲ {q.upvotes}
+                        </button>
+                      </div>
+                      {q.answer && (
+                        <div style={{ marginTop: 8, padding: "7px 10px", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: 7 }}>
+                          <div style={{ color: "#4ade80", fontSize: 10, fontWeight: 700, marginBottom: 2 }}>HOST ANSWER</div>
+                          <div style={{ color: "#d1d5db", fontSize: 12 }}>{q.answer}</div>
+                        </div>
+                      )}
+                      {role === "host" && !q.answer && (
+                        <div style={{ marginTop: 6, display: "flex", gap: 5 }}>
+                          <input
+                            value={qaAnswerInputs[q.id] ?? ""}
+                            onChange={e => setQaAnswerInputs(prev => ({ ...prev, [q.id]: e.target.value }))}
+                            onKeyDown={e => { if (e.key === "Enter") answerQuestion(q.id, qaAnswerInputs[q.id] ?? ""); }}
+                            placeholder="Type answer…"
+                            style={{ flex: 1, background: "#0a0910", border: "1px solid #1e1b4b", borderRadius: 6, color: "#f3f4f6", padding: "5px 8px", fontSize: 11, outline: "none", fontFamily: "inherit" }}
+                          />
+                          <button onClick={() => answerQuestion(q.id, qaAnswerInputs[q.id] ?? "")}
+                            style={{ background: "#7c3aed", border: "none", color: "#fff", borderRadius: 6, padding: "5px 10px", fontSize: 11, cursor: "pointer" }}>
+                            Send
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {role !== "host" && (
+                  <div style={{ padding: "8px 10px", borderTop: "1px solid #1e1b4b", display: "flex", gap: 6, flexShrink: 0 }}>
+                    <input
+                      value={qaInput}
+                      onChange={e => setQaInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") askQuestion(); }}
+                      placeholder="Ask a question…"
+                      style={{ flex: 1, background: "#0a0910", border: "1px solid #1e1b4b", borderRadius: 8, color: "#f3f4f6", padding: "7px 10px", fontSize: 12, outline: "none", fontFamily: "inherit" }}
+                    />
+                    <button onClick={askQuestion}
+                      style={{ background: "#7c3aed", border: "none", color: "#fff", borderRadius: 8, padding: "7px 12px", fontSize: 12, cursor: "pointer", fontWeight: 700 }}>
+                      Ask
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1331,6 +1510,7 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
           {role === "host" && <TBtn icon="rooms" label="Rooms" active={activePanel === "breakout"} badge={breakoutActive ? 1 : undefined} onClick={() => togglePanel("breakout")} />}
           {role === "host" && <TBtn icon="poll" label="Polls" active={activePanel === "polls"} badge={polls.length > 0 ? polls.length : undefined} onClick={() => togglePanel("polls")} />}
           {role === "host" && <TBtn icon="mute-all" label="Mute All" onClick={muteAll} />}
+          <TBtn icon="qa" label="Q&A" active={activePanel === "qa"} badge={unreadQa > 0 ? unreadQa : undefined} onClick={() => togglePanel("qa")} />
           <TBtn icon="react" label="React" active={showReactionPicker} onClick={() => setShowReactionPicker(v => !v)} />
 
           {/* Audience: raise hand */}
