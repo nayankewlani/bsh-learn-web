@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import Hls from "hls.js";
 import AgoraRTC from "agora-rtc-sdk-ng";
 AgoraRTC.setLogLevel(4);
 import type {
@@ -25,9 +24,6 @@ interface Props {
   // call are equal, not a host-broadcasts-to-audience webinar. Drives this client
   // straight into publishing camera/mic instead of waiting on the raise-hand flow.
   oneToOne?: boolean;
-  // HLS URL returned by /join when CDN streaming is active — audience watches this
-  // instead of joining the Agora RTC channel directly.
-  hlsUrl?: string;
   onLeave?: () => void;
 }
 interface RemoteUser { uid: string | number; videoTrack?: IRemoteVideoTrack; audioTrack?: IRemoteAudioTrack; }
@@ -75,61 +71,6 @@ const RemoteVideo: React.FC<{ track: IRemoteVideoTrack; label: string; fit?: "co
 };
 const pill: React.CSSProperties = { position: "absolute", bottom: 8, left: 8, background: "rgba(0,0,0,0.72)", padding: "2px 9px", borderRadius: 5, fontSize: 12, color: "#fff" };
 
-/* ─── HLS player for CDN-streamed audience ─────────────────────────────── */
-const HlsPlayer: React.FC<{ hlsUrl: string }> = ({ hlsUrl }) => {
-  const videoRef  = useRef<HTMLVideoElement>(null);
-  const hlsRef    = useRef<Hls | null>(null);
-  const [buffering, setBuffering] = useState(true);
-  const [errored,   setErrored]   = useState(false);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    setBuffering(true);
-    setErrored(false);
-
-    if (Hls.isSupported()) {
-      const hls = new Hls({ lowLatencyMode: true, maxBufferLength: 10 });
-      hlsRef.current = hls;
-      hls.loadSource(hlsUrl);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setBuffering(false);
-        video.play().catch(() => {});
-      });
-      hls.on(Hls.Events.ERROR, (_evt, data) => {
-        if (data.fatal) setErrored(true);
-      });
-      return () => { hls.destroy(); hlsRef.current = null; };
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = hlsUrl;
-      video.addEventListener("loadedmetadata", () => { setBuffering(false); video.play().catch(() => {}); });
-    }
-  }, [hlsUrl]);
-
-  if (errored) return (
-    <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10, color: "#6b7280" }}>
-      <div style={{ fontSize: 36 }}>📡</div>
-      <p style={{ margin: 0 }}>Stream unavailable — please try refreshing</p>
-    </div>
-  );
-  return (
-    <div style={{ position: "relative", width: "100%", height: "100%", background: "#000" }}>
-      {buffering && (
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10, color: "#6b7280", zIndex: 2 }}>
-          <div style={{ fontSize: 36 }}>📡</div>
-          <p style={{ margin: 0, fontSize: 14 }}>Live stream loading…</p>
-          <p style={{ margin: 0, fontSize: 11, color: "#4b5563" }}>May take 10–15 s to start</p>
-        </div>
-      )}
-      <video
-        ref={videoRef}
-        style={{ width: "100%", height: "100%", objectFit: "contain", display: buffering ? "none" : "block" }}
-        playsInline
-      />
-    </div>
-  );
-};
 
 /* ─── Professional SVG icon set ─────────────────────────────────────────── */
 const Ic = ({ d, extra }: { d: string | React.ReactNode; extra?: React.ReactNode }) => (
@@ -280,7 +221,7 @@ const WhiteboardCanvas: React.FC<{
 };
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
-const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, classId, oneToOne = false, hlsUrl, onLeave }) => {
+const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, classId, oneToOne = false, onLeave }) => {
   const { user } = useAuthStore();
 
   // Agora refs
@@ -848,19 +789,6 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
   useEffect(() => {
     leftIntentionallyRef.current = false;
 
-    if (hlsUrl && role === "audience") {
-      // CDN / HLS mode: skip Agora, just poll shared state
-      setJoined(true);
-      setConnecting(false);
-      pollState();
-      pollRef.current = setInterval(pollState, 3000);
-      reactPollRef.current = setInterval(pollReactions, 1000);
-      return () => {
-        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-        if (reactPollRef.current) { clearInterval(reactPollRef.current); reactPollRef.current = null; }
-      };
-    }
-
     const agoraRole = role === "host" || oneToOne ? "host" : "audience";
     joinChannel(channel, token, agoraRole, role === "host" || oneToOne).then(() => {
       pollState();
@@ -1007,13 +935,6 @@ const LiveClassRoom: React.FC<Props> = ({ appId, channel, token, uid, role, clas
           )}
           {joined && (
             <div style={{ position: "relative", height: "100%", minHeight: 340 }}>
-
-              {/* HLS audience player — CDN streaming mode */}
-              {hlsUrl && role === "audience" && !isCoHost && (
-                <div style={{ position: "absolute", inset: 0, zIndex: 2, background: "#000" }}>
-                  <HlsPlayer hlsUrl={hlsUrl} />
-                </div>
-              )}
 
               {/* ── Gallery view: CSS grid of all participants ── */}
               {viewMode === "gallery" && (() => {
