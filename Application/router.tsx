@@ -22,6 +22,7 @@ import Hypnosis2Page from "./pages/Hypnosis2Page";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EducatorApplicationPage from "./pages/auth/EducatorApplicationPage";
 import BookSessionPage from "./pages/BookSessionPage";
 import ConsultBookingPage from "./pages/ConsultBookingPage";
@@ -48,6 +49,7 @@ import AdminHeroBanners      from "./pages/admin/AdminHeroBanners";
 import AdminUpcomingClasses  from "./pages/admin/AdminUpcomingClasses";
 import AdminChat             from "./pages/admin/AdminChat";
 import AdminBroadcast        from "./pages/admin/AdminBroadcast";
+import AdminMediaLibrary     from "./pages/admin/AdminMediaLibrary";
 
 const Layout: React.FC = () => (
   <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0914" }}>
@@ -78,6 +80,7 @@ const AppRouter: React.FC = () => (
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/apply-educator" element={<EducatorApplicationPage />} />
 
       <Route element={<Layout />}>
@@ -133,6 +136,7 @@ const AppRouter: React.FC = () => (
           <Route path="upcoming-classes"        element={<AdminUpcomingClasses />} />
           <Route path="chat"                    element={<AdminChat />} />
           <Route path="broadcast"               element={<AdminBroadcast />} />
+          <Route path="media-library"           element={<AdminMediaLibrary />} />
           <Route path="reports"                 element={<AdminReports />} />
         </Route>
       </Route>
