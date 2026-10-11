@@ -216,12 +216,12 @@ export default function AdminMediaLibrary() {
     label:   { fontSize: 12, fontWeight: 700, color: t.textMuted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, display: "block" },
     input:   { width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.bgInput, color: t.textPrimary, fontSize: 14, boxSizing: "border-box" as const },
     tabRow:  { display: "flex", gap: 8, marginBottom: 20 },
-    tab:     (active: boolean) => ({ padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, background: active ? t.accent : t.bgTertiary, color: active ? "#fff" : t.textSecond }),
     btn:     { padding: "10px 22px", borderRadius: 8, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, background: t.accent, color: "#fff" },
     row:     { display: "flex", gap: 16, flexWrap: "wrap" as const },
     col:     { flex: 1, minWidth: 200 },
-    chip:    (active: boolean) => ({ padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1px solid ${active ? t.accent : t.border}`, background: active ? t.accent + "30" : "transparent", color: active ? t.accentLight : t.textSecond }),
   };
+  const tabStyle  = (active: boolean): React.CSSProperties => ({ padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, background: active ? t.accent : t.bgTertiary, color: active ? "#fff" : t.textSecond });
+  const chipStyle = (active: boolean): React.CSSProperties => ({ padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1px solid ${active ? t.accent : t.border}`, background: active ? t.accent + "30" : "transparent", color: active ? t.accentLight : t.textSecond });
 
   const batchToggle = (bid: string, list: string[], setter: (v: string[]) => void) =>
     setter(list.includes(bid) ? list.filter(x => x !== bid) : [...list, bid]);
@@ -236,7 +236,7 @@ export default function AdminMediaLibrary() {
         <span style={s.label}>Target</span>
         <div style={s.tabRow}>
           {(["program", "course", "free"] as const).map(tgt => (
-            <button key={tgt} style={s.tab(target === tgt)} onClick={() => { setTarget(tgt); resetForm(); }}>
+            <button key={tgt} style={tabStyle(target === tgt)} onClick={() => { setTarget(tgt); resetForm(); }}>
               {tgt === "program" ? "📚 Program" : tgt === "course" ? "🎓 Course" : "🌐 Free Content"}
             </button>
           ))}
@@ -269,7 +269,7 @@ export default function AdminMediaLibrary() {
           <label style={s.label}>Content Type</label>
           <div style={s.tabRow}>
             {(["video", "pdf", "image"] as const).map(ft => (
-              <button key={ft} style={s.tab(fileType === ft)} onClick={() => setFileType(ft)}>
+              <button key={ft} style={tabStyle(fileType === ft)} onClick={() => setFileType(ft)}>
                 {TYPE_ICON[ft]} {ft.toUpperCase()}
               </button>
             ))}
@@ -297,7 +297,7 @@ export default function AdminMediaLibrary() {
             <label style={s.label}>Visible to Batches (leave empty = all enrolled)</label>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {batches.map(b => (
-                <button key={b._id} style={s.chip(selBatches.includes(b._id))} onClick={() => batchToggle(b._id, selBatches, setSelBatches)}>
+                <button key={b._id} style={chipStyle(selBatches.includes(b._id))} onClick={() => batchToggle(b._id, selBatches, setSelBatches)}>
                   {b.name}
                 </button>
               ))}
@@ -399,7 +399,7 @@ export default function AdminMediaLibrary() {
                         <label style={s.label}>Batches</label>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                           {batches.map(b => (
-                            <button key={b._id} style={s.chip(editBatches.includes(b._id))} onClick={() => batchToggle(b._id, editBatches, setEditBatches)}>
+                            <button key={b._id} style={chipStyle(editBatches.includes(b._id))} onClick={() => batchToggle(b._id, editBatches, setEditBatches)}>
                               {b.name}
                             </button>
                           ))}
