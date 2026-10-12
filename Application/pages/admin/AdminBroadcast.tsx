@@ -101,6 +101,21 @@ const AdminBroadcast: React.FC = () => {
   const [options,       setOptions]       = useState<BroadcastOptions>({ programs: [], courses: [], liveClasses: [] });
   const [optionsLoaded, setOptionsLoaded] = useState(false);
 
+  // ── Image upload ──────────────────────────────────────────────────────────
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+
+  const uploadImage = async (file: File) => {
+    setImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const { data } = await client.post('/admin/upload-image', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setImageUrl(data.url);
+    } catch { alert('Image upload failed — try again'); }
+    finally { setImageUploading(false); }
+  };
+
   // ── Send state ────────────────────────────────────────────────────────────
   const [sending, setSending] = useState(false);
   const [result,  setResult]  = useState<{ ok: boolean; msg: string } | null>(null);
@@ -416,12 +431,44 @@ const AdminBroadcast: React.FC = () => {
                 <span style={{ ...charCount, bottom: -16 }}>{body.length}/300</span>
               </div>
 
-              <div style={{ marginBottom: 0, position: 'relative' }}>
-                <label style={lbl}>Notification Image <span style={{ color: '#475569', fontWeight: 400 }}>(optional)</span></label>
-                <input style={inputStyle} placeholder="https://cdn.bshhealers.com/images/promo.jpg" value={imageUrl} onChange={e => setImageUrl(e.target.value)} />
+              <div style={{ marginBottom: 0 }}>
+                <label style={lbl}>Notification Image <span style={{ color: '#475569', fontWeight: 400 }}>(optional — shows as big picture on Android)</span></label>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage(f); e.target.value = ''; }}
+                />
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input
+                    style={{ ...inputStyle, flex: 1 }}
+                    placeholder="Paste a URL or upload ↑"
+                    value={imageUrl}
+                    onChange={e => setImageUrl(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={imageUploading}
+                    style={{ whiteSpace: 'nowrap', padding: '10px 16px', borderRadius: 8, border: 'none', cursor: imageUploading ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, background: '#334155', color: '#e2e8f0', flexShrink: 0 }}
+                  >
+                    {imageUploading ? '⏳ Uploading…' : '📷 Upload'}
+                  </button>
+                  {imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl('')}
+                      style={{ padding: '10px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: '#1e293b', color: '#ef4444', flexShrink: 0 }}
+                    >✕</button>
+                  )}
+                </div>
                 {imageUrl && (
-                  <div style={{ marginTop: 8, borderRadius: 8, overflow: 'hidden', maxHeight: 80, background: '#0f172a' }}>
-                    <img src={imageUrl} alt="preview" style={{ width: '100%', maxHeight: 80, objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <div style={{ marginTop: 8, borderRadius: 8, overflow: 'hidden', maxHeight: 120, background: '#0f172a', position: 'relative' }}>
+                    <img src={imageUrl} alt="preview" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', display: 'block' }} onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }} />
+                    <div style={{ position: 'absolute', bottom: 6, right: 8, fontSize: 10, background: 'rgba(0,0,0,0.6)', color: '#94a3b8', padding: '2px 6px', borderRadius: 4 }}>
+                      FCM will load this image on delivery
+                    </div>
                   </div>
                 )}
               </div>
