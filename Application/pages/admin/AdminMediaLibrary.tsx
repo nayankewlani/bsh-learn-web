@@ -68,6 +68,7 @@ export default function AdminMediaLibrary() {
   // ── Bulk upload queue ────────────────────────────────────────────────────────
   const [queue, setQueue]         = useState<QueueItem[]>([]);
   const [bulkRunning, setBulkRunning] = useState(false);
+  const [activeUploadTitle, setActiveUploadTitle] = useState<string | null>(null);
   const bulkFileRef = useRef<HTMLInputElement>(null);
   const runningRef  = useRef(false);
 
@@ -158,6 +159,7 @@ export default function AdminMediaLibrary() {
   // Upload a single item — returns true on success
   const uploadOne = useCallback(async (item: QueueItem): Promise<boolean> => {
     updateQueue(item.localId, { status: "uploading", progress: 0 });
+    setActiveUploadTitle(item.title);
     const basePayload = {
       target,
       programId: target === "program" ? programId : undefined,
@@ -170,36 +172,39 @@ export default function AdminMediaLibrary() {
 
     try {
       if (fileType === "video") {
-        const { data } = await client.post("/media/create-video", { ...basePayload, title: item.title, description: desc });
+        // Use a longer timeout for this API call since Mux may be slow
+        const { data } = await client.post("/media/create-video", { ...basePayload, title: item.title, description: desc }, { timeout: 60000 });
+        const mimeType = item.file.type || "video/mp4";
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.upload.onprogress = e => {
             if (e.lengthComputable) updateQueue(item.localId, { progress: Math.round(e.loaded / e.total * 100) });
           };
-          xhr.onload  = () => xhr.status < 300 ? resolve() : reject(new Error(`HTTP ${xhr.status}`));
-          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.onload  = () => xhr.status < 300 ? resolve() : reject(new Error(`Mux HTTP ${xhr.status}`));
+          xhr.onerror = () => reject(new Error("Network error during upload"));
           xhr.open("PUT", data.uploadUrl);
-          xhr.setRequestHeader("Content-Type", item.file.type);
+          if (mimeType) xhr.setRequestHeader("Content-Type", mimeType);
           xhr.send(item.file);
         });
         updateQueue(item.localId, { status: "processing", progress: 100, contentId: data.content._id, muxUploadId: data.uploadId });
         // Poll Mux async — doesn't block the upload loop
         pollMux(item.localId, data.content._id, data.uploadId);
       } else {
+        const mimeType = item.file.type || "application/octet-stream";
         const { data } = await client.post("/media/create-file-url", {
           ...basePayload,
           title: item.title, description: desc, type: fileType,
-          fileName: item.file.name, fileMimeType: item.file.type,
-        });
+          fileName: item.file.name, fileMimeType: mimeType,
+        }, { timeout: 60000 });
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.upload.onprogress = e => {
             if (e.lengthComputable) updateQueue(item.localId, { progress: Math.round(e.loaded / e.total * 100) });
           };
-          xhr.onload  = () => xhr.status < 300 ? resolve() : reject(new Error(`HTTP ${xhr.status}`));
-          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.onload  = () => xhr.status < 300 ? resolve() : reject(new Error(`GCS HTTP ${xhr.status}`));
+          xhr.onerror = () => reject(new Error("Network error during upload"));
           xhr.open("PUT", data.uploadUrl);
-          xhr.setRequestHeader("Content-Type", item.file.type);
+          if (mimeType) xhr.setRequestHeader("Content-Type", mimeType);
           xhr.send(item.file);
         });
         updateQueue(item.localId, { status: "ready", progress: 100 });
@@ -213,9 +218,6 @@ export default function AdminMediaLibrary() {
 
   const startBulkUpload = async () => {
     if (runningRef.current) return;
-    if (!folder.trim() && folderOptions.length === 0) {
-      // allow no folder — just upload without folder
-    }
     runningRef.current = true;
     setBulkRunning(true);
     const pending = queue.filter(q => q.status === "pending");
@@ -225,6 +227,7 @@ export default function AdminMediaLibrary() {
     }
     runningRef.current = false;
     setBulkRunning(false);
+    setActiveUploadTitle(null);
     loadItems();
     loadFolderOptions();
   };
@@ -232,6 +235,7 @@ export default function AdminMediaLibrary() {
   const stopBulkUpload = () => {
     runningRef.current = false;
     setBulkRunning(false);
+    setActiveUploadTitle(null);
   };
 
   const removeFromQueue = (localId: string) => setQueue(prev => prev.filter(q => q.localId !== localId));
@@ -443,6 +447,22 @@ export default function AdminMediaLibrary() {
             </>
           )}
         </div>
+
+        {/* Active upload banner */}
+        {bulkRunning && activeUploadTitle && (
+          <div style={{ background: "#1e40af22", border: "1px solid #3b82f6", borderRadius: 8, padding: "10px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 14 }}>⬆️</span>
+            <div>
+              <span style={{ color: "#60a5fa", fontWeight: 700, fontSize: 13 }}>Uploading to Mux: </span>
+              <span style={{ color: t.textPrimary, fontSize: 13 }}>{activeUploadTitle}</span>
+            </div>
+          </div>
+        )}
+        {bulkRunning && !activeUploadTitle && (
+          <div style={{ background: "#1e40af22", border: "1px solid #3b82f6", borderRadius: 8, padding: "10px 14px", marginBottom: 12 }}>
+            <span style={{ color: "#60a5fa", fontWeight: 700, fontSize: 13 }}>⬆️ Starting upload…</span>
+          </div>
+        )}
 
         {/* Summary bar */}
         {queue.length > 0 && (
