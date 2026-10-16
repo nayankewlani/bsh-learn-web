@@ -94,8 +94,7 @@ const LivePage: React.FC = () => {
     }
   }, [user]);
 
-  const startClass = async (classId: string, title: string) => {
-    const sendNotification = window.confirm(`Send push notification to students that "${title}" is now live?`);
+  const startClass = async (classId: string, title: string, sendNotification = false) => {
     setJoiningId(classId);
     try {
       const { data } = await client.post(`/live-classes/${classId}/start`, { sendNotification });
@@ -330,9 +329,12 @@ const LivePage: React.FC = () => {
                           </div>
                         </div>
                         {b.liveClassId && (
-                          <Button size="sm" onClick={() => startClass(b.liveClassId, `1:1 with ${b.client?.name}`)}>
-                            Start Session
-                          </Button>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <Button size="sm" onClick={() => startClass(b.liveClassId, `1:1 with ${b.client?.name}`, false)}>
+                              Start Session
+                            </Button>
+                            <button title="Start and notify client" onClick={() => startClass(b.liveClassId, `1:1 with ${b.client?.name}`, true)} style={{ padding: "5px 9px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#f59e0b", cursor: "pointer", fontSize: 15 }}>🔔</button>
+                          </div>
                         )}
                       </div>
                     ))}
@@ -371,7 +373,12 @@ const LivePage: React.FC = () => {
                           <div style={{ fontWeight: 600, color: t.textPrimary, fontSize: 13 }}>{cls.title}</div>
                           <div style={{ color: t.textSecond, fontSize: 11 }}>{fmtDate(cls.scheduledAt)} · {cls.status}</div>
                         </div>
-                        {cls.status === "scheduled" && <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Go Live</Button>}
+                        {cls.status === "scheduled" && (
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <Button size="sm" onClick={() => startClass(cls._id, cls.title, false)} loading={joiningId === cls._id}>Go Live</Button>
+                            <button title="Go Live and notify students" disabled={joiningId === cls._id} onClick={() => startClass(cls._id, cls.title, true)} style={{ padding: "5px 9px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#f59e0b", cursor: "pointer", fontSize: 15 }}>🔔</button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -403,9 +410,12 @@ const LivePage: React.FC = () => {
                         ) : cls.status === "rejected" ? (
                           <div style={{ fontSize: 12, color: "#ef4444", padding: "5px 10px", background: "rgba(239,68,68,.1)", borderRadius: 8 }}>Rejected</div>
                         ) : cls.status === "scheduled" ? (
-                          <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Go Live</Button>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <Button size="sm" onClick={() => startClass(cls._id, cls.title, false)} loading={joiningId === cls._id}>Go Live</Button>
+                            <button title="Go Live and notify students" disabled={joiningId === cls._id} onClick={() => startClass(cls._id, cls.title, true)} style={{ padding: "5px 9px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#f59e0b", cursor: "pointer", fontSize: 15 }}>🔔</button>
+                          </div>
                         ) : cls.status === "live" ? (
-                          <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Re-enter Room</Button>
+                          <Button size="sm" onClick={() => startClass(cls._id, cls.title, false)} loading={joiningId === cls._id}>Re-enter Room</Button>
                         ) : null}
                       </div>
                     ))}
@@ -537,7 +547,13 @@ const LivePage: React.FC = () => {
                   <div style={{ display: "flex", gap: 8 }}>
                     {cls.status === "live" ? (
                       <>
-                        <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Re-enter Room</Button>
+                        <Button size="sm" onClick={() => startClass(cls._id, cls.title, false)} loading={joiningId === cls._id}>Re-enter Room</Button>
+                        <button
+                          title="Re-enter and notify students"
+                          disabled={joiningId === cls._id}
+                          onClick={() => startClass(cls._id, cls.title, true)}
+                          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#f59e0b", cursor: "pointer", fontSize: 16 }}
+                        >🔔</button>
                         <Button size="sm" variant="danger" onClick={() => endClass(cls._id)} loading={endingId === cls._id}>End</Button>
                       </>
                     ) : cls.status === "pending_approval" ? (
@@ -549,9 +565,17 @@ const LivePage: React.FC = () => {
                         Rejected by admin
                       </div>
                     ) : (
-                      <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>
-                        {cls.platform === "zoom" ? "Open Zoom →" : "Start Now"}
-                      </Button>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <Button size="sm" onClick={() => startClass(cls._id, cls.title, false)} loading={joiningId === cls._id}>
+                          {cls.platform === "zoom" ? "Open Zoom →" : "Start Now"}
+                        </Button>
+                        <button
+                          title="Start and notify students"
+                          disabled={joiningId === cls._id}
+                          onClick={() => startClass(cls._id, cls.title, true)}
+                          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#f59e0b", cursor: "pointer", fontSize: 16 }}
+                        >🔔</button>
+                      </div>
                     )}
                   </div>
                 </div>
