@@ -79,6 +79,10 @@ const AdminLiveClasses: React.FC = () => {
     } catch (err: any) { alert(err.response?.data?.message || "Failed to save URL"); }
   };
 
+  // Per-class platform selection for approval (default agora)
+  const [approvalPlatforms, setApprovalPlatforms] = useState<Record<string, 'agora' | 'zoom'>>({});
+  const [zoomLinks, setZoomLinks]                 = useState<Record<string, string>>({});
+
   // Free live permissions
   const [perms, setPerms]        = useState<AdminLivePermission[]>([]);
   const [permsLoading, setPermsLoading] = useState(false);
@@ -107,9 +111,18 @@ const AdminLiveClasses: React.FC = () => {
 
   const handleAction = async (id: string, action: 'approve' | 'reject' | 'end') => {
     if (action === 'end' && !window.confirm('End this class for all participants?')) return;
+    if (action === 'approve') {
+      const platform = approvalPlatforms[id] ?? 'agora';
+      if (platform === 'zoom' && !zoomLinks[id]?.trim()) {
+        alert('Please enter the Zoom meeting link before approving.');
+        return;
+      }
+    }
     setActionId(id);
     try {
-      await adminApproveLiveClass(id, action as any);
+      const platform = approvalPlatforms[id] ?? 'agora';
+      const zoomLink = zoomLinks[id]?.trim();
+      await adminApproveLiveClass(id, action as any, action === 'approve' ? platform : undefined, action === 'approve' && platform === 'zoom' ? zoomLink : undefined);
       load();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed');
@@ -351,16 +364,44 @@ const AdminLiveClasses: React.FC = () => {
                               )}
                             </td>
 
-                            <td>
-                              {status === 'pending' && (
-                                <div style={{ display: 'flex', gap: 6 }}>
-                                  <button className="adm-btn adm-btn-sm adm-btn-success" onClick={() => handleAction(c._id, 'approve')} disabled={actionId === c._id}>
-                                    {actionId === c._id ? '…' : '✓ Approve'}
-                                  </button>
-                                  <button className="adm-btn adm-btn-sm adm-btn-danger" onClick={() => handleAction(c._id, 'reject')} disabled={actionId === c._id}>
-                                    {actionId === c._id ? '…' : '✕ Reject'}
-                                  </button>
-                                </div>
+                            <td style={{ minWidth: 220 }}>
+                              {status === 'pending' && (() => {
+                                const plat = approvalPlatforms[c._id] ?? 'agora';
+                                return (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    {/* Platform toggle */}
+                                    <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid #334155', width: 'fit-content' }}>
+                                      <button
+                                        style={{ padding: '4px 12px', fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', background: plat === 'agora' ? '#7c3aed' : '#1e293b', color: plat === 'agora' ? '#fff' : '#64748b' }}
+                                        onClick={() => setApprovalPlatforms(p => ({ ...p, [c._id]: 'agora' }))}
+                                      >Agora</button>
+                                      <button
+                                        style={{ padding: '4px 12px', fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', background: plat === 'zoom' ? '#0ea5e9' : '#1e293b', color: plat === 'zoom' ? '#fff' : '#64748b' }}
+                                        onClick={() => setApprovalPlatforms(p => ({ ...p, [c._id]: 'zoom' }))}
+                                      >Zoom</button>
+                                    </div>
+                                    {/* Zoom link input */}
+                                    {plat === 'zoom' && (
+                                      <input
+                                        placeholder="Zoom meeting link…"
+                                        value={zoomLinks[c._id] ?? ''}
+                                        onChange={e => setZoomLinks(z => ({ ...z, [c._id]: e.target.value }))}
+                                        style={{ fontSize: 11, padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', width: 180 }}
+                                      />
+                                    )}
+                                    <div style={{ display: 'flex', gap: 6 }}>
+                                      <button className="adm-btn adm-btn-sm adm-btn-success" onClick={() => handleAction(c._id, 'approve')} disabled={actionId === c._id}>
+                                        {actionId === c._id ? '…' : '✓ Approve'}
+                                      </button>
+                                      <button className="adm-btn adm-btn-sm adm-btn-danger" onClick={() => handleAction(c._id, 'reject')} disabled={actionId === c._id}>
+                                        {actionId === c._id ? '…' : '✕ Reject'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                              {status === 'upcoming' && c.platform === 'zoom' && (
+                                <span style={{ fontSize: 11, color: '#0ea5e9', background: 'rgba(14,165,233,0.12)', borderRadius: 8, padding: '4px 10px', fontWeight: 700 }}>🔗 Zoom</span>
                               )}
                               {status === 'live' && (
                                 <button

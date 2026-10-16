@@ -98,6 +98,8 @@ export interface AdminLiveClass {
   duration: number;
   status: 'pending_approval' | 'rejected' | 'scheduled' | 'live' | 'ended';
   agoraChannel?: string;
+  platform?: 'agora' | 'zoom';
+  zoomLink?: string;
   maxParticipants?: number;
   heroVideoUrl?: string;
   recordingActive?: boolean;
@@ -179,7 +181,7 @@ export const adminUpdateCourse      = (id: string, data: object)     => client.p
 export const adminGetTransactions   = ()                             => client.get('/admin/transactions');
 export const adminGetEarnings       = ()                             => client.get('/admin/earnings');
 export const adminGetLiveClasses         = ()                                        => client.get('/admin/live-classes');
-export const adminApproveLiveClass       = (id: string, action: 'approve' | 'reject') => client.patch(`/admin/live-classes/${id}`, { action });
+export const adminApproveLiveClass       = (id: string, action: 'approve' | 'reject', platform?: 'agora' | 'zoom', zoomLink?: string) => client.patch(`/admin/live-classes/${id}`, { action, ...(platform ? { platform } : {}), ...(zoomLink ? { zoomLink } : {}) });
 export const adminGetRecordingManifestUrl = (id: string) => `/api/admin/live-classes/${id}/recording-manifest`;
 export const adminGetSessions       = ()                             => client.get('/admin/private-sessions');
 export const adminUpdateSession     = (id: string, data: object)     => client.patch(`/admin/private-sessions/${id}`, data);

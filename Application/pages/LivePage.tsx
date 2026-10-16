@@ -19,6 +19,8 @@ interface LiveClass {
   duration: number;
   status: string;
   enrolledStudents: string[];
+  platform?: 'agora' | 'zoom';
+  zoomLink?: string;
 }
 
 interface ActiveRoom {
@@ -98,6 +100,10 @@ const LivePage: React.FC = () => {
       const { data } = await client.post(`/live-classes/${classId}/start`);
       setClasses((prev) => prev.map((c) => c._id === classId ? { ...c, status: "live" } : c));
       setMyClasses((prev) => prev.map((c) => c._id === classId ? { ...c, status: "live" } : c));
+      if (data.platform === "zoom") {
+        window.open(data.zoomLink, "_blank", "noopener,noreferrer");
+        return;
+      }
       setActiveRoom({ appId: data.appId, channel: data.channel, token: data.token, uid: data.uid, role: "host", classId, title });
     } catch (err: unknown) {
       alert((err as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to start");
@@ -113,6 +119,11 @@ const LivePage: React.FC = () => {
       const { data } = await client.post(`/live-classes/${classId}/join`);
       if (data.waiting) {
         setWaitingRoom({ classId, title });
+        setJoiningId(null);
+        return;
+      }
+      if (data.platform === "zoom") {
+        window.open(data.zoomLink, "_blank", "noopener,noreferrer");
         setJoiningId(null);
         return;
       }
@@ -537,7 +548,9 @@ const LivePage: React.FC = () => {
                         Rejected by admin
                       </div>
                     ) : (
-                      <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>Start Now</Button>
+                      <Button size="sm" onClick={() => startClass(cls._id, cls.title)} loading={joiningId === cls._id}>
+                        {cls.platform === "zoom" ? "Open Zoom →" : "Start Now"}
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -592,7 +605,7 @@ const LivePage: React.FC = () => {
                         <div style={{ color: t.textMuted, fontSize: 12, marginBottom: 14 }}>🗓 {fmtDate(cls.scheduledAt)}</div>
                         {cls.status === "live" ? (
                           <Button fullWidth size="sm" onClick={() => joinClass(cls._id, cls.title)} loading={joiningId === cls._id}>
-                            Join Now →
+                            {cls.platform === "zoom" ? "Join via Zoom →" : "Join Now →"}
                           </Button>
                         ) : (
                           <div style={{ color: t.textMuted, fontSize: 13, textAlign: "center", padding: "8px 0", background: t.bgNav, borderRadius: 8 }}>
