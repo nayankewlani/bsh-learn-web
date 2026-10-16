@@ -95,9 +95,10 @@ const LivePage: React.FC = () => {
   }, [user]);
 
   const startClass = async (classId: string, title: string) => {
+    const sendNotification = window.confirm(`Send push notification to students that "${title}" is now live?`);
     setJoiningId(classId);
     try {
-      const { data } = await client.post(`/live-classes/${classId}/start`);
+      const { data } = await client.post(`/live-classes/${classId}/start`, { sendNotification });
       setClasses((prev) => prev.map((c) => c._id === classId ? { ...c, status: "live" } : c));
       setMyClasses((prev) => prev.map((c) => c._id === classId ? { ...c, status: "live" } : c));
       if (data.platform === "zoom") {
