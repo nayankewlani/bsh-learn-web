@@ -11,6 +11,7 @@ interface GHLConfig {
   customHeaders?: { key: string; value: string }[];
   isConnected?: boolean; lastTestedAt?: string;
 }
+
 interface Item {
   _id: string;
   _type: 'course' | 'program';
@@ -36,6 +37,7 @@ interface Item {
   showcaseTitle?: string; showcaseImageUrl?: string;
   razorpayPaymentLink?: string; razorpayPaymentLinkId?: string;
   ghlConfig?: GHLConfig;
+  ghlPortalUrl?: string;
   createdAt: string;
 }
 interface Enrollment {
@@ -714,7 +716,7 @@ const CreateProgramPanel: React.FC<{ onClose: () => void; onCreated: (p: Item) =
   ];
 
   const inboundPreviewUrl = form.programId
-    ? `https://bshapp.blessingsschoolofhypnosis.com/api/admin-courses/programs/inbound/${toSlug(form.programId)}/[SECRET]`
+    ? `https://bshhealers.com/api/admin-courses/programs/inbound/${toSlug(form.programId)}/[SECRET]`
     : '(generated after creation)';
 
   const create = async () => {
@@ -1586,7 +1588,7 @@ const RazorpayTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m
 
 const GHLTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m: string, e?: boolean) => void }> = ({ item, onUpdate, flash }) => {
   const ghl = item.ghlConfig || {};
-  const [form, setForm] = useState({ outboundWebhookUrl: ghl.outboundWebhookUrl || '', apiKey: ghl.apiKey || '', locationId: ghl.locationId || '', tagId: ghl.tagId || '' });
+  const [form, setForm] = useState({ outboundWebhookUrl: ghl.outboundWebhookUrl || '', apiKey: ghl.apiKey || '', locationId: ghl.locationId || '', tagId: ghl.tagId || '', portalUrl: item.ghlPortalUrl || '' });
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>(ghl.customHeaders || []);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -1595,15 +1597,15 @@ const GHLTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m: str
 
   const inboundUrl = ghl.inboundSecret
     ? isProgram
-      ? `https://bshapp.blessingsschoolofhypnosis.com/api/admin-courses/programs/inbound/${item.programId}/${ghl.inboundSecret}`
-      : `https://bshapp.blessingsschoolofhypnosis.com/api/admin-courses/inbound/${item._id}/${ghl.inboundSecret}`
+      ? `https://bshhealers.com/api/admin-courses/programs/inbound/${item.programId}/${ghl.inboundSecret}`
+      : `https://bshhealers.com/api/admin-courses/inbound/${item._id}/${ghl.inboundSecret}`
     : null;
 
   const save = async () => {
     setSaving(true);
     try {
       const { data } = await client.patch(`${api(item)}/ghl`, { ...form, customHeaders: headers.filter(h => h.key && h.value) });
-      onUpdate({ ...item, ghlConfig: data.ghlConfig });
+      onUpdate({ ...item, ghlConfig: data.ghlConfig, ghlPortalUrl: data.ghlPortalUrl ?? form.portalUrl });
       flash('GHL settings saved!');
     } catch (err: any) { flash(err.response?.data?.message || 'Save failed', true); }
     finally { setSaving(false); }
@@ -1670,6 +1672,18 @@ const GHLTab: React.FC<{ item: Item; onUpdate: (c: Item) => void; flash: (m: str
               <button onClick={() => setHeaders(prev => prev.filter((_, idx) => idx !== i))} style={{ ...S.btn('#450a0a'), padding: '6px 10px', fontSize: 16 }}>×</button>
             </div>
           ))}
+        </div>
+        <div style={{ marginBottom: 18, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <label style={{ ...S.label, color: '#34d399' }}>🎓 Student Portal URL (GHL Course Page)</label>
+          <input
+            value={form.portalUrl}
+            onChange={e => setForm(f => ({ ...f, portalUrl: e.target.value }))}
+            style={S.input}
+            placeholder="https://your-domain.com/courses/advance-hypnosis"
+          />
+          <div style={{ color: '#475569', fontSize: 11, marginTop: 4 }}>
+            Enrolled students see a <strong style={{ color: '#94a3b8' }}>Watch Classes</strong> button in the app that opens this URL. Paste your GHL course portal or membership site link here.
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={save} disabled={saving} style={S.btn(saving ? '#374151' : '#FF1E56')}>{saving ? 'Saving…' : '💾 Save GHL Settings'}</button>
