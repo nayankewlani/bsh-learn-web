@@ -11,6 +11,7 @@ interface StudentDetail {
   student:     any;
   enrollments: any[];
   payments:    any[];
+  programs:    any[];
 }
 
 const AdminStudents: React.FC = () => {
@@ -26,6 +27,7 @@ const AdminStudents: React.FC = () => {
   const [detail, setDetail]         = useState<StudentDetail | null>(null);
   const [detailLoading, setDL]      = useState(false);
   const [detailError, setDE]        = useState('');
+  const [grantingId, setGrantingId] = useState<string | null>(null);
 
   const PER = 20;
 
@@ -72,6 +74,27 @@ const AdminStudents: React.FC = () => {
     } finally {
       setActionId(null);
     }
+  };
+
+  const grantAccess = async (userId: string, type: 'program' | 'course', id: string) => {
+    const key = `${type}:${id}`;
+    if (!confirm(`Grant ${type} access for "${id}" to this user?`)) return;
+    setGrantingId(key);
+    try {
+      const body = type === 'program' ? { userId, type, programId: id } : { userId, type, courseId: id };
+      const r = await fetch('/api/admin/grant-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.message);
+      alert(d.message);
+      // Reload detail
+      if (detail) { const r2 = await adminGetStudentDetail(detail.student._id); setDetail(r2.data as StudentDetail); }
+    } catch (err: any) {
+      alert(err.message || 'Failed to grant access');
+    } finally { setGrantingId(null); }
   };
 
   const pages = Math.ceil(total / PER);
@@ -239,15 +262,37 @@ const AdminStudents: React.FC = () => {
                     ? <div style={{ color: '#64748b', fontSize: 13 }}>No payments yet</div>
                     : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {detail.payments.map((p: any) => (
-                          <div key={p._id} style={{ background: '#13102b', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{p.course?.title ?? (p.type === 'subscription' ? 'Subscription' : 'Payment')}</div>
+                        {detail.payments.map((p: any) => {
+                          const grantedPrograms = (detail.programs ?? []).map((pg: any) => pg.programId);
+                          const grantedCourses  = detail.enrollments.map((e: any) => String(e.course?._id ?? e.course));
+                          const needsGrant =
+                            (p.type === 'program' && p.programId && !grantedPrograms.includes(p.programId)) ||
+                            (p.type === 'course'  && p.course?._id && !grantedCourses.includes(String(p.course._id)));
+                          const grantKey = p.type === 'program' ? `program:${p.programId}` : `course:${p.course?._id}`;
+                          return (
+                          <div key={p._id} style={{ background: '#13102b', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>
+                                {p.course?.title ?? p.programId ?? (p.type === 'subscription' ? 'Subscription' : 'Payment')}
+                              </div>
                               <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>{fmtDate(p.createdAt)} · <span className="pill pill-blue" style={{ fontSize: 10 }}>{p.type}</span></div>
                             </div>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: '#FF6B8A' }}>{fmtMoney(p.amount)}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: '#FF6B8A' }}>{fmtMoney(p.amount)}</div>
+                              {needsGrant && (
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-success"
+                                  disabled={grantingId === grantKey}
+                                  onClick={() => {
+                                    if (p.type === 'program' && p.programId) grantAccess(detail.student._id, 'program', p.programId);
+                                    else if (p.type === 'course' && p.course?._id) grantAccess(detail.student._id, 'course', String(p.course._id));
+                                  }}
+                                >{grantingId === grantKey ? '…' : '⚡ Grant'}</button>
+                              )}
+                            </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )
                   }
