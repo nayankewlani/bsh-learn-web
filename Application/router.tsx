@@ -48,8 +48,9 @@ import AdminProgramPosts  from "./pages/admin/AdminProgramPosts";
 import AdminHeroBanners      from "./pages/admin/AdminHeroBanners";
 import AdminUpcomingClasses  from "./pages/admin/AdminUpcomingClasses";
 import AdminChat             from "./pages/admin/AdminChat";
-import AdminBroadcast        from "./pages/admin/AdminBroadcast";
-import AdminMediaLibrary     from "./pages/admin/AdminMediaLibrary";
+import AdminBroadcast               from "./pages/admin/AdminBroadcast";
+import AdminMediaLibrary            from "./pages/admin/AdminMediaLibrary";
+import AdminEducatorMembership      from "./pages/admin/AdminEducatorMembership";
 
 const Layout: React.FC = () => (
   <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0914" }}>
@@ -137,6 +138,7 @@ const AppRouter: React.FC = () => (
           <Route path="chat"                    element={<AdminChat />} />
           <Route path="broadcast"               element={<AdminBroadcast />} />
           <Route path="media-library"           element={<AdminMediaLibrary />} />
+          <Route path="educator-membership"     element={<AdminEducatorMembership />} />
           <Route path="reports"                 element={<AdminReports />} />
         </Route>
       </Route>

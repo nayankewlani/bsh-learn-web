@@ -19,6 +19,7 @@ const NAV = [
   { to: '/admin/chat',                  label: 'Chat Viewer' },
   { to: '/admin/broadcast',             label: 'Broadcast' },
   { to: '/admin/educator-applications', label: 'Educator Applications' },
+  { to: '/admin/educator-membership',   label: 'Educator Memberships' },
   { to: '/admin/transactions',          label: 'Transactions' },
   { to: '/admin/payouts',               label: 'Trainer Payouts' },
   { to: '/admin/permissions',           label: 'Permissions' },
@@ -41,6 +42,7 @@ const TITLES: Record<string, string> = {
   '/admin/chat':                  'Chat Viewer',
   '/admin/broadcast':             'Broadcast',
   '/admin/educator-applications': 'Educator Applications',
+  '/admin/educator-membership':   'Educator Memberships',
   '/admin/transactions':          'Transactions',
   '/admin/payouts':               'Trainer Payouts',
   '/admin/permissions':           'Permissions',
@@ -50,7 +52,7 @@ const TITLES: Record<string, string> = {
 const ICONS: Record<string, string> = {
   'Overview': '▣', 'Students': '👥', 'Trainers': '🎓', 'Courses': '📚',
   'Course Manager': '⚙️', 'Bulk Enroll': '📥', 'Program Posts': '📢', 'Media Library': '🎬', 'Hero Banners': '🎥', 'Starting Soon': '📅', 'Home Free Classes': '🎬', 'Live Classes': '📡', 'Sessions & Calls': '📋',
-  'Educator Applications': '🎓', 'Transactions': '₹', 'Trainer Payouts': '💸', 'Permissions': '🔐', 'Reports': '📊', 'Chat Viewer': '💬', 'Broadcast': '📣',
+  'Educator Applications': '🎓', 'Educator Memberships': '🏅', 'Transactions': '₹', 'Trainer Payouts': '💸', 'Permissions': '🔐', 'Reports': '📊', 'Chat Viewer': '💬', 'Broadcast': '📣',
 };
 
 const AdminLayout: React.FC = () => {
