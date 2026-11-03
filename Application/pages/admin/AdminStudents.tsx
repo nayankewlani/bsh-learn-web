@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import type { AdminStudent } from '../../api/admin';
-import { adminGetStudents, adminGetStudentDetail, adminSuspendUser, adminUpdatePermissions } from '../../api/admin';
+import { adminGetStudents, adminGetStudentDetail, adminSuspendUser, adminUpdatePermissions, adminDeleteStudent } from '../../api/admin';
 
 const fmtDate  = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 const fmtDob   = (d?: string) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -21,7 +21,8 @@ const AdminStudents: React.FC = () => {
   const [search, setSearch]     = useState('');
   const [query, setQuery]       = useState('');
   const [page, setPage]         = useState(1);
-  const [actionId, setActionId] = useState<string | null>(null);
+  const [actionId, setActionId]   = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // detail modal
   const [detail, setDetail]         = useState<StudentDetail | null>(null);
@@ -73,6 +74,22 @@ const AdminStudents: React.FC = () => {
       alert(err.response?.data?.message || 'Action failed');
     } finally {
       setActionId(null);
+    }
+  };
+
+  const deleteStudent = async (s: AdminStudent) => {
+    const confirmed = window.confirm(
+      `⚠️ PERMANENT DELETE\n\nThis will delete "${s.name}" and ALL their data:\n• Account\n• Enrollments\n• Payments\n• Program access\n\nThis cannot be undone. Are you sure?`
+    );
+    if (!confirmed) return;
+    setDeletingId(s._id);
+    try {
+      await adminDeleteStudent(s._id);
+      load(query, page);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete student');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -153,6 +170,13 @@ const AdminStudents: React.FC = () => {
                             className={`adm-btn adm-btn-sm ${s.isActive ? 'adm-btn-danger' : 'adm-btn-success'}`}
                             onClick={() => toggle(s)} disabled={actionId === s._id}
                           >{actionId === s._id ? '…' : s.isActive ? 'Suspend' : 'Reactivate'}</button>
+                          <button
+                            className="adm-btn adm-btn-sm adm-btn-danger"
+                            style={{ background: '#7f1d1d', borderColor: '#991b1b' }}
+                            onClick={() => deleteStudent(s)}
+                            disabled={deletingId === s._id}
+                            title="Permanently delete this student and all their data"
+                          >{deletingId === s._id ? '…' : '🗑 Delete'}</button>
                         </td>
                       </tr>
                     ))}

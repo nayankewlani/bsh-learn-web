@@ -187,6 +187,7 @@ export const adminGetSessions       = ()                             => client.g
 export const adminUpdateSession     = (id: string, data: object)     => client.patch(`/admin/private-sessions/${id}`, data);
 export const adminUpdatePermissions = (userId: string, data: object) => client.patch(`/admin/permissions/${userId}`, data);
 export const adminSuspendUser                = (id: string)                           => client.delete(`/admin/users/${id}/suspend`);
+export const adminDeleteStudent              = (id: string)                           => client.delete(`/admin/students/${id}`);
 export const adminGetSessionApplications     = ()                                      => client.get('/admin/session-applications');
 export const adminUpdateSessionApplication   = (id: string, data: object)              => client.patch(`/admin/session-applications/${id}`, data);
 export type DeepLinkType =
