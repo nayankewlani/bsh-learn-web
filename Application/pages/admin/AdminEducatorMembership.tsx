@@ -113,7 +113,7 @@ const StepBar: React.FC<{ current: number }> = ({ current }) => (
 
 // ── Main page ──────────────────────────────────────────────────────────────
 const AdminEducatorMembership: React.FC = () => {
-  const [tab, setTab] = useState<"list" | "create" | "templates" | "earnings">("list");
+  const [tab, setTab] = useState<"list" | "create" | "bulk" | "templates" | "earnings">("list");
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(false);
   const [filterTier, setFilterTier] = useState("");
@@ -139,6 +139,15 @@ const AdminEducatorMembership: React.FC = () => {
   const [createdMembership, setCreatedMembership] = useState<Membership | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Bulk assign
+  const [bulkTrainers, setBulkTrainers]   = useState<any[]>([]);
+  const [bulkSelected, setBulkSelected]   = useState<Set<string>>(new Set());
+  const [bulkTier, setBulkTier]           = useState<Tier>("golden");
+  const [bulkSearch, setBulkSearch]       = useState("");
+  const [bulkLoading, setBulkLoading]     = useState(false);
+  const [bulkSaving, setBulkSaving]       = useState(false);
+  const [bulkResult, setBulkResult]       = useState("");
+
   // Template editor
   const [tmplTier, setTmplTier] = useState<Tier>("golden");
   const [template, setTemplate] = useState<Template>({
@@ -161,6 +170,7 @@ const AdminEducatorMembership: React.FC = () => {
   useEffect(() => { if (tab === "list") fetchMemberships(); }, [tab, filterTier, filterStatus, search]);
   useEffect(() => { if (tab === "templates") fetchTemplate(tmplTier); }, [tmplTier, tab]);
   useEffect(() => { if (tab === "earnings") { fetchEarningsAdmin(); fetchEarningsSummary(); } }, [tab]);
+  useEffect(() => { if (tab === "bulk") fetchBulkTrainers(); }, [tab]);
 
   async function fetchMemberships() {
     setLoading(true);
@@ -337,6 +347,36 @@ const AdminEducatorMembership: React.FC = () => {
     return true;
   });
 
+  async function fetchBulkTrainers() {
+    setBulkLoading(true);
+    try {
+      const [trainersRes, membershipsRes] = await Promise.all([
+        client.get("/admin/trainers"),
+        client.get("/membership?limit=1000"),
+      ]);
+      const enrolledIds = new Set((membershipsRes.data.memberships || []).map((m: any) => String(m.userId?._id || m.userId)));
+      const trainers = (trainersRes.data.trainers || trainersRes.data || [])
+        .filter((t: any) => !enrolledIds.has(String(t._id)));
+      setBulkTrainers(trainers);
+      setBulkSelected(new Set());
+      setBulkResult("");
+    } catch { /* ignore */ } finally { setBulkLoading(false); }
+  }
+
+  async function handleBulkAssign() {
+    if (bulkSelected.size === 0) { alert("Select at least one trainer"); return; }
+    if (!confirm(`Assign ${bulkTier} tier to ${bulkSelected.size} trainer(s)?`)) return;
+    setBulkSaving(true);
+    setBulkResult("");
+    try {
+      const { data } = await client.post("/membership/bulk", { userIds: Array.from(bulkSelected), tier: bulkTier });
+      setBulkResult(data.message || "Done");
+      await fetchBulkTrainers();
+    } catch (e: any) {
+      setBulkResult(e?.response?.data?.message || "Failed");
+    } finally { setBulkSaving(false); }
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={S.page}>
@@ -344,9 +384,9 @@ const AdminEducatorMembership: React.FC = () => {
 
       {/* Tab bar */}
       <div style={S.tabs}>
-        {(["list","create","templates","earnings"] as const).map(t => (
+        {(["list","create","bulk","templates","earnings"] as const).map(t => (
           <button key={t} style={tab === t ? S.tabA : S.tab} onClick={() => { setTab(t); if (t === "create") setStep(0); }}>
-            {t === "list" ? "All Educators" : t === "create" ? "+ Onboard Educator" : t === "templates" ? "MOU Templates" : "Earnings"}
+            {t === "list" ? "All Educators" : t === "create" ? "+ Onboard Educator" : t === "bulk" ? "⚡ Bulk Assign" : t === "templates" ? "MOU Templates" : "Earnings"}
           </button>
         ))}
       </div>
@@ -639,6 +679,72 @@ const AdminEducatorMembership: React.FC = () => {
                "Activate Educator"}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ── BULK ASSIGN ── */}
+      {tab === "bulk" && (
+        <div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
+            <input
+              style={{ flex: 1, minWidth: 200, background: "#1e1b3a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 13 }}
+              placeholder="Search trainer name or email…"
+              value={bulkSearch}
+              onChange={e => setBulkSearch(e.target.value)}
+            />
+            <select
+              style={{ background: "#1e1b3a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 13 }}
+              value={bulkTier}
+              onChange={e => setBulkTier(e.target.value as Tier)}
+            >
+              <option value="golden">🥇 Golden</option>
+              <option value="diamond">💎 Diamond</option>
+              <option value="platinum">🏆 Platinum</option>
+            </select>
+            <button
+              style={{ background: bulkSelected.size === 0 ? "#334155" : "#7c3aed", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", cursor: "pointer", fontWeight: 700, fontSize: 13 }}
+              onClick={handleBulkAssign}
+              disabled={bulkSaving || bulkSelected.size === 0}
+            >{bulkSaving ? "Assigning…" : `Assign ${bulkTier} to ${bulkSelected.size} selected`}</button>
+            <button
+              style={{ background: "#1e1b3a", border: "1px solid #334155", color: "#94a3b8", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12 }}
+              onClick={() => setBulkSelected(new Set(bulkTrainers.map((t: any) => t._id)))}
+            >Select All</button>
+            {bulkSelected.size > 0 && (
+              <button
+                style={{ background: "#1e1b3a", border: "1px solid #334155", color: "#94a3b8", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12 }}
+                onClick={() => setBulkSelected(new Set())}
+              >Clear</button>
+            )}
+          </div>
+          {bulkResult && <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 8, background: bulkResult.includes("Failed") ? "#7f1d1d" : "#14532d", color: "#fff", fontSize: 13 }}>{bulkResult}</div>}
+          {bulkLoading
+            ? <div style={{ color: "#94a3b8", padding: 20 }}>Loading trainers…</div>
+            : bulkTrainers.length === 0
+              ? <div style={{ color: "#64748b", padding: 20 }}>All trainers are already enrolled in a tier.</div>
+              : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {bulkTrainers
+                    .filter((t: any) => !bulkSearch || t.name?.toLowerCase().includes(bulkSearch.toLowerCase()) || t.email?.toLowerCase().includes(bulkSearch.toLowerCase()))
+                    .map((t: any) => (
+                      <div
+                        key={t._id}
+                        onClick={() => setBulkSelected(prev => { const n = new Set(prev); n.has(t._id) ? n.delete(t._id) : n.add(t._id); return n; })}
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 8, background: bulkSelected.has(t._id) ? "#1e1040" : "#13102b", border: `1px solid ${bulkSelected.has(t._id) ? "#7c3aed" : "#1e293b"}`, cursor: "pointer" }}
+                      >
+                        <input type="checkbox" checked={bulkSelected.has(t._id)} readOnly style={{ accentColor: "#7c3aed" }} />
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 13 }}>
+                          {t.name?.charAt(0)?.toUpperCase() || "T"}
+                        </div>
+                        <div>
+                          <div style={{ color: "#e2e8f0", fontSize: 13, fontWeight: 600 }}>{t.name}</div>
+                          <div style={{ color: "#64748b", fontSize: 12 }}>{t.email}</div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )
+          }
         </div>
       )}
 
