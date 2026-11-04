@@ -719,6 +719,7 @@ interface AddForm {
   rating: number; followers: number; sessionsDisplay: string;
   hasPayBooking: boolean; hasApplyBooking: boolean;
   consultationCategories: string[];
+  membershipTier: '' | 'golden' | 'diamond' | 'platinum';
 }
 
 const EMPTY_FORM: AddForm = {
@@ -731,6 +732,7 @@ const EMPTY_FORM: AddForm = {
   rating: 0, followers: 0, sessionsDisplay: '',
   hasPayBooking: true, hasApplyBooking: false,
   consultationCategories: [],
+  membershipTier: '',
 };
 
 const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ onCreated }) => {
@@ -761,6 +763,13 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
     setSaving(true); setMsg('');
     try {
       const { data } = await adminCreateTrainer(form);
+      if (form.membershipTier) {
+        try {
+          await client.post('/membership/bulk', { userIds: [data.trainer._id], tier: form.membershipTier });
+        } catch {
+          // membership assign failed silently — trainer still created
+        }
+      }
       setSuccess(data.trainer);
       onCreated(data.trainer);
       setForm(EMPTY_FORM);
@@ -773,10 +782,18 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
     <div style={{ maxWidth: 560, background: '#1e293b', border: '1px solid #334155', borderRadius: 20, padding: 32, textAlign: 'center' }}>
       <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
       <div style={{ fontWeight: 800, fontSize: 20, color: '#e2e8f0', marginBottom: 8 }}>Trainer Created!</div>
-      <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 24 }}>
+      <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 8 }}>
         <strong style={{ color: '#FF6B8A' }}>{success.name}</strong> ({success.email}) is now a trainer on BSH Healers.
       </div>
-      <button onClick={() => setSuccess(null)} style={{ background: 'linear-gradient(90deg,#FF1E56,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+      {form.membershipTier === '' && (
+        <div style={{ color: '#94a3b8', fontSize: 13, marginBottom: 24 }}>No membership assigned — add one from Educator Memberships.</div>
+      )}
+      {form.membershipTier !== '' && (
+        <div style={{ display: 'inline-block', background: form.membershipTier === 'golden' ? '#451a03' : form.membershipTier === 'diamond' ? '#1e1b4b' : '#042f2e', border: `1px solid ${form.membershipTier === 'golden' ? '#d97706' : form.membershipTier === 'diamond' ? '#818cf8' : '#22d3ee'}`, color: form.membershipTier === 'golden' ? '#d97706' : form.membershipTier === 'diamond' ? '#818cf8' : '#22d3ee', borderRadius: 20, padding: '4px 14px', fontSize: 13, fontWeight: 700, marginBottom: 24 }}>
+          🏅 {form.membershipTier.charAt(0).toUpperCase() + form.membershipTier.slice(1)} membership assigned
+        </div>
+      )}
+      <button onClick={() => setSuccess(null)} style={{ background: 'linear-gradient(90deg,#FF1E56,#5b21b6)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14, display: 'block', margin: '0 auto' }}>
         + Add Another Trainer
       </button>
     </div>
@@ -927,6 +944,30 @@ const AddTrainerPanel: React.FC<{ onCreated: (t: AdminTrainer) => void }> = ({ o
               </div>
             </label>
             <div style={{ fontSize: 10, color: '#475569', marginTop: 4 }}>Both can be enabled simultaneously</div>
+          </div>
+
+          {/* Membership Tier */}
+          <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: '16px', marginBottom: 20 }}>
+            <div style={{ fontWeight: 700, color: '#f59e0b', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>🏅 Membership Tier</div>
+            <div style={{ fontSize: 11, color: '#475569', marginBottom: 12 }}>Assign a tier now — optional, can be set later from Educator Memberships</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+              {(['', 'golden', 'diamond', 'platinum'] as const).map(tier => {
+                const meta: Record<string, { label: string; color: string; bg: string }> = {
+                  '':         { label: 'None',     color: '#475569', bg: '#1e293b' },
+                  golden:     { label: '🥇 Golden',  color: '#d97706', bg: '#451a03' },
+                  diamond:    { label: '💎 Diamond', color: '#818cf8', bg: '#1e1b4b' },
+                  platinum:   { label: '🌟 Platinum',color: '#22d3ee', bg: '#042f2e' },
+                };
+                const m = meta[tier];
+                const selected = form.membershipTier === tier;
+                return (
+                  <button key={tier} onClick={() => setForm(v => ({ ...v, membershipTier: tier }))}
+                    style={{ padding: '10px 6px', borderRadius: 10, border: `2px solid ${selected ? m.color : '#334155'}`, background: selected ? m.bg : 'transparent', color: selected ? m.color : '#64748b', fontWeight: selected ? 800 : 500, fontSize: 12, cursor: 'pointer', transition: 'all 0.15s' }}>
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Permissions */}
