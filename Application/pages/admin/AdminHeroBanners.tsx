@@ -88,10 +88,15 @@ const AdminHeroBanners: React.FC = () => {
     setSaving(true);
     setErr('');
     try {
+      // Convert datetime-local (local time) to UTC ISO so server stores it correctly.
+      // Without this, a 6:35 PM IST entry is stored as 6:35 PM UTC → shows as 12:05 AM IST next day.
+      const timerEndsAtUtc = form.showTimer && form.timerEndsAt
+        ? new Date(form.timerEndsAt).toISOString()
+        : undefined;
       const payload = {
         ...form,
         showTimer: form.showTimer,
-        timerEndsAt: form.showTimer && form.timerEndsAt ? form.timerEndsAt : undefined,
+        timerEndsAt: timerEndsAtUtc,
         order: Number(form.order) || 0,
       };
       if (editing) {
@@ -364,10 +369,34 @@ const AdminHeroBanners: React.FC = () => {
                 </div>
               )}
 
-              <div>
-                <label style={label}>Tap destination (CTA link)</label>
+              <div style={{ gridColumn: '1/-1' }}>
+                <label style={label}>Tap destination (where banner leads)</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                  {[
+                    { label: '🏠 Home',       value: '/(tabs)/' },
+                    { label: '🔴 Live Classes', value: '/(tabs)/live' },
+                    { label: '🛍 Store',        value: '/(tabs)/store' },
+                    { label: '🔍 Explore',     value: '/(tabs)/explore' },
+                    { label: '👤 Profile',     value: '/(tabs)/profile' },
+                  ].map(opt => (
+                    <button key={opt.value} type="button"
+                      onClick={() => setForm(f => ({ ...f, ctaLink: opt.value }))}
+                      style={{
+                        padding: '6px 12px', borderRadius: 20, border: '2px solid',
+                        borderColor: form.ctaLink === opt.value ? '#7c3aed' : '#374151',
+                        backgroundColor: form.ctaLink === opt.value ? '#7c3aed22' : 'transparent',
+                        color: form.ctaLink === opt.value ? '#c4b5fd' : '#9ca3af',
+                        fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                      }}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
                 <input value={form.ctaLink} onChange={e => setForm(f => ({ ...f, ctaLink: e.target.value }))}
-                  placeholder="e.g. /(tabs)/live  or  /program/hypnosis-2" style={input} />
+                  placeholder="Or type a custom route: /program/hypnosis-2" style={input} />
+                <p style={{ margin: '4px 0 0', fontSize: 11, color: '#6b7280' }}>
+                  Select a preset above or type any in-app route. Use <strong>Live Classes</strong> to open the live tab for event banners.
+                </p>
               </div>
 
               <div>
