@@ -95,7 +95,8 @@ const AdminUpcomingClasses: React.FC = () => {
     if (!form.scheduledAt)  { setErr('Date & time is required'); return; }
     setSaving(true); setErr('');
     try {
-      const payload = { ...form, order: Number(form.order) || 0 };
+      const scheduledAtUtc = form.scheduledAt ? new Date(form.scheduledAt).toISOString() : form.scheduledAt;
+      const payload = { ...form, order: Number(form.order) || 0, scheduledAt: scheduledAtUtc };
       if (editing) {
         await client.put(`/upcoming-classes/${editing._id}`, payload);
       } else {
