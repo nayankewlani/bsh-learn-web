@@ -112,7 +112,7 @@ const AdminBroadcast: React.FC = () => {
       fd.append('image', file);
       const { data } = await client.post('/admin/upload-image', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setImageUrl(data.url);
-    } catch { alert('Image upload failed — try again'); }
+    } catch (err: any) { alert('Image upload failed — ' + (err?.response?.data?.error || err?.response?.data?.message || err?.message || 'try again')); }
     finally { setImageUploading(false); }
   };
 
