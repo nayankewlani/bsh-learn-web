@@ -206,6 +206,7 @@ export interface BroadcastCampaign {
   deepLinkType: DeepLinkType;
   deepLinkId?: string;
   audienceType: string;
+  audienceId?: string;
   audienceLabel: string;
   scheduledAt?: string;
   status: BroadcastStatus;

@@ -246,6 +246,23 @@ const AdminBroadcast: React.FC = () => {
     }
   };
 
+  // ── Resend campaign (pre-fill Compose with same content) ──────────────────
+
+  const handleResend = (b: BroadcastCampaign) => {
+    setTitle(b.title);
+    setBody(b.body);
+    setImageUrl(b.imageUrl || '');
+    setDeepLinkType((b.deepLinkType as DeepLinkType) || 'none');
+    setDeepLinkId(b.deepLinkId || '');
+    setAudienceType((b.audienceType as AudienceType) || 'all');
+    setAudienceId(b.audienceId || '');
+    setIsScheduled(false);
+    setScheduledAt('');
+    setResult(null);
+    setTab('compose');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // ── Cancel scheduled campaign ──────────────────────────────────────────────
 
   const handleCancel = async (id: string) => {
@@ -697,6 +714,12 @@ const AdminBroadcast: React.FC = () => {
                         <button onClick={() => handleCancel(b._id)}
                           style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.07)', color: '#f87171', cursor: 'pointer' }}>
                           ✕ Cancel
+                        </button>
+                      )}
+                      {b.status === 'sent' && (
+                        <button onClick={() => handleResend(b)}
+                          style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(124,58,237,0.4)', background: 'rgba(124,58,237,0.08)', color: '#a78bfa', cursor: 'pointer' }}>
+                          📤 Resend
                         </button>
                       )}
                       {b.status === 'sent' && b.pushCount > 0 && (
