@@ -11,7 +11,7 @@ import client from '../../api/client';
 type AudienceType = 'all' | 'students' | 'educators' | 'program' | 'course' | 'live_class' | 'specific_user';
 
 interface UserSearchResult {
-  _id: string; name: string; email: string; phone: string; avatar: string; hasPush: boolean;
+  _id: string; name: string; email: string; phone: string; avatar: string; hasPush: boolean; suspended?: boolean;
 }
 
 interface AudienceOption { id: string; label: string }
@@ -415,7 +415,7 @@ const AdminBroadcast: React.FC = () => {
                               style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 14px', background: 'none', border: 'none', borderBottom: '1px solid #1e293b', cursor: 'pointer', textAlign: 'left', alignItems: 'center' }}>
                               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#7c3aed22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>👤</div>
                               <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: 13 }}>{u.name}</div>
+                                <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: 13 }}>{u.name}{u.suspended ? <span style={{ marginLeft: 6, fontSize: 10, color: '#ef4444', fontWeight: 700 }}>SUSPENDED</span> : null}</div>
                                 <div style={{ color: '#64748b', fontSize: 11 }}>{u.email}{u.phone ? ` · ${u.phone}` : ''}</div>
                               </div>
                               <span style={{ fontSize: 10, color: u.hasPush ? '#22c55e' : '#475569', fontWeight: 600 }}>{u.hasPush ? '📲' : '🔕'}</span>
