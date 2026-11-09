@@ -1,0 +1,17 @@
+name: Deploy Web App
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger server deploy
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST https://bshhealers.com/api/deploy/web \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" \
+            -H "Content-Type: application/json"
