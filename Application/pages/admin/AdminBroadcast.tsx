@@ -396,7 +396,7 @@ const AdminBroadcast: React.FC = () => {
                           userSearchDebounce.current = setTimeout(async () => {
                             setUserSearchLoading(true);
                             try {
-                              const r = await client.get(`/api/admin/user-search?q=${encodeURIComponent(q)}`);
+                              const r = await client.get(`/admin/user-search?q=${encodeURIComponent(q)}`);
                               setUserResults(r.data.users ?? []);
                             } catch { setUserResults([]); }
                             finally { setUserSearchLoading(false); }
