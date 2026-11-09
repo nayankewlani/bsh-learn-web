@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { useThemeStore } from "../stores/themeStore";
@@ -25,6 +25,14 @@ const ConsultBookingPage: React.FC = () => {
   const [paying, setPaying]             = useState(false);
   const [error, setError]               = useState("");
   const [booked, setBooked]             = useState(false);
+  const [discount, setDiscount]         = useState<{ discountType: string; discountValue: number; note?: string } | null>(null);
+
+  useEffect(() => {
+    if (!expert?.dbId || !user) return;
+    client.get(`/consultation-bookings/check-discount?trainerId=${expert.dbId}`)
+      .then(r => setDiscount(r.data.discount ?? null))
+      .catch(() => {});
+  }, [expert?.dbId, user]);
 
   if (!expert) return (
     <div style={{ background: t.bgPrimary, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -45,9 +53,20 @@ const ConsultBookingPage: React.FC = () => {
   // Pricing: per-minute rate × duration per session
   const ratePerMin = usePerSession ? dbSessionPricePaise / 100 : FALLBACK_RATE;
   const pricePerSessionRupees = ratePerMin * duration;
-  const totalRupees = sessions * pricePerSessionRupees;
-  const totalPaise  = Math.round(totalRupees * 100);
+  const baseTotalRupees = sessions * pricePerSessionRupees;
+  const baseTotalPaise  = Math.round(baseTotalRupees * 100);
   const savedRupees = bonusSessions * pricePerSessionRupees;
+
+  // Apply discount if one exists (mirrors server logic)
+  const discountedPaise = (() => {
+    if (!discount) return baseTotalPaise;
+    if (discount.discountType === "percent")
+      return Math.max(100, Math.round(baseTotalPaise * (1 - discount.discountValue / 100)));
+    return Math.max(100, baseTotalPaise - discount.discountValue);
+  })();
+  const totalRupees = discountedPaise / 100;
+  const totalPaise  = discountedPaise;
+  const discountSavingRupees = (baseTotalPaise - discountedPaise) / 100;
 
   const handlePay = async () => {
     if (!user) { navigate("/login"); return; }
@@ -198,18 +217,42 @@ const ConsultBookingPage: React.FC = () => {
             style={{ width: "100%", padding: "11px 14px", border: `1.5px solid ${t.border}`, borderRadius: 10, background: t.bgPrimary, color: t.textPrimary, fontSize: 13, outline: "none", resize: "none", boxSizing: "border-box", fontFamily: "inherit" }} />
         </div>
 
+        {/* Discount banner */}
+        {discount && (
+          <div style={{ background: "rgba(22,163,74,0.08)", border: "1.5px solid rgba(22,163,74,0.3)", borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 22 }}>🏷️</span>
+            <div>
+              <div style={{ color: "#16a34a", fontWeight: 700, fontSize: 14 }}>
+                Special Discount Applied!{" "}
+                {discount.discountType === "percent"
+                  ? `${discount.discountValue}% off`
+                  : `₹${(discount.discountValue / 100).toLocaleString("en-IN")} off`}
+              </div>
+              {discount.note && <div style={{ color: "#15803d", fontSize: 12 }}>{discount.note}</div>}
+            </div>
+          </div>
+        )}
+
         {/* Order summary */}
         <div style={{ background: t.bgCard, border: `1.5px solid ${t.border}`, borderRadius: 16, padding: "20px 20px", marginBottom: 24 }}>
           <div style={{ fontWeight: 700, color: t.textPrimary, fontSize: 15, marginBottom: 16 }}>Order Summary</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", color: t.textSecond, fontSize: 13 }}>
               <span>{sessions} session{sessions > 1 ? "s" : ""} × {duration} min × ₹{ratePerMin.toLocaleString("en-IN")}/min</span>
-              <span style={{ color: t.textPrimary, fontWeight: 600 }}>₹{totalRupees.toLocaleString("en-IN")}</span>
+              <span style={{ color: discount ? t.textSecond : t.textPrimary, fontWeight: 600, textDecoration: discount ? "line-through" : "none" }}>
+                ₹{baseTotalRupees.toLocaleString("en-IN")}
+              </span>
             </div>
             {bonusSessions > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", color: "#16a34a", fontSize: 13 }}>
                 <span>🎁 {bonusSessions} free session{bonusSessions > 1 ? "s" : ""} included</span>
                 <span style={{ fontWeight: 600 }}>₹0</span>
+              </div>
+            )}
+            {discount && discountSavingRupees > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", color: "#16a34a", fontSize: 13 }}>
+                <span>🏷️ Special discount ({discount.discountType === "percent" ? `${discount.discountValue}%` : `₹${(discount.discountValue / 100).toLocaleString("en-IN")}`})</span>
+                <span style={{ fontWeight: 600 }}>−₹{discountSavingRupees.toLocaleString("en-IN")}</span>
               </div>
             )}
             <div style={{ display: "flex", justifyContent: "space-between", color: t.textSecond, fontSize: 13 }}>

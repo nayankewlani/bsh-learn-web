@@ -19,7 +19,7 @@ const AdminSessions: React.FC = () => {
   const [sel, setSel]                 = useState<AdminSession | null>(null);
   const [form, setForm]               = useState({ status: '', adminNotes: '', scheduledAt: '' });
   const [saving, setSaving]           = useState(false);
-  const [mainTab, setMainTab]         = useState<'consultations' | 'bookings' | 'permissions' | 'applications'>('consultations');
+  const [mainTab, setMainTab]         = useState<'consultations' | 'bookings' | 'permissions' | 'applications' | 'discounts'>('consultations');
   const [bookings, setBookings]       = useState<any[]>([]);
   const [permissions, setPermissions] = useState<any[]>([]);
   const [bookingFilter, setBookingFilter] = useState('all');
@@ -27,6 +27,21 @@ const AdminSessions: React.FC = () => {
   const [appFilter, setAppFilter]         = useState<string>('all');
   const [appActionId, setAppActionId]     = useState<string | null>(null);
   const [appNote, setAppNote]             = useState<Record<string, string>>({});
+
+  // Discounts state
+  const [discounts, setDiscounts]       = useState<any[]>([]);
+  const [discTrainer, setDiscTrainer]   = useState('');
+  const [discUser, setDiscUser]         = useState('');
+  const [discTrainerQ, setDiscTrainerQ] = useState('');
+  const [discUserQ, setDiscUserQ]       = useState('');
+  const [discTrainerResults, setDiscTrainerResults] = useState<any[]>([]);
+  const [discUserResults, setDiscUserResults]       = useState<any[]>([]);
+  const [discType, setDiscType]   = useState<'percent' | 'flat'>('percent');
+  const [discValue, setDiscValue] = useState('');
+  const [discMaxUses, setDiscMaxUses] = useState('1');
+  const [discExpiry, setDiscExpiry]   = useState('');
+  const [discNote, setDiscNote]       = useState('');
+  const [discSaving, setDiscSaving]   = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -50,7 +65,44 @@ const AdminSessions: React.FC = () => {
       .catch(() => {});
   };
 
-  useEffect(() => { load(); loadBookings(); loadPermissions(); loadApplications(); }, []);
+  const loadDiscounts = () => {
+    client.get('/admin/session-discounts').then(r => setDiscounts(r.data.discounts || [])).catch(() => {});
+  };
+
+  const searchUsers = async (q: string, role: 'trainer' | 'user') => {
+    if (q.length < 2) { role === 'trainer' ? setDiscTrainerResults([]) : setDiscUserResults([]); return; }
+    try {
+      const r = await client.get(`/admin/user-search?q=${encodeURIComponent(q)}`);
+      if (role === 'trainer') setDiscTrainerResults(r.data.users || []);
+      else setDiscUserResults(r.data.users || []);
+    } catch {}
+  };
+
+  const createDiscount = async () => {
+    if (!discTrainer || !discUser || !discValue) { alert('Select trainer, user and enter discount value'); return; }
+    setDiscSaving(true);
+    try {
+      await client.post('/admin/session-discounts', {
+        trainerId: discTrainer, userId: discUser,
+        discountType: discType, discountValue: Number(discValue),
+        maxUses: Number(discMaxUses) || 1,
+        expiresAt: discExpiry || undefined, note: discNote || undefined,
+      });
+      setDiscTrainer(''); setDiscTrainerQ(''); setDiscUser(''); setDiscUserQ('');
+      setDiscValue(''); setDiscMaxUses('1'); setDiscExpiry(''); setDiscNote('');
+      loadDiscounts();
+      alert('Discount created!');
+    } catch (err: any) { alert(err.response?.data?.message || 'Failed'); }
+    finally { setDiscSaving(false); }
+  };
+
+  const deleteDiscount = async (id: string) => {
+    if (!confirm('Delete this discount?')) return;
+    try { await client.delete(`/admin/session-discounts/${id}`); loadDiscounts(); }
+    catch (err: any) { alert(err.response?.data?.message || 'Failed'); }
+  };
+
+  useEffect(() => { load(); loadBookings(); loadPermissions(); loadApplications(); loadDiscounts(); }, []);
 
   const openModal = (s: AdminSession) => {
     setSel(s);
@@ -142,6 +194,7 @@ const AdminSessions: React.FC = () => {
           { key: 'applications',  label: `✋ 1:1 Applications${pendingApplications > 0 ? ` (${pendingApplications} pending)` : ` (${applications.length})`}` },
           { key: 'bookings',      label: `1:1 Bookings${pendingBookings > 0 ? ` (${pendingBookings} pending)` : ` (${bookings.length})`}` },
           { key: 'permissions',   label: `Live Permissions${pendingPermissions > 0 ? ` (${pendingPermissions} pending)` : ''}` },
+          { key: 'discounts',     label: `🏷️ Session Discounts (${discounts.length})` },
         ] as const).map(tab => (
           <button key={tab.key} onClick={() => setMainTab(tab.key)}
             style={{ padding: '8px 18px', borderRadius: 20, border: `1.5px solid ${mainTab === tab.key ? '#FF1E56' : '#e5e7eb'}`, background: mainTab === tab.key ? 'rgba(255,30,86,0.1)' : 'transparent', color: mainTab === tab.key ? '#FF1E56' : '#6b7280', fontWeight: mainTab === tab.key ? 700 : 500, fontSize: 13, cursor: 'pointer' }}>
@@ -375,6 +428,172 @@ const AdminSessions: React.FC = () => {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── SESSION DISCOUNTS TAB ── */}
+      {mainTab === 'discounts' && (
+        <div>
+          <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 20 }}>
+            Grant a specific user a custom discount on sessions with a specific trainer. The discount is applied server-side when they book.
+          </p>
+
+          {/* Create discount form */}
+          <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 20, marginBottom: 24 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, color: '#111', marginBottom: 16 }}>Create Discount</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+
+              {/* Trainer picker */}
+              <div style={{ position: 'relative' }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Trainer *</label>
+                {discTrainerQ && discTrainer ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,30,86,0.07)', border: '1.5px solid #FF1E56', borderRadius: 8, padding: '8px 12px' }}>
+                    <span style={{ fontSize: 13, color: '#111', fontWeight: 600, flex: 1 }}>{discTrainerQ}</span>
+                    <button onClick={() => { setDiscTrainer(''); setDiscTrainerQ(''); }} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 16, padding: 0 }}>×</button>
+                  </div>
+                ) : (
+                  <>
+                    <input value={discTrainerQ} onChange={e => { setDiscTrainerQ(e.target.value); setDiscTrainer(''); searchUsers(e.target.value, 'trainer'); }}
+                      placeholder="Search trainer name or email…"
+                      style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' }} />
+                    {discTrainerResults.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', marginTop: 2 }}>
+                        {discTrainerResults.map((u: any) => (
+                          <button key={u._id} onClick={() => { setDiscTrainer(u._id); setDiscTrainerQ(u.name + ' (' + u.email + ')'); setDiscTrainerResults([]); }}
+                            style={{ width: '100%', padding: '10px 12px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', cursor: 'pointer', textAlign: 'left', fontSize: 13 }}>
+                            <strong>{u.name}</strong> <span style={{ color: '#6b7280' }}>{u.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* User picker */}
+              <div style={{ position: 'relative' }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>User *</label>
+                {discUserQ && discUser ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,30,86,0.07)', border: '1.5px solid #FF1E56', borderRadius: 8, padding: '8px 12px' }}>
+                    <span style={{ fontSize: 13, color: '#111', fontWeight: 600, flex: 1 }}>{discUserQ}</span>
+                    <button onClick={() => { setDiscUser(''); setDiscUserQ(''); }} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 16, padding: 0 }}>×</button>
+                  </div>
+                ) : (
+                  <>
+                    <input value={discUserQ} onChange={e => { setDiscUserQ(e.target.value); setDiscUser(''); searchUsers(e.target.value, 'user'); }}
+                      placeholder="Search user name, email or phone…"
+                      style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' }} />
+                    {discUserResults.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', marginTop: 2 }}>
+                        {discUserResults.map((u: any) => (
+                          <button key={u._id} onClick={() => { setDiscUser(u._id); setDiscUserQ(u.name + ' (' + u.email + ')'); setDiscUserResults([]); }}
+                            style={{ width: '100%', padding: '10px 12px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', cursor: 'pointer', textAlign: 'left', fontSize: 13 }}>
+                            <strong>{u.name}</strong> <span style={{ color: '#6b7280' }}>{u.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Discount type */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Discount Type *</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {(['percent', 'flat'] as const).map(t => (
+                    <button key={t} onClick={() => setDiscType(t)}
+                      style={{ flex: 1, padding: '8px', borderRadius: 8, border: `1.5px solid ${discType === t ? '#FF1E56' : '#d1d5db'}`, background: discType === t ? 'rgba(255,30,86,0.08)' : '#fff', color: discType === t ? '#FF1E56' : '#374151', fontWeight: discType === t ? 700 : 500, fontSize: 13, cursor: 'pointer' }}>
+                      {t === 'percent' ? '% Percent' : '₹ Flat (₹)'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Discount value */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
+                  {discType === 'percent' ? 'Percent Off (1–100)' : 'Flat Discount (₹)'} *
+                </label>
+                <input type="number" value={discValue} onChange={e => setDiscValue(e.target.value)}
+                  placeholder={discType === 'percent' ? 'e.g. 20' : 'e.g. 500'}
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' }} />
+                {discType === 'flat' && discValue && (
+                  <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>= ₹{Number(discValue).toLocaleString('en-IN')} off total</div>
+                )}
+              </div>
+
+              {/* Max uses */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Max Uses</label>
+                <input type="number" min="1" value={discMaxUses} onChange={e => setDiscMaxUses(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Expiry */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Expiry Date (optional)</label>
+                <input type="date" value={discExpiry} onChange={e => setDiscExpiry(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Note */}
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Note (optional)</label>
+                <input value={discNote} onChange={e => setDiscNote(e.target.value)} placeholder="e.g. First-time client, loyalty reward…"
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' }} />
+              </div>
+            </div>
+
+            <button onClick={createDiscount} disabled={discSaving}
+              style={{ marginTop: 16, padding: '10px 28px', background: discSaving ? '#9ca3af' : '#FF1E56', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: discSaving ? 'not-allowed' : 'pointer' }}>
+              {discSaving ? 'Creating…' : 'Create Discount'}
+            </button>
+          </div>
+
+          {/* Existing discounts */}
+          <div style={{ fontWeight: 700, fontSize: 15, color: '#111', marginBottom: 12 }}>Active Discounts ({discounts.length})</div>
+          {discounts.length === 0 ? (
+            <div style={{ color: '#6b7280', textAlign: 'center', padding: '32px 0', fontSize: 14 }}>No discounts created yet</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {discounts.map((d: any) => {
+                const used = d.usedCount >= d.maxUses;
+                const expired = d.expiresAt && new Date(d.expiresAt) < new Date();
+                return (
+                  <div key={d._id} style={{ background: '#fff', border: `1px solid ${used || expired ? '#fecaca' : '#e5e7eb'}`, borderRadius: 12, padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontWeight: 700, fontSize: 15, color: '#FF1E56' }}>
+                          {d.discountType === 'percent' ? `${d.discountValue}% OFF` : `₹${(d.discountValue / 100).toLocaleString('en-IN')} OFF`}
+                        </span>
+                        {(used || expired) && (
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626', background: 'rgba(239,68,68,0.08)', padding: '2px 7px', borderRadius: 10 }}>
+                            {used ? 'USED UP' : 'EXPIRED'}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 13, color: '#374151', marginBottom: 2 }}>
+                        <strong>Trainer:</strong> {d.trainer?.name} <span style={{ color: '#6b7280' }}>({d.trainer?.email})</span>
+                      </div>
+                      <div style={{ fontSize: 13, color: '#374151', marginBottom: 2 }}>
+                        <strong>User:</strong> {d.user?.name} <span style={{ color: '#6b7280' }}>({d.user?.email})</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>
+                        Uses: {d.usedCount}/{d.maxUses}
+                        {d.expiresAt ? ` · Expires: ${new Date(d.expiresAt).toLocaleDateString('en-IN')}` : ' · No expiry'}
+                        {d.note ? ` · ${d.note}` : ''}
+                      </div>
+                    </div>
+                    <button onClick={() => deleteDiscount(d._id)}
+                      style={{ padding: '6px 14px', background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+                      Delete
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
