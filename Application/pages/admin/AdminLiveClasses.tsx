@@ -83,6 +83,23 @@ const AdminLiveClasses: React.FC = () => {
   const [approvalPlatforms, setApprovalPlatforms] = useState<Record<string, 'agora' | 'zoom'>>({});
   const [zoomLinks, setZoomLinks]                 = useState<Record<string, string>>({});
 
+  // Reschedule state (1:1 sessions)
+  const [rescheduleId,   setRescheduleId]   = useState<string | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleSaving, setRescheduleSaving] = useState(false);
+
+  const handleReschedule = async (id: string) => {
+    if (!rescheduleDate) return;
+    setRescheduleSaving(true);
+    try {
+      const r = await client.patch(`/admin/live-classes/${id}/reschedule`, { scheduledAt: rescheduleDate });
+      setClasses(prev => prev.map(c => c._id === id ? { ...c, scheduledAt: (r.data as any).scheduledAt } : c));
+      setRescheduleId(null);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to reschedule');
+    } finally { setRescheduleSaving(false); }
+  };
+
   // Free live permissions
   const [perms, setPerms]        = useState<AdminLivePermission[]>([]);
   const [permsLoading, setPermsLoading] = useState(false);
@@ -400,8 +417,45 @@ const AdminLiveClasses: React.FC = () => {
                                   </div>
                                 );
                               })()}
-                              {status === 'upcoming' && c.platform === 'zoom' && (
-                                <span style={{ fontSize: 11, color: '#0ea5e9', background: 'rgba(14,165,233,0.12)', borderRadius: 8, padding: '4px 10px', fontWeight: 700 }}>🔗 Zoom</span>
+                              {status === 'upcoming' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  {c.platform === 'zoom' && (
+                                    <span style={{ fontSize: 11, color: '#0ea5e9', background: 'rgba(14,165,233,0.12)', borderRadius: 8, padding: '4px 10px', fontWeight: 700 }}>🔗 Zoom</span>
+                                  )}
+                                  {/* Reschedule button for 1:1 sessions */}
+                                  {(c.maxParticipants ?? 500) <= 2 && (
+                                    rescheduleId === c._id ? (
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                        <input
+                                          type="datetime-local"
+                                          value={rescheduleDate}
+                                          onChange={e => setRescheduleDate(e.target.value)}
+                                          style={{ fontSize: 11, padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', width: 180 }}
+                                        />
+                                        <div style={{ display: 'flex', gap: 4 }}>
+                                          <button className="adm-btn adm-btn-sm adm-btn-success" style={{ fontSize: 10, padding: '2px 10px' }}
+                                            onClick={() => handleReschedule(c._id)} disabled={rescheduleSaving}>
+                                            {rescheduleSaving ? '…' : '✓ Save'}
+                                          </button>
+                                          <button style={{ fontSize: 10, background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
+                                            onClick={() => setRescheduleId(null)}>Cancel</button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <button className="adm-btn adm-btn-sm" style={{ fontSize: 10, padding: '3px 10px', background: '#164e63' }}
+                                        onClick={() => {
+                                          // Pre-fill with current time in local datetime-local format
+                                          const d = new Date(c.scheduledAt);
+                                          const pad = (n: number) => String(n).padStart(2, '0');
+                                          const local = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                                          setRescheduleDate(local);
+                                          setRescheduleId(c._id);
+                                        }}>
+                                        📅 Reschedule
+                                      </button>
+                                    )
+                                  )}
+                                </div>
                               )}
                               {status === 'live' && (
                                 <button
