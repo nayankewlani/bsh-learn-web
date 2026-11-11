@@ -157,8 +157,8 @@ const AdminBroadcast: React.FC = () => {
   // ── Audience preview (debounced) ───────────────────────────────────────────
 
   const fetchPreview = useCallback(async (type: AudienceType, id: string) => {
-    const needsId = AUDIENCE_GROUPS.find(g => g.type === type)?.needsId;
-    if (needsId && !id) { setAudienceCount(null); return; }
+    const group = AUDIENCE_GROUPS.find(g => g.type === type);
+    if ((group?.needsId || group?.needsUserSearch) && !id) { setAudienceCount(null); return; }
     setPreviewLoading(true);
     try {
       const res = await adminBroadcastAudience(type, id || undefined);
