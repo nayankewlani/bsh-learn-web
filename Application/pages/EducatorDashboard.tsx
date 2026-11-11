@@ -471,13 +471,13 @@ const EducatorDashboard: React.FC = () => {
 
                           {b.status === "scheduled" && b.liveClassId && (
                             <div style={{
-                              background: b.liveClassId.status === "approved" ? "rgba(34,197,94,0.08)" : "rgba(245,158,11,0.08)",
-                              border: `1px solid ${b.liveClassId.status === "approved" ? "rgba(34,197,94,0.2)" : "rgba(245,158,11,0.2)"}`,
+                              background: b.liveClassId.status === "scheduled" ? "rgba(34,197,94,0.08)" : "rgba(245,158,11,0.08)",
+                              border: `1px solid ${b.liveClassId.status === "scheduled" ? "rgba(34,197,94,0.2)" : "rgba(245,158,11,0.2)"}`,
                               borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8
                             }}>
                               <div>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: b.liveClassId.status === "approved" ? "#22c55e" : "#f59e0b", marginBottom: 2 }}>
-                                  {b.liveClassId.status === "approved" ? "✅ Live class approved — ready to start" : "Live class requested — pending admin approval"}
+                                <div style={{ fontSize: 12, fontWeight: 700, color: b.liveClassId.status === "scheduled" ? "#22c55e" : "#f59e0b", marginBottom: 2 }}>
+                                  {b.liveClassId.status === "scheduled" ? "✅ Live class approved — ready to start" : "Live class requested — pending admin approval"}
                                 </div>
                                 {b.liveClassId.scheduledAt && (
                                   <div style={{ fontSize: 12, color: "#94a3b8" }}>
@@ -485,7 +485,7 @@ const EducatorDashboard: React.FC = () => {
                                   </div>
                                 )}
                               </div>
-                              {b.liveClassId.status === "approved" && (
+                              {b.liveClassId.status === "scheduled" && (
                                 <button
                                   onClick={() => navigate("/live")}
                                   style={{ padding: "8px 18px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
