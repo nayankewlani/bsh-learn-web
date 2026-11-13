@@ -422,8 +422,8 @@ const AdminLiveClasses: React.FC = () => {
                               {status === 'upcoming' && c.platform === 'zoom' && (
                                 <span style={{ fontSize: 11, color: '#0ea5e9', background: 'rgba(14,165,233,0.12)', borderRadius: 8, padding: '4px 10px', fontWeight: 700 }}>🔗 Zoom</span>
                               )}
-                              {/* Reschedule button for 1:1 sessions — shown for pending & upcoming */}
-                              {(c.maxParticipants ?? 500) <= 2 && status !== 'live' && status !== 'past' && (
+                              {/* Reschedule button for 1:1 sessions — shown for pending, upcoming & ended */}
+                              {(c.maxParticipants ?? 500) <= 2 && status !== 'live' && (
                                 rescheduleId === c._id ? (
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                     <input
