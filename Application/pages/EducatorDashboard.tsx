@@ -469,32 +469,39 @@ const EducatorDashboard: React.FC = () => {
                             </button>
                           )}
 
-                          {b.status === "scheduled" && b.liveClassId && (
-                            <div style={{
-                              background: b.liveClassId.status === "scheduled" ? "rgba(34,197,94,0.08)" : "rgba(245,158,11,0.08)",
-                              border: `1px solid ${b.liveClassId.status === "scheduled" ? "rgba(34,197,94,0.2)" : "rgba(245,158,11,0.2)"}`,
-                              borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8
-                            }}>
-                              <div>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: b.liveClassId.status === "scheduled" ? "#22c55e" : "#f59e0b", marginBottom: 2 }}>
-                                  {b.liveClassId.status === "scheduled" ? "✅ Live class approved — ready to start" : "Live class requested — pending admin approval"}
+                          {b.status === "scheduled" && b.liveClassId && (() => {
+                            const ls = b.liveClassId.status;
+                            const isEnded    = ls === "ended";
+                            const isLive     = ls === "live";
+                            const isApproved = ls === "scheduled";
+                            const bg    = isEnded ? "rgba(34,197,94,0.08)"  : isApproved || isLive ? "rgba(34,197,94,0.08)"  : "rgba(245,158,11,0.08)";
+                            const bord  = isEnded ? "rgba(34,197,94,0.2)"   : isApproved || isLive ? "rgba(34,197,94,0.2)"   : "rgba(245,158,11,0.2)";
+                            const color = isEnded ? "#22c55e"               : isApproved || isLive ? "#22c55e"               : "#f59e0b";
+                            const label = isEnded    ? "✅ Session completed"
+                                        : isLive     ? "🔴 Session is Live Now!"
+                                        : isApproved ? "✅ Live class approved — ready to start"
+                                        :              "Live class requested — pending admin approval";
+                            return (
+                              <div style={{ background: bg, border: `1px solid ${bord}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                                <div>
+                                  <div style={{ fontSize: 12, fontWeight: 700, color, marginBottom: 2 }}>{label}</div>
+                                  {b.liveClassId.scheduledAt && (
+                                    <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                                      Scheduled: {new Date(b.liveClassId.scheduledAt).toLocaleString("en-IN")}
+                                    </div>
+                                  )}
                                 </div>
-                                {b.liveClassId.scheduledAt && (
-                                  <div style={{ fontSize: 12, color: "#94a3b8" }}>
-                                    Scheduled: {new Date(b.liveClassId.scheduledAt).toLocaleString("en-IN")}
-                                  </div>
+                                {(isApproved || isLive) && (
+                                  <button
+                                    onClick={() => navigate("/live")}
+                                    style={{ padding: "8px 18px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                                  >
+                                    🔴 Go to Live Page
+                                  </button>
                                 )}
                               </div>
-                              {b.liveClassId.status === "scheduled" && (
-                                <button
-                                  onClick={() => navigate("/live")}
-                                  style={{ padding: "8px 18px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-                                >
-                                  🔴 Go to Live Page
-                                </button>
-                              )}
-                            </div>
-                          )}
+                            );
+                          })()}
 
                           {b.status === "completed" && (
                             <div style={{ fontSize: 12, color: "#22c55e", background: "rgba(34,197,94,0.08)", padding: "8px 12px", borderRadius: 8 }}>
