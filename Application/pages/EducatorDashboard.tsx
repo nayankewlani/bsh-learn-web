@@ -467,10 +467,8 @@ const EducatorDashboard: React.FC = () => {
                           {b.status === "paid" && !b.liveClassId && (
                             <button
                               onClick={() => {
-                                const tomorrow = new Date();
-                                tomorrow.setDate(tomorrow.getDate() + 1);
-                                setScheduleDate(tomorrow.toISOString().slice(0, 10));
-                                setScheduleTime("11:00");
+                                setScheduleDate("");
+                                setScheduleTime("");
                                 setScheduleModalBooking(b);
                               }}
                               style={{
