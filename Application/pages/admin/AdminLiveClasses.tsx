@@ -95,7 +95,7 @@ const AdminLiveClasses: React.FC = () => {
       // Convert datetime-local (local time) to UTC ISO string so server stores correct time
       const scheduledAt = new Date(rescheduleDate).toISOString();
       const r = await client.patch(`/admin/live-classes/${id}/reschedule`, { scheduledAt });
-      setClasses(prev => prev.map(c => c._id === id ? { ...c, scheduledAt: (r.data as any).scheduledAt } : c));
+      setClasses(prev => prev.map(c => c._id === id ? { ...c, scheduledAt: (r.data as any).scheduledAt, status: (r.data as any).status ?? c.status } : c));
       setRescheduleId(null);
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to reschedule');
