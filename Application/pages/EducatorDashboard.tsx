@@ -87,6 +87,13 @@ const EducatorDashboard: React.FC = () => {
   const [consultLoading, setConsultLoading] = useState(false);
   const [requestingLiveId, setRequestingLiveId] = useState<string | null>(null);
 
+  // Schedule live session modal
+  const [scheduleModalBooking, setScheduleModalBooking] = useState<ConsultationBooking | null>(null);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("11:00");
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   // 1:1 Applications state
   interface MyApplication {
     _id: string; clientName: string; clientPhone: string; clientEmail: string;
@@ -192,14 +199,17 @@ const EducatorDashboard: React.FC = () => {
     }
   };
 
-  const requestLiveClass = async (bookingId: string) => {
+  const requestLiveClass = async (bookingId: string, scheduledAt: string) => {
+    setScheduleSaving(true);
     setRequestingLiveId(bookingId);
     try {
-      await client.post(`/consultation-bookings/${bookingId}/request-live`);
+      await client.post(`/consultation-bookings/${bookingId}/request-live`, { scheduledAt });
       await loadConsultBookings();
+      setScheduleModalBooking(null);
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to request live class");
     } finally {
+      setScheduleSaving(false);
       setRequestingLiveId(null);
     }
   };
@@ -456,16 +466,20 @@ const EducatorDashboard: React.FC = () => {
                           {/* Status-specific actions */}
                           {b.status === "paid" && !b.liveClassId && (
                             <button
-                              onClick={() => requestLiveClass(b._id)}
-                              disabled={requestingLiveId === b._id}
+                              onClick={() => {
+                                const tomorrow = new Date();
+                                tomorrow.setDate(tomorrow.getDate() + 1);
+                                setScheduleDate(tomorrow.toISOString().slice(0, 10));
+                                setScheduleTime("11:00");
+                                setScheduleModalBooking(b);
+                              }}
                               style={{
                                 width: "100%", padding: "11px", borderRadius: 10, border: "none",
-                                background: requestingLiveId === b._id ? "#374151" : "linear-gradient(90deg,#FF1E56,#D4003F)",
-                                color: "#fff", fontWeight: 700, fontSize: 14,
-                                cursor: requestingLiveId === b._id ? "not-allowed" : "pointer",
+                                background: "linear-gradient(90deg,#FF1E56,#D4003F)",
+                                color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
                               }}
                             >
-                              {requestingLiveId === b._id ? "Requesting…" : "📅 Schedule Live Session → Send to Admin"}
+                              📅 Schedule Live Session → Send to Admin
                             </button>
                           )}
 
@@ -880,6 +894,91 @@ const EducatorDashboard: React.FC = () => {
       )}
 
       <style>{`@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.7;transform:scale(1.3)} }`}</style>
+
+      {/* ── Schedule Live Session Modal ── */}
+      {scheduleModalBooking && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 9999,
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+        }} onClick={() => setScheduleModalBooking(null)}>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "#0f0b1a", border: "1.5px solid #7c3aed55", borderRadius: 18,
+              padding: "28px 28px 24px", maxWidth: 440, width: "100%", boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+            }}
+          >
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 4 }}>
+              📅 Schedule Live Session
+            </div>
+            <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 20 }}>
+              with <strong style={{ color: "#e2e8f0" }}>{scheduleModalBooking.client?.name}</strong>
+              {" "}· {scheduleModalBooking.durationMins} min
+            </div>
+
+            {scheduleModalBooking.preferredTime && (
+              <div style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 18 }}>
+                <div style={{ fontSize: 11, color: "#a78bfa", fontWeight: 700, letterSpacing: 0.5, marginBottom: 2 }}>CLIENT'S PREFERRED TIME</div>
+                <div style={{ fontSize: 13, color: "#c4b5fd" }}>{scheduleModalBooking.preferredTime}</div>
+              </div>
+            )}
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600, letterSpacing: 0.4, display: "block", marginBottom: 6 }}>DATE</label>
+              <input
+                type="date"
+                value={scheduleDate}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={e => setScheduleDate(e.target.value)}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #334155", background: "#1e293b", color: "#fff", fontSize: 14, boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 6 }}>
+              <label style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600, letterSpacing: 0.4, display: "block", marginBottom: 6 }}>TIME</label>
+              <input
+                type="time"
+                value={scheduleTime}
+                onChange={e => setScheduleTime(e.target.value)}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #334155", background: "#1e293b", color: "#fff", fontSize: 14, boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 22, display: "flex", alignItems: "center", gap: 4 }}>
+              🌐 Timezone: <strong style={{ color: "#94a3b8" }}>{localTz}</strong>
+              {scheduleDate && scheduleTime && (
+                <span style={{ marginLeft: 6, color: "#64748b" }}>
+                  · {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setScheduleModalBooking(null)}
+                style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid #334155", background: "transparent", color: "#94a3b8", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!scheduleDate || !scheduleTime || scheduleSaving}
+                onClick={() => {
+                  const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}`).toISOString();
+                  requestLiveClass(scheduleModalBooking._id, scheduledAt);
+                }}
+                style={{
+                  flex: 2, padding: "11px", borderRadius: 10, border: "none",
+                  background: !scheduleDate || !scheduleTime || scheduleSaving ? "#374151" : "linear-gradient(90deg,#FF1E56,#D4003F)",
+                  color: "#fff", fontWeight: 700, fontSize: 14,
+                  cursor: !scheduleDate || !scheduleTime || scheduleSaving ? "not-allowed" : "pointer",
+                }}
+              >
+                {scheduleSaving ? "Sending to Admin…" : "✅ Send to Admin for Approval"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
