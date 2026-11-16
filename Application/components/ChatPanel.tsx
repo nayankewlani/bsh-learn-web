@@ -25,8 +25,20 @@ const ChatPanel: React.FC<Props> = ({ trainerId, trainerName, trainerOnline, onC
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevMsgCountRef = useRef(0);
+
+  const isNearBottom = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
+
+  const scrollToBottom = (smooth = false) => {
+    bottomRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "instant" });
+  };
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -43,7 +55,14 @@ const ChatPanel: React.FC<Props> = ({ trainerId, trainerName, trainerOnline, onC
   }, [fetchMessages, user]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const isInitialLoad = prevMsgCountRef.current === 0 && messages.length > 0;
+    // Always scroll on initial load; on poll updates only if already at bottom
+    if (isInitialLoad) {
+      scrollToBottom(false);
+    } else if (messages.length > prevMsgCountRef.current && isNearBottom()) {
+      scrollToBottom(true);
+    }
+    prevMsgCountRef.current = messages.length;
   }, [messages]);
 
   const send = async () => {
@@ -53,7 +72,7 @@ const ChatPanel: React.FC<Props> = ({ trainerId, trainerName, trainerOnline, onC
       const { data } = await client.post(`/chat/messages/${trainerId}`, { text: text.trim() });
       setMessages(prev => [...prev, data.message]);
       setText("");
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => { scrollToBottom(true); inputRef.current?.focus(); }, 50);
     } catch {} finally { setSending(false); }
   };
 
@@ -92,7 +111,7 @@ const ChatPanel: React.FC<Props> = ({ trainerId, trainerName, trainerOnline, onC
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div ref={scrollContainerRef} style={{ flex: 1, overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
         {loading && <div style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, paddingTop: 40 }}>Loading...</div>}
         {!loading && messages.length === 0 && (
           <div style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, marginTop: 48, lineHeight: 1.7 }}>
