@@ -698,12 +698,35 @@ const EducatorDashboard: React.FC = () => {
                           {b.confirmedSlot && (
                             <div style={{ fontSize: 13, color: "#4ade80", background: "rgba(74,222,128,0.08)", padding: "8px 12px", borderRadius: 8 }}>
                               ✅ Confirmed: {new Date(b.confirmedSlot.datetime).toLocaleString("en-IN")} · {b.confirmedSlot.duration} min
-                              {b.status === "admin_approved" && (
-                                <button onClick={() => navigate("/live")}
-                                  style={{ marginLeft: 12, padding: "5px 14px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                                  Go to Live Page →
-                                </button>
-                              )}
+                              {b.status === "admin_approved" && (() => {
+                                const endTime = new Date(b.confirmedSlot!.datetime);
+                                endTime.setMinutes(endTime.getMinutes() + (b.confirmedSlot!.duration ?? 60));
+                                const isPast = endTime < new Date();
+                                return (
+                                  <span style={{ marginLeft: 12, display: "inline-flex", gap: 8, flexWrap: "wrap" }}>
+                                    <button onClick={() => navigate("/live")}
+                                      style={{ padding: "5px 14px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                                      Go to Live Page →
+                                    </button>
+                                    {isPast && (
+                                      <button
+                                        onClick={async () => {
+                                          if (!window.confirm("Mark this session as completed?")) return;
+                                          try {
+                                            await client.patch(`/session-bookings/${b._id}/complete`);
+                                            const { data } = await client.get("/session-bookings/for-me");
+                                            setSessionBookings(data.bookings ?? []);
+                                          } catch (e: any) {
+                                            alert(e?.response?.data?.message ?? "Failed to mark as completed");
+                                          }
+                                        }}
+                                        style={{ padding: "5px 14px", background: "#22c55e", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                                        ✓ Mark as Completed
+                                      </button>
+                                    )}
+                                  </span>
+                                );
+                              })()}
                             </div>
                           )}
                         </div>
