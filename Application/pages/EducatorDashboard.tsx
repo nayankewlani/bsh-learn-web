@@ -729,6 +729,24 @@ const EducatorDashboard: React.FC = () => {
                               })()}
                             </div>
                           )}
+                          {b.status === "admin_approved" && !b.confirmedSlot && (
+                            <div style={{ marginTop: 8 }}>
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm("Mark this session as completed?")) return;
+                                  try {
+                                    await client.patch(`/session-bookings/${b._id}/complete`);
+                                    const { data } = await client.get("/session-bookings/for-me");
+                                    setSessionBookings(data.bookings ?? []);
+                                  } catch (e: any) {
+                                    alert(e?.response?.data?.message ?? "Failed to mark as completed");
+                                  }
+                                }}
+                                style={{ padding: "5px 14px", background: "#22c55e", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                                ✓ Mark as Completed
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
