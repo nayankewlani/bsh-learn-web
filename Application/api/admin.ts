@@ -104,6 +104,7 @@ export interface AdminLiveClass {
   heroVideoUrl?: string;
   recordingActive?: boolean;
   recordingGcsKey?: string;
+  clientName?: string | null;
 }
 
 export interface AdminLivePermission {

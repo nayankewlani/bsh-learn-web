@@ -297,6 +297,7 @@ const AdminLiveClasses: React.FC = () => {
                         <th>Type</th>
                         <th>Title</th>
                         <th>Trainer</th>
+                        <th>Client</th>
                         <th>Course</th>
                         <th>Start Time</th>
                         <th>Duration</th>
@@ -319,6 +320,11 @@ const AdminLiveClasses: React.FC = () => {
                             </td>
                             <td style={{ fontWeight: 600, color: '#e2e8f0', maxWidth: 200 }}>{c.title}</td>
                             <td style={{ color: '#94a3b8' }}>{c.educator?.name ?? '—'}</td>
+                            <td style={{ color: '#94a3b8' }}>
+                              {(c.maxParticipants ?? 500) <= 2
+                                ? (c.clientName ?? <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 11 }}>No client yet</span>)
+                                : <span style={{ color: '#334155' }}>—</span>}
+                            </td>
                             <td style={{ color: '#64748b', fontSize: 12 }}>{(c.course as any)?.title ?? '—'}</td>
                             <td style={{ color: '#64748b', fontSize: 12 }}>{fmtDate(c.scheduledAt)}</td>
                             <td style={{ color: '#64748b' }}>{c.duration ?? 60} min</td>
