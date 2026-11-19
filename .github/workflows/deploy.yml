@@ -8,24 +8,24 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: SSH into EC2 and deploy web app
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install and build
-        run: |
-          npm ci
-          npm run build
-
-      - name: Deploy to EC2
-        uses: easingthemes/ssh-deploy@v4
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          SOURCE: dist/
-          TARGET: /var/www/bsh-web/
-          ARGS: "--delete"
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: GH_TOKEN
+          command_timeout: 10m
+          script: |
+            set -e
+            WEB_DIR="/home/${{ secrets.SSH_USER }}/bsh-learn-web"
+            git -C "$WEB_DIR" remote set-url origin \
+              "https://x-access-token:${GH_TOKEN}@github.com/nayankewlani/bsh-learn-web.git"
+            git -C "$WEB_DIR" fetch origin master
+            git -C "$WEB_DIR" reset --hard origin/master
+            git -C "$WEB_DIR" remote set-url origin "https://github.com/nayankewlani/bsh-learn-web.git"
+            cd "$WEB_DIR" && npm ci --include=dev && npm run build
+            rsync -a --delete "$WEB_DIR/dist/" /var/www/bsh-web/
+            echo "=== Web app deployed ==="
