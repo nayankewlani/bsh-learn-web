@@ -25,7 +25,7 @@ interface SessionBooking {
 
 interface ConsultationBooking {
   _id: string;
-  client: { _id: string; name: string; email: string; phone?: string };
+  client: { _id: string; name: string; email: string; phone?: string } | null;
   trainerName: string;
   sessions: number;
   bonusSessions: number;
@@ -37,6 +37,7 @@ interface ConsultationBooking {
   preferredTime?: string;
   liveClassId?: { _id: string; status: string; agoraChannel: string; scheduledAt: string } | null;
   createdAt: string;
+  orphanLiveClassId?: string;
 }
 
 interface Payout {
@@ -215,11 +216,16 @@ const EducatorDashboard: React.FC = () => {
     }
   };
 
-  const handleCompleteConsult = async (bookingId: string) => {
+  const handleCompleteConsult = async (bookingId: string, orphanLiveClassId?: string) => {
     if (!window.confirm("Mark this session as completed?")) return;
     setCompletingConsultId(bookingId);
     try {
-      await client.patch(`/consultation-bookings/${bookingId}/complete`);
+      if (orphanLiveClassId) {
+        // No ConsultationBooking exists — mark the live class itself as ended
+        await client.post(`/live-classes/${orphanLiveClassId}/end`);
+      } else {
+        await client.patch(`/consultation-bookings/${bookingId}/complete`);
+      }
       await loadConsultBookings();
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to mark as completed");
@@ -533,7 +539,7 @@ const EducatorDashboard: React.FC = () => {
                                 )}
                                 {isExpired && (
                                   <button
-                                    onClick={() => handleCompleteConsult(b._id)}
+                                    onClick={() => handleCompleteConsult(b._id, b.orphanLiveClassId)}
                                     disabled={completingConsultId === b._id}
                                     style={{ padding: "7px 16px", background: "#22c55e", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}
                                   >
