@@ -86,6 +86,7 @@ const EducatorDashboard: React.FC = () => {
   const [consultBookings, setConsultBookings] = useState<ConsultationBooking[]>([]);
   const [consultLoading, setConsultLoading] = useState(false);
   const [requestingLiveId, setRequestingLiveId] = useState<string | null>(null);
+  const [completingConsultId, setCompletingConsultId] = useState<string | null>(null);
 
   // Schedule live session modal
   const [scheduleModalBooking, setScheduleModalBooking] = useState<ConsultationBooking | null>(null);
@@ -211,6 +212,19 @@ const EducatorDashboard: React.FC = () => {
     } finally {
       setScheduleSaving(false);
       setRequestingLiveId(null);
+    }
+  };
+
+  const handleCompleteConsult = async (bookingId: string) => {
+    if (!window.confirm("Mark this session as completed?")) return;
+    setCompletingConsultId(bookingId);
+    try {
+      await client.patch(`/consultation-bookings/${bookingId}/complete`);
+      await loadConsultBookings();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to mark as completed");
+    } finally {
+      setCompletingConsultId(null);
     }
   };
 
@@ -486,10 +500,16 @@ const EducatorDashboard: React.FC = () => {
                             const isEnded    = ls === "ended";
                             const isLive     = ls === "live";
                             const isApproved = ls === "scheduled";
-                            const bg    = isEnded ? "rgba(34,197,94,0.08)"  : isApproved || isLive ? "rgba(34,197,94,0.08)"  : "rgba(245,158,11,0.08)";
-                            const bord  = isEnded ? "rgba(34,197,94,0.2)"   : isApproved || isLive ? "rgba(34,197,94,0.2)"   : "rgba(245,158,11,0.2)";
-                            const color = isEnded ? "#22c55e"               : isApproved || isLive ? "#22c55e"               : "#f59e0b";
+                            const isPending  = ls === "pending_approval";
+                            const sessionEnd = b.liveClassId.scheduledAt
+                              ? new Date(b.liveClassId.scheduledAt).getTime() + (60 * 60000)
+                              : 0;
+                            const isExpired  = isPending && sessionEnd > 0 && sessionEnd < Date.now();
+                            const bg    = isEnded || isExpired ? "rgba(34,197,94,0.08)"  : isApproved || isLive ? "rgba(34,197,94,0.08)"  : "rgba(245,158,11,0.08)";
+                            const bord  = isEnded || isExpired ? "rgba(34,197,94,0.2)"   : isApproved || isLive ? "rgba(34,197,94,0.2)"   : "rgba(245,158,11,0.2)";
+                            const color = isEnded || isExpired ? "#22c55e"               : isApproved || isLive ? "#22c55e"               : "#f59e0b";
                             const label = isEnded    ? "✅ Session completed"
+                                        : isExpired  ? "✅ Session held — mark as completed"
                                         : isLive     ? "🔴 Session is Live Now!"
                                         : isApproved ? "✅ Live class approved — ready to start"
                                         :              "Live class requested — pending admin approval";
@@ -509,6 +529,15 @@ const EducatorDashboard: React.FC = () => {
                                     style={{ padding: "8px 18px", background: "#FF1E56", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                                   >
                                     🔴 Go to Live Page
+                                  </button>
+                                )}
+                                {isExpired && (
+                                  <button
+                                    onClick={() => handleCompleteConsult(b._id)}
+                                    disabled={completingConsultId === b._id}
+                                    style={{ padding: "7px 16px", background: "#22c55e", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+                                  >
+                                    {completingConsultId === b._id ? "…" : "✓ Mark as Completed"}
                                   </button>
                                 )}
                               </div>

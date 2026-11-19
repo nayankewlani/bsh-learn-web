@@ -189,12 +189,15 @@ const AdminLiveClasses: React.FC = () => {
   }, [watchingId]);
 
   const getStatus = (c: AdminLiveClass) => {
-    if (c.status === 'pending_approval') return 'pending';
-    if (c.status === 'rejected')         return 'past';
-    if (c.status === 'live')             return 'live';
-    if (c.status === 'ended')            return 'past';
+    if (c.status === 'rejected') return 'past';
+    if (c.status === 'live')     return 'live';
+    if (c.status === 'ended')    return 'past';
     const start = new Date(c.scheduledAt).getTime();
     const end   = start + (c.duration ?? 60) * 60000;
+    if (c.status === 'pending_approval') {
+      if (end < now) return 'past'; // time has passed — show in Past, not stuck in Pending
+      return 'pending';
+    }
     if (start <= now && end >= now) return 'live';
     if (start > now) return 'upcoming';
     return 'past';
