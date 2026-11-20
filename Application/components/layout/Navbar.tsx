@@ -245,8 +245,10 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const [profileOpen, setProfileOpen]     = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled]           = useState(false);
+  const [appMenuOpen, setAppMenuOpen]       = useState(false);
+  const [scrolled, setScrolled]             = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const appMenuRef  = useRef<HTMLDivElement>(null);
 
   const isActive = (link: NavItem): boolean => {
     if (link.isHash) {
@@ -281,6 +283,8 @@ const Navbar: React.FC = () => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
         setProfileOpen(false);
+      if (appMenuRef.current && !appMenuRef.current.contains(e.target as Node))
+        setAppMenuOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -295,6 +299,7 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     setProfileOpen(false);
     setMobileMenuOpen(false);
+    setAppMenuOpen(false);
   }, [location.pathname]);
 
   // Lock body scroll when mobile menu is open
@@ -435,6 +440,68 @@ const Navbar: React.FC = () => {
           {/* ── Flex spacer ── */}
           <div style={{ flex: 1 }} />
 
+          {/* ── Get App dropdown (desktop) ── */}
+          <div className="nav-desktop" ref={appMenuRef} style={{ position: "relative", flexShrink: 0 }}>
+            <button
+              onClick={() => setAppMenuOpen(v => !v)}
+              title="Download BSH Healers App"
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "7px 14px", borderRadius: 50, flexShrink: 0,
+                background: appMenuOpen
+                  ? (isDark ? "rgba(124,58,237,0.18)" : "rgba(124,58,237,0.1)")
+                  : (isDark ? "rgba(255,255,255,0.09)" : "#ffffff"),
+                border: `1.5px solid ${appMenuOpen ? t.accent : (isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.11)")}`,
+                boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.45)" : "0 2px 12px rgba(0,0,0,0.13)",
+                color: appMenuOpen ? t.accentLight : (isDark ? t.textPrimary : "#222"),
+                cursor: "pointer", fontSize: 12, fontWeight: 700,
+                transition: "all 0.2s", whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = isDark ? "0 8px 24px rgba(0,0,0,0.55)" : "0 8px 24px rgba(0,0,0,0.18)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = isDark ? "0 2px 12px rgba(0,0,0,0.45)" : "0 2px 12px rgba(0,0,0,0.13)"; }}
+            >
+              <span style={{ fontSize: 14 }}>📱</span>
+              Get App
+            </button>
+
+            {appMenuOpen && (
+              <div style={{
+                position: "absolute", right: 0, top: 50,
+                background: isDark ? "#13122a" : "#fff",
+                border: `1px solid ${t.border}`,
+                borderRadius: 18, padding: 18, zIndex: 400,
+                boxShadow: `0 24px 60px ${t.shadow}, 0 0 0 1px ${t.border}`,
+                animation: "ddFadeIn 0.15s ease", width: 248,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 13 }}>✨</span> BSH Healers on Mobile
+                </div>
+                {[
+                  { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", icon: "🍎" },
+                  { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", icon: "▶" },
+                ].map((store) => (
+                  <a key={store.name} href={store.href} target="_blank" rel="noopener noreferrer"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12,
+                      padding: "12px 16px", borderRadius: 12, marginBottom: 8,
+                      background: "#000", border: "1px solid rgba(255,255,255,0.12)",
+                      textDecoration: "none", transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.02)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.5)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{store.icon}</span>
+                    <div>
+                      <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 9, letterSpacing: 0.4, lineHeight: 1, marginBottom: 2 }}>{store.sub}</div>
+                      <div style={{ color: "#fff", fontWeight: 800, fontSize: 15, letterSpacing: -0.2 }}>{store.name}</div>
+                    </div>
+                  </a>
+                ))}
+                <div style={{ fontSize: 10, color: t.textMuted, textAlign: "center", marginTop: 2 }}>Free to download · 50,000+ users</div>
+              </div>
+            )}
+          </div>
+
           {/* ── Search icon (desktop) ── */}
           <button
             className="nav-desktop"
@@ -544,8 +611,8 @@ const Navbar: React.FC = () => {
         </div>
 
         <style>{`
-          @media (max-width: 1000px) { .nav-desktop { display: none !important; } }
-          @media (min-width: 1001px) { .nav-desktop { display: flex !important; } .nav-mobile-only { display: none !important; } }
+          @media (max-width: 1100px) { .nav-desktop { display: none !important; } }
+          @media (min-width: 1101px) { .nav-desktop { display: flex !important; } .nav-mobile-only { display: none !important; } }
           .nav-mobile-only { display: flex; }
 
           @keyframes navLivePulse {
@@ -671,6 +738,40 @@ const Navbar: React.FC = () => {
 
           {/* Divider */}
           <div style={{ height: 8, background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}` }} />
+
+          {/* ── Download App Section (mobile) ── */}
+          <div style={{ padding: "20px 24px", borderBottom: `1px solid ${t.border}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: isDark ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.1)", border: `1.5px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>📱</div>
+              <div>
+                <div style={{ color: t.textPrimary, fontWeight: 700, fontSize: 14, lineHeight: 1.2 }}>Get BSH Healers on Mobile</div>
+                <div style={{ color: t.textMuted, fontSize: 11, marginTop: 2 }}>Live classes & consultations in your pocket</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              {[
+                { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", icon: "🍎" },
+                { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", icon: "▶" },
+              ].map((store) => (
+                <a key={store.name} href={store.href} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    flex: 1, display: "flex", alignItems: "center", gap: 9,
+                    padding: "11px 12px", borderRadius: 12,
+                    background: "#000", border: "1px solid rgba(255,255,255,0.1)",
+                    textDecoration: "none", transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.02)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+                >
+                  <span style={{ fontSize: 20, flexShrink: 0, lineHeight: 1 }}>{store.icon}</span>
+                  <div>
+                    <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 8, letterSpacing: 0.4, lineHeight: 1 }}>{store.sub}</div>
+                    <div style={{ color: "#fff", fontWeight: 800, fontSize: 12, letterSpacing: -0.2, lineHeight: 1.4 }}>{store.name}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
 
           {/* Auth section */}
           <div style={{ padding: "20px 24px 32px" }}>

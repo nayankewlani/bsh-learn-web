@@ -113,6 +113,62 @@ const Footer: React.FC = () => (
         ))}
       </div>
 
+      {/* ── Download App Banner ── */}
+      <div style={{
+        background: "linear-gradient(135deg, #1e1040 0%, #0f0a2e 50%, #1a0a2e 100%)",
+        border: "1px solid #2d1f6e",
+        borderRadius: 24, padding: "36px 40px", marginBottom: 36,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        flexWrap: "wrap", gap: 28, position: "relative", overflow: "hidden",
+      }}>
+        {/* Background glow blobs */}
+        <div style={{ position: "absolute", top: -40, right: 80, width: 180, height: 180, borderRadius: "50%", background: "rgba(124,58,237,0.15)", filter: "blur(60px)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -30, right: 20, width: 120, height: 120, borderRadius: "50%", background: "rgba(236,72,153,0.1)", filter: "blur(50px)", pointerEvents: "none" }} />
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <span style={{ fontSize: 28 }}>📱</span>
+            <span style={{ background: "linear-gradient(90deg,#a78bfa,#ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: 900, fontSize: 11, letterSpacing: 2, textTransform: "uppercase" }}>Now Available on Mobile</span>
+          </div>
+          <h3 style={{ color: "#f3f4f6", fontWeight: 900, fontSize: 24, margin: "0 0 10px", letterSpacing: -0.5, lineHeight: 1.2 }}>
+            Take BSH Healers Everywhere
+          </h3>
+          <p style={{ color: "#9ca3af", fontSize: 14, margin: 0, maxWidth: 400, lineHeight: 1.6 }}>
+            Live workshops · 1-on-1 sessions · 100+ healing courses — all in your pocket, anytime.
+          </p>
+          <div style={{ display: "flex", gap: 20, marginTop: 14, flexWrap: "wrap" }}>
+            {["⭐ 4.8 App Store rating", "👥 50,000+ downloads", "🔒 Secure & private"].map((tag) => (
+              <span key={tag} style={{ color: "#6b7280", fontSize: 12 }}>{tag}</span>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
+          {[
+            { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", icon: "🍎" },
+            { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", icon: "▶" },
+          ].map((store) => (
+            <a key={store.name} href={store.href} target="_blank" rel="noopener noreferrer"
+              style={{
+                display: "flex", alignItems: "center", gap: 14,
+                padding: "14px 22px", borderRadius: 14,
+                background: "#000", border: "1px solid rgba(255,255,255,0.12)",
+                textDecoration: "none", transition: "all 0.25s", minWidth: 180,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.6)"; e.currentTarget.style.borderColor = "rgba(167,139,250,0.4)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.5)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+            >
+              <span style={{ fontSize: 30, lineHeight: 1, flexShrink: 0 }}>{store.icon}</span>
+              <div>
+                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, letterSpacing: 0.4, lineHeight: 1, marginBottom: 3 }}>{store.sub}</div>
+                <div style={{ color: "#fff", fontWeight: 800, fontSize: 17, letterSpacing: -0.3, lineHeight: 1 }}>{store.name}</div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+
       {/* Bottom bar */}
       <div style={{ borderTop: "1px solid #1e1b4b", paddingTop: 22, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <span style={{ color: "#4b5563", fontSize: 13 }}>© 2026 BSH. All rights reserved.</span>
