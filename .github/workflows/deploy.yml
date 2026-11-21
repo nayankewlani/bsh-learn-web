@@ -8,9 +8,32 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger server-side web deploy via webhook
-        run: |
-          curl -sf -X POST https://bshhealers.com/api/deploy/web \
-            -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -w "\nHTTP %{http_code}"
+      - name: SSH into EC2 and build web app
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          command_timeout: 10m
+          script: |
+            set -e
+            WEB_DIR="/home/${{ secrets.SSH_USER }}/bsh-learn-web"
+
+            # Pull latest code using the token stored in server .env
+            WEB_GH_TOKEN=$(grep '^WEB_GH_TOKEN=' ~/bsh-api-server/.env 2>/dev/null | cut -d= -f2- | tr -d '\r' || true)
+            if [ -n "$WEB_GH_TOKEN" ]; then
+              git -C "$WEB_DIR" remote set-url origin \
+                "https://x-access-token:${WEB_GH_TOKEN}@github.com/nayankewlani/bsh-learn-web.git"
+            fi
+            git -C "$WEB_DIR" fetch origin master
+            git -C "$WEB_DIR" reset --hard origin/master
+            git -C "$WEB_DIR" remote set-url origin \
+              "https://github.com/nayankewlani/bsh-learn-web.git" 2>/dev/null || true
+
+            # Build and deploy
+            cd "$WEB_DIR"
+            npm ci --include=dev
+            npm run build
+            rsync -a --delete "$WEB_DIR/dist/" /var/www/bsh-web/
+
+            echo "=== Web app deployed successfully ==="
