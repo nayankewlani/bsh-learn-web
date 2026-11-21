@@ -12,6 +12,9 @@ import { FaInstagram, FaYoutube, FaFacebook, FaLinkedin, FaGlobe } from "react-i
 import client from "../api/client";
 
 import heroImg from "../assets/hero.png";
+import bshHealersLogo from "../assets/bsh-healers-logo.png";
+import appleLogoSvg from "../assets/apple-logo.svg";
+import googlePlayLogo from "../assets/google-play-logo.webp";
 import advHypnosisImg from "../assets/advanced-hypnosis.png";
 import hypnosisImg from "../assets/hypnosis.png";
 import hypnosis2Img from "../assets/hypnosis-2.png";
@@ -674,13 +677,13 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* ══ §11b APP DOWNLOAD ══ */}
-      <section style={{ background: t.bgSecondary, borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}`, padding: "64px 24px", opacity: 0.55, filter: "grayscale(30%)", pointerEvents: "none", userSelect: "none" }}>
+      <section style={{ background: t.bgSecondary, borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}`, padding: "64px 24px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", gap: 56, flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 360px", minWidth: 0 }}>
-            {/* Coming Soon badge */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(107,114,128,0.12)", border: "1px solid rgba(107,114,128,0.28)", borderRadius: 30, padding: "5px 14px", marginBottom: 20 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#9ca3af", display: "inline-block" }} />
-              <span style={{ color: t.textMuted, fontSize: 12, fontWeight: 700 }}>App Coming Soon</span>
+            {/* Live badge */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.35)", borderRadius: 30, padding: "5px 14px", marginBottom: 20 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", display: "inline-block", boxShadow: "0 0 6px #4ade80" }} />
+              <span style={{ color: "#4ade80", fontSize: 12, fontWeight: 700 }}>Now on Android & iOS</span>
             </div>
             <h2 style={{ fontSize: "clamp(24px,3vw,32px)", fontWeight: 900, color: t.textPrimary, marginBottom: 12, letterSpacing: -0.5, lineHeight: 1.2 }}>
               Learn anywhere with<br />the BSH App
@@ -690,48 +693,48 @@ const HomePage: React.FC = () => {
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
               {/* App Store button */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, background: t.bgCard, border: `1.5px solid ${t.border}`, borderRadius: 12, padding: "11px 20px" }}>
-                <svg width="22" height="26" viewBox="0 0 814 1000" fill={t.isDark ? "#e5e7eb" : "#1c1c1e"}>
-                  <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.5 135.4-317.5 268.5-317.5 99.8 0 182.6 65.8 245.7 65.8 60.4 0 155.1-70 269.1-70 43.4 0 160.3 4 248.4 168.4zm-234-181.5c48.3-60.4 82.7-143.7 82.7-227 0-11.9-1-23.8-3.2-33.4-78.4 3.2-171.6 52.5-228 118.3C368.5 74.1 328 162.5 328 250.5c0 10.3 1.6 20.6 2.6 24.5 5.2.3 13.6 1.6 22.6 1.6 71 0 154.8-47.7 200.9-107.2z"/>
-                </svg>
+              <a href="https://apps.apple.com/in/app/bsh-healers/id6811677552" target="_blank" rel="noopener noreferrer"
+                style={{ display: "flex", alignItems: "center", gap: 12, background: t.bgCard, border: `1.5px solid ${t.border}`, borderRadius: 12, padding: "11px 20px", textDecoration: "none", transition: "all 0.2s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#a78bfa"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = "none"; }}
+              >
+                <img src={appleLogoSvg} alt="App Store" style={{ width: 22, height: 26, flexShrink: 0, filter: t.isDark ? "brightness(0) invert(1)" : "brightness(0)" }} />
                 <div>
                   <div style={{ color: t.textMuted, fontSize: 10, lineHeight: 1 }}>Download on the</div>
                   <div style={{ color: t.textPrimary, fontWeight: 800, fontSize: 15, lineHeight: 1.3 }}>App Store</div>
                 </div>
-              </div>
+              </a>
 
               {/* Google Play button */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, background: t.bgCard, border: `1.5px solid ${t.border}`, borderRadius: 12, padding: "11px 20px" }}>
-                <svg width="22" height="24" viewBox="0 0 512 512">
-                  <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z" fill="#EA4335"/>
-                  <path d="M47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l232.6-232.6L47 0z" fill="#4285F4"/>
-                  <path d="M399.8 256l-74.5-21.7-60.1 21.7 60.1 21.7L399.8 256z" fill="#FBBC04" opacity="0"/>
-                  <path d="M104.6 499l280.8-161.2-60.1-60.1L104.6 499z" fill="#34A853"/>
-                  <path d="M485.3 219.8L399.8 170l-74.5 86 74.5 86 85.7-50.2c24.2-13.4 24.2-46.6-.2-72z" fill="#FBBC04"/>
-                </svg>
+              <a href="https://play.google.com/store/apps/details?id=com.bshlearn.app" target="_blank" rel="noopener noreferrer"
+                style={{ display: "flex", alignItems: "center", gap: 12, background: t.bgCard, border: `1.5px solid ${t.border}`, borderRadius: 12, padding: "11px 20px", textDecoration: "none", transition: "all 0.2s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#a78bfa"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = "none"; }}
+              >
+                <img src={googlePlayLogo} alt="Google Play" style={{ width: 24, height: 24, flexShrink: 0 }} />
                 <div>
                   <div style={{ color: t.textMuted, fontSize: 10, lineHeight: 1 }}>Get it on</div>
                   <div style={{ color: t.textPrimary, fontWeight: 800, fontSize: 15, lineHeight: 1.3 }}>Google Play</div>
                 </div>
-              </div>
+              </a>
             </div>
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, color: t.textMuted, fontSize: 13, fontWeight: 600 }}>
-              <span style={{ fontSize: 16 }}>💬</span> WhatsApp community — coming soon
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              {["⭐ 4.8 App Store rating", "👥 Free to Download", "🔒 Secure & private"].map((tag) => (
+                <span key={tag} style={{ color: t.textMuted, fontSize: 12 }}>{tag}</span>
+              ))}
             </div>
           </div>
 
           <div style={{ flex: "0 1 280px", display: "flex", justifyContent: "center", position: "relative" }}>
             <div style={{ background: "linear-gradient(135deg,#1e1b4b 0%,#3b0764 50%,#064e3b 100%)", borderRadius: 28, padding: "36px 28px", textAlign: "center", boxShadow: "0 24px 60px rgba(26,32,53,0.16)", position: "relative", overflow: "hidden", width: "100%" }}>
               <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
-              {/* Coming Soon overlay */}
-              <div style={{ position: "absolute", top: 14, right: 14, background: "rgba(107,114,128,0.85)", borderRadius: 8, padding: "4px 10px", backdropFilter: "blur(4px)" }}>
-                <span style={{ color: "#fff", fontSize: 10, fontWeight: 800 }}>COMING SOON</span>
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <img src={bshHealersLogo} alt="Blessings School of Hypnosis" style={{ width: 90, height: 90, borderRadius: "50%", objectFit: "cover", marginBottom: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }} />
               </div>
-              <div style={{ fontSize: 52, marginBottom: 16 }}>🌿</div>
-              <div style={{ color: "#e9d5ff", fontSize: 12, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8 }}>BSH Healers App</div>
-              <div style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginBottom: 6 }}>Healing in your pocket</div>
-              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.5 }}>Live classes · Recordings · 1:1 sessions</div>
+              <div style={{ color: "#e9d5ff", fontSize: 12, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, position: "relative", zIndex: 1 }}>BSH Healers App</div>
+              <div style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginBottom: 6, position: "relative", zIndex: 1 }}>Healing in your pocket</div>
+              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.5, position: "relative", zIndex: 1 }}>Live classes · Recordings · 1:1 sessions</div>
             </div>
           </div>
         </div>

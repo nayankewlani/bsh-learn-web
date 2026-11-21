@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaInstagram, FaYoutube, FaTelegram, FaTwitter, FaLinkedin } from "react-icons/fa";
 import bshIcon from "../../assets/BSH-logo-02.png";
+import appleLogoSvg from "../../assets/apple-logo.svg";
+import googlePlayLogo from "../../assets/google-play-logo.webp";
 
 const Footer: React.FC = () => (
   <footer style={{ background: "#0a0914", borderTop: "1px solid #1e1b4b", padding: "48px 24px 28px" }}>
@@ -145,8 +147,8 @@ const Footer: React.FC = () => (
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
           {[
-            { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", icon: "🍎" },
-            { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", icon: "▶" },
+            { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", logo: appleLogoSvg, logoStyle: { width: 28, height: 34, filter: "brightness(0) invert(1)", flexShrink: 0 } },
+            { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", logo: googlePlayLogo, logoStyle: { width: 32, height: 32, flexShrink: 0 } },
           ].map((store) => (
             <a key={store.name} href={store.href} target="_blank" rel="noopener noreferrer"
               style={{
@@ -159,7 +161,7 @@ const Footer: React.FC = () => (
               onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.6)"; e.currentTarget.style.borderColor = "rgba(167,139,250,0.4)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.5)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
             >
-              <span style={{ fontSize: 30, lineHeight: 1, flexShrink: 0 }}>{store.icon}</span>
+              <img src={store.logo} alt={store.name} style={store.logoStyle} />
               <div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, letterSpacing: 0.4, lineHeight: 1, marginBottom: 3 }}>{store.sub}</div>
                 <div style={{ color: "#fff", fontWeight: 800, fontSize: 17, letterSpacing: -0.3, lineHeight: 1 }}>{store.name}</div>

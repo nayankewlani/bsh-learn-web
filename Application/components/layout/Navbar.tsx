@@ -5,6 +5,8 @@ import { useThemeStore } from "../../stores/themeStore";
 import Avatar from "../ui/Avatar";
 import client from "../../api/client";
 import bshIcon from "../../assets/BSH-logo-02.png";
+import appleLogoSvg from "../../assets/apple-logo.svg";
+import googlePlayLogo from "../../assets/google-play-logo.webp";
 import {
   HiOutlineSearch, HiOutlineBookOpen, HiOutlineAcademicCap,
   HiOutlineUser, HiOutlinePlusCircle, HiOutlineLogout,
@@ -477,8 +479,8 @@ const Navbar: React.FC = () => {
                   <span style={{ fontSize: 13 }}>✨</span> BSH Healers on Mobile
                 </div>
                 {[
-                  { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", icon: "🍎" },
-                  { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", icon: "▶" },
+                  { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", logo: appleLogoSvg, logoStyle: { width: 22, height: 26, filter: "brightness(0) invert(1)", flexShrink: 0 } },
+                  { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", logo: googlePlayLogo, logoStyle: { width: 24, height: 24, flexShrink: 0 } },
                 ].map((store) => (
                   <a key={store.name} href={store.href} target="_blank" rel="noopener noreferrer"
                     style={{
@@ -490,7 +492,7 @@ const Navbar: React.FC = () => {
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.02)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.5)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
                   >
-                    <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{store.icon}</span>
+                    <img src={store.logo} alt={store.name} style={store.logoStyle} />
                     <div>
                       <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 9, letterSpacing: 0.4, lineHeight: 1, marginBottom: 2 }}>{store.sub}</div>
                       <div style={{ color: "#fff", fontWeight: 800, fontSize: 15, letterSpacing: -0.2 }}>{store.name}</div>
@@ -750,8 +752,8 @@ const Navbar: React.FC = () => {
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               {[
-                { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", icon: "🍎" },
-                { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", icon: "▶" },
+                { href: "https://apps.apple.com/in/app/bsh-healers/id6811677552", sub: "Download on the", name: "App Store", logo: appleLogoSvg, logoStyle: { width: 20, height: 24, filter: "brightness(0) invert(1)", flexShrink: 0 } },
+                { href: "https://play.google.com/store/apps/details?id=com.bshlearn.app", sub: "Get it on", name: "Google Play", logo: googlePlayLogo, logoStyle: { width: 22, height: 22, flexShrink: 0 } },
               ].map((store) => (
                 <a key={store.name} href={store.href} target="_blank" rel="noopener noreferrer"
                   style={{
@@ -763,7 +765,7 @@ const Navbar: React.FC = () => {
                   onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.02)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
                 >
-                  <span style={{ fontSize: 20, flexShrink: 0, lineHeight: 1 }}>{store.icon}</span>
+                  <img src={store.logo} alt={store.name} style={store.logoStyle} />
                   <div>
                     <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 8, letterSpacing: 0.4, lineHeight: 1 }}>{store.sub}</div>
                     <div style={{ color: "#fff", fontWeight: 800, fontSize: 12, letterSpacing: -0.2, lineHeight: 1.4 }}>{store.name}</div>
