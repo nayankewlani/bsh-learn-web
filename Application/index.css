@@ -62,24 +62,25 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
   mix-blend-mode: screen;
   background:
-    radial-gradient(ellipse at 10% 20%, rgba(124,58,237,0.28) 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 75%, rgba(79,70,229,0.22) 0%, transparent 50%),
-    radial-gradient(ellipse at 65% 8%,  rgba(109,40,217,0.2)  0%, transparent 38%),
-    radial-gradient(ellipse at 15% 90%, rgba(13,148,136,0.14) 0%, transparent 35%),
-    radial-gradient(ellipse at 50% 50%, rgba(76,29,149,0.12)  0%, transparent 55%);
+    radial-gradient(ellipse at 10% 20%, rgba(124,58,237,0.5)  0%, transparent 50%),
+    radial-gradient(ellipse at 90% 75%, rgba(79,70,229,0.4)   0%, transparent 50%),
+    radial-gradient(ellipse at 65% 8%,  rgba(109,40,217,0.38) 0%, transparent 38%),
+    radial-gradient(ellipse at 15% 90%, rgba(13,148,136,0.28) 0%, transparent 35%),
+    radial-gradient(ellipse at 50% 50%, rgba(76,29,149,0.22)  0%, transparent 55%);
 }
 html[data-theme="light"] body::after { display: none; }
 
-/* Star field */
+/* Star field — z-index:3 + mix-blend-mode:screen puts stars visibly over all dark containers */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 3;
+  mix-blend-mode: screen;
   animation: starsGlow 5s ease-in-out infinite alternate;
   background-image:
     radial-gradient(circle 1px   at 5%  8%,  rgba(255,255,255,0.75) 0, transparent 2px),

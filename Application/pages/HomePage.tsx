@@ -342,23 +342,12 @@ const HomePage: React.FC = () => {
   const [homeClasses, setHomeClasses]     = useState<HomeClassAPI[]>([]);
   const [classesReady, setClassesReady]   = useState(false);
   const [videoModal, setVideoModal]       = useState<{ url: string; title: string } | null>(null);
-  const [activeHealerNames, setActiveHealerNames] = useState<Set<string> | null>(null);
 
-  // Always show all healers — the DB filter was hiding trainers whose names
-  // didn't match exactly. null = still loading (avoid flash of unstyled content).
-  const visibleHealers = activeHealerNames === null ? [] : HERO_HEALERS;
+  // Always show all 14 healers immediately — no API dependency
+  const visibleHealers = HERO_HEALERS;
 
   useEffect(() => {
     fetchFeatured();
-    client.get("/chat/online-educators")
-      .then(r => {
-        const names: string[] = ((r.data as any).educators || []).map((e: any) => (e.name as string).toLowerCase());
-        setActiveHealerNames(new Set(names));
-      })
-      .catch(() => {
-        // API failed — show all hardcoded healers as fallback
-        setActiveHealerNames(new Set(HERO_HEALERS.map(h => h.name.toLowerCase())));
-      });
     client.get("/home-classes")
       .then(r => {
         const cls: HomeClassAPI[] = (r.data as any).classes || [];
@@ -410,7 +399,7 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div style={{ background: t.bgPrimary, minHeight: "100vh" }}>
+    <div style={{ background: t.isDark ? "transparent" : t.bgPrimary, minHeight: "100vh" }}>
 
       {/* Video Modal */}
       {videoModal && <VideoModal url={videoModal.url} title={videoModal.title} onClose={() => setVideoModal(null)} />}
