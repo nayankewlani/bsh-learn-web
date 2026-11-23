@@ -143,6 +143,27 @@ const HERO_HEALERS = [
   { name: "Abhinnav Kumar", subject: "Hypnotherapy", exp: "8+ yrs", rating: "4.8", img: abhinnavKumarImg, color: "#7c3aed", isLive: false },
 ];
 
+// Image map for healers loaded dynamically from DB
+const HEALER_IMGS: Record<string, string> = {
+  "dr. pradeep kumar":   pradeepKumarImg,
+  "geeta makhijani":     geetaMakhijaniImg,
+  "nalini j. yadav":     naliniYadavImg,
+  "nalini j yadav":      naliniYadavImg,
+  "vikas bhardwaj":      vikasBhardwajImg,
+  "vandana khurana":     vandanaKhuranaImg,
+  "dr. suman batra":     sumanBatraImg,
+  "deepika handa":       deepikaHandaImg,
+  "ankit vig":           ankitVigImg,
+  "rajesh kumar":        rajeshKumarImg,
+  "dr. puneet jain":     puneetJainImg,
+  "biju balkrishnan":    bijuBalkrishnanImg,
+  "dr. ratna sawant":    ratnaSwantImg,
+  "shruti saxena":       shrutiSaxenaImg,
+  "abhinnav kumar":      abhinnavKumarImg,
+};
+
+type HealerRow = { name: string; subject: string; exp: string; rating: string; img: string; color: string; isLive: boolean };
+
 const TESTIMONIALS = [
   { name: "Priya Sharma", title: "Software Engineer, Bengaluru", text: "BSH Healers transformed my understanding of energy healing. The Reiki course is exceptional!", init: "P" },
   { name: "Rahul Mehta", title: "Business Owner, Mumbai", text: "The Advance Hypnosis course opened doors I never knew existed. World-class content.", init: "R" },
@@ -342,12 +363,28 @@ const HomePage: React.FC = () => {
   const [homeClasses, setHomeClasses]     = useState<HomeClassAPI[]>([]);
   const [classesReady, setClassesReady]   = useState(false);
   const [videoModal, setVideoModal]       = useState<{ url: string; title: string } | null>(null);
+  const [fetchedHealers, setFetchedHealers] = useState<HealerRow[] | null>(null);
 
-  // Always show all 14 healers immediately — no API dependency
-  const visibleHealers = HERO_HEALERS;
+  // Show HERO_HEALERS immediately; replace with live DB list once it loads
+  const visibleHealers: HealerRow[] = fetchedHealers ?? HERO_HEALERS;
 
   useEffect(() => {
     fetchFeatured();
+    // Fetch the same trainer list as ConsultationPage so the ticker is always in sync
+    client.get("/chat/online-educators")
+      .then(r => {
+        const rows: HealerRow[] = (r.data.educators || []).map((e: any) => ({
+          name:    e.name,
+          subject: e.specialties?.[0] || e.trainerRole || "",
+          exp:     e.experience || "10+ yrs",
+          rating:  (e.rating || 4.9).toFixed(1),
+          img:     HEALER_IMGS[e.name.toLowerCase()] || e.avatar || pradeepKumarImg,
+          color:   e.trainerColor || "#7c3aed",
+          isLive:  e.isOnline || false,
+        }));
+        if (rows.length > 0) setFetchedHealers(rows);
+      })
+      .catch(() => {}); // falls back to HERO_HEALERS
     client.get("/home-classes")
       .then(r => {
         const cls: HomeClassAPI[] = (r.data as any).classes || [];
