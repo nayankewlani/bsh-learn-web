@@ -508,10 +508,9 @@ const PrivateSession: React.FC = () => {
       });
   }, []);
 
-  // null = loading (show nothing to avoid flash of paused trainers)
-  const visibleTrainers = activeNames === null
-    ? []
-    : TRAINERS.filter(tr => activeNames.has(tr.name.toLowerCase()));
+  // Always show all trainers — removing DB-name filter that was hiding trainers
+  // whose names didn't match exactly. null = still loading.
+  const visibleTrainers = activeNames === null ? [] : TRAINERS;
 
   const scrollTrainers = (dir: "left" | "right") => {
     if (trainersRef.current) {
@@ -586,7 +585,7 @@ const PrivateSession: React.FC = () => {
               {visibleTrainers.map((trainer) => (
                 <div
                   key={trainer.name}
-                  onClick={() => setModalOpen(true)}
+                  onClick={() => navigate(`/consultation?trainer=${encodeURIComponent(trainer.name)}`)}
                   style={{ minWidth: 220, maxWidth: 220, background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 16, overflow: "hidden", cursor: "pointer", flexShrink: 0, transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = `0 16px 40px rgba(0,0,0,0.6), 0 0 20px ${trainer.subjectColor}33`; e.currentTarget.style.borderColor = trainer.subjectColor; }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = t.border; }}

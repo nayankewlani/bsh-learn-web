@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useThemeStore } from "../stores/themeStore";
-import { useNavigate } from "react-router-dom";
-import { HiOutlineStar, HiOutlineUsers, HiOutlineBadgeCheck } from "react-icons/hi";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { HiOutlineStar, HiOutlineUsers, HiOutlineBadgeCheck, HiOutlineSearch, HiOutlineLink } from "react-icons/hi";
 import { FiMessageSquare, FiCalendar } from "react-icons/fi";
 import ChatPanel from "../components/ChatPanel";
 import client from "../api/client";
@@ -181,22 +181,65 @@ const ApplyModal: React.FC<{ expert: Expert; onClose: () => void }> = ({ expert,
 
 interface CardProps {
   expert: Expert;
+  isSelected: boolean;
   onApply: () => void;
   onChat: () => void;
   onBook: () => void;
+  onSelect: () => void;
 }
 
-const ExpertCard: React.FC<CardProps> = ({ expert, onApply, onChat, onBook }) => {
+const ExpertCard: React.FC<CardProps> = ({ expert, isSelected, onApply, onChat, onBook, onSelect }) => {
   const { t, isDark } = useThemeStore();
+  const [copied, setCopied] = useState(false);
   const showApply = expert.hasApplyBooking;
   const showPay   = expert.hasPayBooking;
   const isOnline  = expert.isOnline;
   const stars     = Math.round(expert.rating);
 
+  const copyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/consultation?trainer=${expert._id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // fallback: select text
+      const inp = document.createElement("input");
+      inp.value = url;
+      document.body.appendChild(inp);
+      inp.select();
+      document.execCommand("copy");
+      document.body.removeChild(inp);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
-    <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 16, padding: "18px 16px", transition: "all 0.22s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = expert.color; e.currentTarget.style.boxShadow = `0 8px 28px ${expert.color}22`; e.currentTarget.style.transform = "translateY(-3px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
+    <div
+      onClick={onSelect}
+      style={{ background: t.bgCard, border: `2px solid ${isSelected ? "#7c3aed" : t.border}`, borderRadius: 16, padding: "18px 16px", transition: "all 0.22s", cursor: "pointer", boxShadow: isSelected ? "0 0 0 3px rgba(124,58,237,0.2)" : "none" }}
+      onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = expert.color; e.currentTarget.style.boxShadow = `0 8px 28px ${expert.color}22`; } e.currentTarget.style.transform = "translateY(-3px)"; }}
+      onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = "none"; } e.currentTarget.style.transform = "none"; }}>
+
+      {/* Selected indicator + copy link */}
+      {isSelected && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.4)", color: "#a78bfa", fontSize: 10, fontWeight: 700, borderRadius: 20, padding: "2px 10px" }}>✓ Selected</span>
+          <button onClick={copyLink} title="Copy direct link" style={{ background: copied ? "rgba(74,222,128,0.1)" : "rgba(124,58,237,0.1)", border: `1px solid ${copied ? "rgba(74,222,128,0.4)" : "rgba(124,58,237,0.3)"}`, color: copied ? "#4ade80" : "#a78bfa", borderRadius: 8, padding: "3px 10px", fontSize: 10, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+            <HiOutlineLink size={11} /> {copied ? "Copied!" : "Copy link"}
+          </button>
+        </div>
+      )}
+      {!isSelected && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+          <button onClick={copyLink} title="Copy direct link to this trainer" style={{ background: "transparent", border: "none", color: t.textMuted, cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center", gap: 3, fontSize: 10, opacity: 0.6 }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "#a78bfa"; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = "0.6"; e.currentTarget.style.color = t.textMuted; }}>
+            <HiOutlineLink size={11} /> {copied ? "Copied!" : "Link"}
+          </button>
+        </div>
+      )}
 
       {/* Photo + info */}
       <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -261,19 +304,19 @@ const ExpertCard: React.FC<CardProps> = ({ expert, onApply, onChat, onBook }) =>
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
         {/* Apply for 1:1 button */}
         {showApply && (
-          <button onClick={onApply} style={{ width: "100%", background: `linear-gradient(135deg,${expert.color},${expert.color}cc)`, border: "none", color: "#fff", padding: "10px", borderRadius: 50, cursor: "pointer", fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          <button onClick={e => { e.stopPropagation(); onApply(); }} style={{ width: "100%", background: `linear-gradient(135deg,${expert.color},${expert.color}cc)`, border: "none", color: "#fff", padding: "10px", borderRadius: 50, cursor: "pointer", fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
             ✋ Apply for 1:1 Session
           </button>
         )}
         {/* Pay / Chat / Book row */}
         {(showPay || !showApply) && (
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={onChat} style={{ flex: 1, padding: "10px 8px", borderRadius: 50, border: `1.5px solid ${isOnline ? "#ef4444" : t.border}`, background: isOnline ? "rgba(239,68,68,0.08)" : "transparent", color: isOnline ? "#ef4444" : t.textSecond, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+            <button onClick={e => { e.stopPropagation(); onChat(); }} style={{ flex: 1, padding: "10px 8px", borderRadius: 50, border: `1.5px solid ${isOnline ? "#ef4444" : t.border}`, background: isOnline ? "rgba(239,68,68,0.08)" : "transparent", color: isOnline ? "#ef4444" : t.textSecond, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
               <FiMessageSquare size={13} />
               {isOnline ? "Chat (Online)" : "Chat"}
             </button>
             {showPay && (
-              <button onClick={onBook} style={{ flex: 1, padding: "10px 8px", background: "linear-gradient(90deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", borderRadius: 50, cursor: "pointer", fontWeight: 700, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, boxShadow: "0 3px 10px rgba(124,58,237,0.35)" }}>
+              <button onClick={e => { e.stopPropagation(); onBook(); }} style={{ flex: 1, padding: "10px 8px", background: "linear-gradient(90deg,#7c3aed,#5b21b6)", border: "none", color: "#fff", borderRadius: 50, cursor: "pointer", fontWeight: 700, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, boxShadow: "0 3px 10px rgba(124,58,237,0.35)" }}>
                 <FiCalendar size={13} /> Book
               </button>
             )}
@@ -290,6 +333,7 @@ const ConsultationPage: React.FC = () => {
   const { t, isDark } = useThemeStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [selectedLangs, setSelectedLangs]       = useState<string[]>([]);
@@ -297,6 +341,9 @@ const ConsultationPage: React.FC = () => {
   const [activeTab, setActiveTab]               = useState("All");
   const [applying, setApplying]                 = useState<Expert | null>(null);
   const [signupPhone, setSignupPhone]           = useState("");
+  const [searchQuery, setSearchQuery]           = useState("");
+  const [selectedTrainerId, setSelectedTrainerId] = useState<string | null>(null);
+  const selectedCardRef = useRef<HTMLDivElement>(null);
 
   // Chat state
   const [chat, setChat] = useState<{ id: string; name: string; online: boolean } | null>(null);
@@ -354,6 +401,36 @@ const ConsultationPage: React.FC = () => {
       .finally(() => setLoadedExperts(true));
   }, []);
 
+  // On load: if ?trainer= URL param set, find and select that trainer
+  useEffect(() => {
+    if (!loadedExperts || experts.length === 0) return;
+    const param = searchParams.get("trainer");
+    if (!param) return;
+    const found = experts.find(e => e._id === param)
+      || experts.find(e => e.name.toLowerCase() === param.toLowerCase());
+    if (found) {
+      setSelectedTrainerId(found._id);
+      // Clear other filters so the trainer is visible
+      setActiveTab("All");
+      setSelectedSubjects([]);
+      setSelectedLangs([]);
+      setOnlineOnly(false);
+      setTimeout(() => {
+        document.getElementById(`trainer-card-${found._id}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 350);
+    }
+  }, [loadedExperts, experts]);
+
+  const handleSelectTrainer = (expert: Expert) => {
+    setSelectedTrainerId(prev => prev === expert._id ? null : expert._id);
+    if (selectedTrainerId !== expert._id) {
+      setSearchParams({ trainer: expert._id }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
   const toggleFilter = (arr: string[], val: string, set: (v: string[]) => void) =>
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
 
@@ -363,9 +440,15 @@ const ConsultationPage: React.FC = () => {
       if (selectedSubjects.length && !selectedSubjects.includes(e.subject)) return false;
       if (selectedLangs.length && !e.languages.some(l => selectedLangs.includes(l))) return false;
       if (onlineOnly && !e.isOnline) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (!e.name.toLowerCase().includes(q) &&
+            !e.role.toLowerCase().includes(q) &&
+            !e.subject.toLowerCase().includes(q)) return false;
+      }
       return true;
     }).sort((a, b) => Number(b.isOnline) - Number(a.isOnline)); // online first
-  }, [experts, activeTab, selectedSubjects, selectedLangs, onlineOnly]);
+  }, [experts, activeTab, selectedSubjects, selectedLangs, onlineOnly, searchQuery]);
 
   // Derive filter tabs dynamically from loaded trainers (includes custom modalities)
   const allTabs = useMemo(() => {
@@ -506,6 +589,20 @@ const ConsultationPage: React.FC = () => {
 
         {/* Expert Grid */}
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Search bar */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, background: t.bgCard, border: `1.5px solid ${t.border}`, borderRadius: 12, padding: "10px 16px" }}>
+            <HiOutlineSearch size={16} style={{ color: t.textMuted, flexShrink: 0 }} />
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by name, specialty, or expertise…"
+              style={{ flex: 1, background: "none", border: "none", outline: "none", color: t.textPrimary, fontSize: 14 }}
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} style={{ background: "none", border: "none", color: t.textMuted, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}>✕</button>
+            )}
+          </div>
+
           {/* Tabs */}
           <div style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", paddingBottom: 4 }}>
             {allTabs.map(tab => {
@@ -526,7 +623,7 @@ const ConsultationPage: React.FC = () => {
                 {activeTab === "All" ? "All Expert Healers" : activeTab}
               </h2>
               <p style={{ color: t.textMuted, fontSize: 13, margin: 0 }}>
-                {filtered.length} experts · {filtered.filter(e => e.isOnline).length} online now
+                {filtered.length} expert{filtered.length !== 1 ? "s" : ""} · {filtered.filter(e => e.isOnline).length} online now
               </p>
             </div>
             <span style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", borderRadius: 50, padding: "4px 12px", fontSize: 11, fontWeight: 700 }}>
@@ -534,17 +631,42 @@ const ConsultationPage: React.FC = () => {
             </span>
           </div>
 
+          {/* Selected trainer URL bar */}
+          {selectedTrainerId && (() => {
+            const sel = experts.find(e => e._id === selectedTrainerId);
+            if (!sel) return null;
+            const url = `${window.location.origin}/consultation?trainer=${sel._id}`;
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 16 }}>
+                <HiOutlineLink size={14} style={{ color: "#a78bfa", flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ color: t.textMuted, fontSize: 11, display: "block" }}>Direct link for <strong style={{ color: t.textPrimary }}>{sel.name}</strong></span>
+                  <span style={{ color: "#a78bfa", fontSize: 11, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{url}</span>
+                </div>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(url).catch(() => {}); }}
+                  style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.4)", color: "#a78bfa", borderRadius: 8, padding: "4px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                  Copy
+                </button>
+                <button onClick={() => { setSelectedTrainerId(null); setSearchParams({}, { replace: true }); }} style={{ background: "none", border: "none", color: t.textMuted, cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0, flexShrink: 0 }}>✕</button>
+              </div>
+            );
+          })()}
+
           {/* Grid */}
           {filtered.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
               {filtered.map(expert => (
-                <ExpertCard
-                  key={expert.name}
-                  expert={expert}
-                  onApply={() => setApplying(expert)}
-                  onChat={() => handleChat(expert)}
-                  onBook={() => handleBook(expert)}
-                />
+                <div key={expert.name} id={`trainer-card-${expert._id}`} ref={selectedTrainerId === expert._id ? selectedCardRef : null}>
+                  <ExpertCard
+                    expert={expert}
+                    isSelected={selectedTrainerId === expert._id}
+                    onSelect={() => handleSelectTrainer(expert)}
+                    onApply={() => setApplying(expert)}
+                    onChat={() => handleChat(expert)}
+                    onBook={() => handleBook(expert)}
+                  />
+                </div>
               ))}
             </div>
           ) : (

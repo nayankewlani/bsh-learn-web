@@ -39,6 +39,11 @@ import deepikaHandaImg from "../assets/deepika handa.jpeg";
 import ankitVigImg from "../assets/Ankit Vig.jpeg";
 import vandanaKhuranaImg from "../assets/Vandana khurana.jpeg";
 import rajeshKumarImg from "../assets/Rajesh kumar.jpeg";
+import puneetJainImg from "../assets/Dr.punnet jain.jpeg";
+import bijuBalkrishnanImg from "../assets/biju balkrishnan.png";
+import ratnaSwantImg from "../assets/dr. ratna sawant.jpeg";
+import shrutiSaxenaImg from "../assets/shruti saxena.jpeg";
+import abhinnavKumarImg from "../assets/Arishnav B Kumar.jpeg";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -126,11 +131,16 @@ const HERO_HEALERS = [
   { name: "Geeta Makhijani", subject: "Shadow Work", exp: "15+ yrs", rating: "4.8", img: geetaMakhijaniImg, color: "#0d9488", isLive: false },
   { name: "Nalini J. Yadav", subject: "Emotional Healing", exp: "14+ yrs", rating: "4.8", img: naliniYadavImg, color: "#0d9488", isLive: false },
   { name: "Vikas Bhardwaj", subject: "NLP Coaching", exp: "12+ yrs", rating: "4.9", img: vikasBhardwajImg, color: "#2563eb", isLive: true },
-  { name: "Vandana Khurana", subject: "Spiritual Healing", exp: "11+ yrs", rating: "4.8", img: vandanaKhuranaImg, color: "#9333ea", isLive: false },
-  { name: "Dr. Suman Batra", subject: "Pranic Healing", exp: "13+ yrs", rating: "4.9", img: sumanBatraImg, color: "#0891b2", isLive: false },
-  { name: "Deepika Handa", subject: "Mind Wellness", exp: "9+ yrs", rating: "4.8", img: deepikaHandaImg, color: "#d97706", isLive: true },
+  { name: "Vandana Khurana", subject: "Mind Wellness", exp: "16+ yrs", rating: "4.8", img: vandanaKhuranaImg, color: "#be185d", isLive: false },
+  { name: "Dr. Suman Batra", subject: "Spiritual Healing", exp: "13+ yrs", rating: "4.9", img: sumanBatraImg, color: "#9333ea", isLive: false },
+  { name: "Deepika Handa", subject: "Mind Wellness", exp: "9+ yrs", rating: "4.8", img: deepikaHandaImg, color: "#0891b2", isLive: true },
   { name: "Ankit Vig", subject: "NLP Coaching", exp: "10+ yrs", rating: "4.9", img: ankitVigImg, color: "#2563eb", isLive: false },
-  { name: "Rajesh Kumar", subject: "Energy Healing", exp: "12+ yrs", rating: "4.8", img: rajeshKumarImg, color: "#16a34a", isLive: true },
+  { name: "Rajesh Kumar", subject: "Vastu Shastra", exp: "12+ yrs", rating: "4.9", img: rajeshKumarImg, color: "#d97706", isLive: true },
+  { name: "Dr. Puneet Jain", subject: "Autism Healing", exp: "10+ yrs", rating: "4.9", img: puneetJainImg, color: "#059669", isLive: false },
+  { name: "Biju Balkrishnan", subject: "Corporate Training", exp: "15+ yrs", rating: "4.9", img: bijuBalkrishnanImg, color: "#1d4ed8", isLive: false },
+  { name: "Dr. Ratna Sawant", subject: "Hypnotherapy", exp: "17+ yrs", rating: "4.9", img: ratnaSwantImg, color: "#7c3aed", isLive: false },
+  { name: "Shruti Saxena", subject: "Emotional Healing", exp: "11+ yrs", rating: "4.8", img: shrutiSaxenaImg, color: "#db2777", isLive: false },
+  { name: "Abhinnav Kumar", subject: "Hypnotherapy", exp: "8+ yrs", rating: "4.8", img: abhinnavKumarImg, color: "#7c3aed", isLive: false },
 ];
 
 const TESTIMONIALS = [
@@ -334,11 +344,9 @@ const HomePage: React.FC = () => {
   const [videoModal, setVideoModal]       = useState<{ url: string; title: string } | null>(null);
   const [activeHealerNames, setActiveHealerNames] = useState<Set<string> | null>(null);
 
-  // null = still loading (render nothing to avoid flash of paused healers)
-  // Set  = API responded (show only active ones; fallback shows all on error)
-  const visibleHealers = activeHealerNames === null
-    ? []
-    : HERO_HEALERS.filter(h => activeHealerNames.has(h.name.toLowerCase()));
+  // Always show all healers — the DB filter was hiding trainers whose names
+  // didn't match exactly. null = still loading (avoid flash of unstyled content).
+  const visibleHealers = activeHealerNames === null ? [] : HERO_HEALERS;
 
   useEffect(() => {
     fetchFeatured();
