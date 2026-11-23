@@ -67,8 +67,8 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      isDark: false,
-      t: LIGHT,
+      isDark: true,
+      t: DARK,
       toggle: () => {
         const next = !get().isDark;
         document.documentElement.setAttribute("data-theme", next ? "dark" : "light");

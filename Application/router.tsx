@@ -53,7 +53,7 @@ import AdminMediaLibrary            from "./pages/admin/AdminMediaLibrary";
 import AdminEducatorMembership      from "./pages/admin/AdminEducatorMembership";
 
 const Layout: React.FC = () => (
-  <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0914" }}>
+  <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
     <Navbar />
     <main style={{ flex: 1 }} className="mobile-nav-pad"><Outlet /></main>
     <Footer />
