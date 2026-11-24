@@ -21,6 +21,13 @@ interface Post {
 const fmtDate = (s: string) =>
   new Date(s).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
+// Convert a UTC ISO string to a datetime-local value in the browser's local timezone (IST)
+const toLocalInput = (iso: string) => {
+  const d = new Date(iso);
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
+
 export default function AdminProgramPosts() {
   const { t } = useThemeStore();
   const [programId, setProgramId] = useState(PROGRAMS[0].id);
@@ -44,6 +51,7 @@ export default function AdminProgramPosts() {
   const [editContent, setEditContent]     = useState("");
   const [editScheduledAt, setEditScheduledAt] = useState("");
   const [editLinks, setEditLinks]         = useState<Link[]>([{ label: "", url: "" }]);
+  const [editProgramId, setEditProgramId] = useState("");
   const [editSaving, setEditSaving]       = useState(false);
   const [editError, setEditError]         = useState("");
 
@@ -52,8 +60,9 @@ export default function AdminProgramPosts() {
     setEditType(post.type);
     setEditTitle(post.title || "");
     setEditContent(post.content);
-    setEditScheduledAt(post.scheduledAt ? new Date(post.scheduledAt).toISOString().slice(0, 16) : "");
+    setEditScheduledAt(post.scheduledAt ? toLocalInput(post.scheduledAt) : "");
     setEditLinks(post.links?.length ? post.links : [{ label: "", url: "" }]);
+    setEditProgramId(post.programId || programId);
     setEditError("");
   };
 
@@ -68,8 +77,9 @@ export default function AdminProgramPosts() {
         type: editType,
         title: editTitle.trim() || undefined,
         content: editContent.trim(),
-        scheduledAt: editScheduledAt || undefined,
+        scheduledAt: editScheduledAt ? new Date(editScheduledAt).toISOString() : undefined,
         links: validLinks,
+        ...(editProgramId && editProgramId !== programId ? { programId: editProgramId } : {}),
       });
       await load(programId);
       closeEdit();
@@ -110,7 +120,7 @@ export default function AdminProgramPosts() {
         title: title.trim() || undefined,
         content: content.trim(),
         type,
-        scheduledAt: scheduledAt || undefined,
+        scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
         links: validLinks,
       });
       setPostOk(true);
@@ -327,6 +337,17 @@ export default function AdminProgramPosts() {
                       )}
                     </div>
                   ))}
+                </div>
+
+                {/* Move to another program */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={S.label}>Move to Program</label>
+                  <select value={editProgramId} onChange={e => setEditProgramId(e.target.value)} style={{ ...S.input, cursor: "pointer" }}>
+                    {PROGRAMS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                  </select>
+                  {editProgramId !== (programId) && (
+                    <div style={{ fontSize: 11, color: "#f59e0b", marginTop: 4 }}>⚠ This post will be moved to "{PROGRAMS.find(p => p.id === editProgramId)?.label}"</div>
+                  )}
                 </div>
 
                 {editError && <div style={{ padding: "8px 12px", background: "rgba(239,68,68,0.1)", borderRadius: 8, color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{editError}</div>}

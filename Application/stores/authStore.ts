@@ -10,6 +10,7 @@ export interface User {
   avatar?: string;
   bio?: string;
   phone?: string;
+  dob?: string;
 }
 
 interface AuthState {

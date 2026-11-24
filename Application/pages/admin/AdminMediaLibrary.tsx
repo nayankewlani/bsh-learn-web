@@ -211,7 +211,10 @@ export default function AdminMediaLibrary() {
       }
       return true;
     } catch (err: any) {
-      updateQueue(item.localId, { status: "error", error: err.message || "Failed" });
+      // Extract the actual server error message from Axios response if available
+      const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
+      const displayMsg = serverMsg || err.message || "Failed";
+      updateQueue(item.localId, { status: "error", error: displayMsg });
       return false;
     }
   }, [target, programId, courseId, folder, selBatches, tags, isFree, fileType, desc, pollMux, updateQueue]);

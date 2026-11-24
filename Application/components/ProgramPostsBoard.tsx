@@ -16,12 +16,13 @@ interface Post {
 type Filter = "all" | "live_class" | "announcement";
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  new Date(s).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 
 const fmtDateTime = (s: string) =>
   new Date(s).toLocaleString("en-IN", {
     weekday: "long", day: "2-digit", month: "long",
     year: "numeric", hour: "2-digit", minute: "2-digit",
+    timeZone: "Asia/Kolkata",
   });
 
 const timeFromNow = (s: string) => {

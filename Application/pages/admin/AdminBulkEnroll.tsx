@@ -88,11 +88,12 @@ export default function AdminBulkEnroll() {
       fd.append("itemId",   selectedId);
       fd.append("itemType", selectedType);
       fd.append("file",     file);
-      const r = await client.post("/admin/bulk-enroll", fd);
+      const r = await client.post("/admin/bulk-enroll", fd, { timeout: 180000 });
       setResult(r.data as BulkResult);
       setFilter("all");
     } catch (e: any) {
-      setError(e?.response?.data?.message || "Upload failed");
+      const msg = e?.response?.data?.message;
+      setError(msg || (e?.code === "ECONNABORTED" ? "Request timed out — file may be too large, try splitting into smaller batches" : "Upload failed — check your internet connection and try again"));
     } finally {
       setLoading(false);
     }
