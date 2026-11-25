@@ -15,7 +15,8 @@ export default defineConfig({
         chunkFileNames: "assets/[hash].js",
         entryFileNames: "assets/[hash].js",
         assetFileNames: "assets/[hash][extname]",
-        manualChunks(id) {
+        manualChunks(id: string) {
+
           if (id.includes("node_modules/react") || id.includes("node_modules/react-dom") || id.includes("node_modules/react-router")) {
             return "vendor";
           }
