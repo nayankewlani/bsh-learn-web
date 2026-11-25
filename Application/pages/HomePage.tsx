@@ -500,7 +500,7 @@ const HomePage: React.FC = () => {
                 0% { transform: translateY(0); }
                 100% { transform: translateY(-50%); }
               }
-              .healer-scroller-inner { animation: healerScroll 28s linear infinite; }
+              .healer-scroller-inner { animation: healerScroll 60s linear infinite; }
               .healer-scroller-wrap:hover .healer-scroller-inner { animation-play-state: paused; }
             `}</style>
 
